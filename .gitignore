@@ -1,0 +1,6 @@
+bin
+project/project/target
+project/target
+sbt.staging
+.cache
+target

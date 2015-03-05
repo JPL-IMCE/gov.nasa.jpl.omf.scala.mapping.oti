@@ -1,0 +1,8 @@
+Version 0.1: March 5, 2015
+
+Capabilities: 
+- Export SysML BDD according to IMCE-generated profile stereotypes and their specializations
+- Single-graph export mapping of SysML BDD content that, based on stereotypes, maps to OMF Entity Types (Aspects, Concepts and Relationships)
+
+Limitations (w.r.t. plan):
+- no support for SysML IBD
