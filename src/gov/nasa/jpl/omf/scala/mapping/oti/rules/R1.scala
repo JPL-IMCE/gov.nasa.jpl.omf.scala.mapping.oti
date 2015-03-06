@@ -62,7 +62,7 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
             case _: UMLNamespace[Uml] => false 
             case _ => true  
           } )
-          val moreContents = pkgContents.map( TboxContentPair( pkgTbox, _ ) ) toList;
+          val moreContents = pkgContents.map( TboxNestedNamespacePair( Some( pkgTbox ), _ ) ) toList;
           
           Success( ( morePairs, moreContents ) )
       }
