@@ -2,7 +2,7 @@ import com.banno.license.Plugin.LicenseKeys._
 
 name := "gov.nasa.jpl.omf.scala.mapping.oti"
   
-version in ThisBuild := "0.1"
+version in ThisBuild := "0.2.1"
 
 version <<= version in ThisBuild
 

@@ -1,6 +1,11 @@
+Version 0.2.1: March 11, 2015
+
+- Rule engine cleanup
+- Added R4 (mapping of directed, binary composite association relationships)
+
 Version 0.2: March 5, 2015
 
-Added R3 (mapping of dependency-mapped relationships)
+- Added R3 (mapping of dependency-mapped relationships)
 
 Version 0.1: March 5, 2015
 

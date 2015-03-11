@@ -13,6 +13,16 @@ import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
 
+/**
+ * Mapping for a kind of UML Package (but not a Profile)
+ * 
+ * The mapping of a UML Package distinguishes 2 kinds of owned elements:
+ * - nested packages will be recursively mapped
+ * - non-package owned elements will be mapped in the subsequent phase
+ * 
+ * For the IMCE authorization pattern, a UML Package, as a kind of UML Namespace, should map to an OMF TerminologyGraph.
+ * Currently, this rule does not map a UML Package according to the IMCE authorization pattern.
+ */
 case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf] ) {
 
   import umlOps._
@@ -26,18 +36,16 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
 
     val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction =
       {
-        case ( rule, TboxNestedNamespacePair( Some( tbox ), pkgU: UMLPackage[Uml] ), as, cs, rs, unmappedS ) =>
+        case ( rule, TboxUMLElementPair( Some( tbox ), pkgU: UMLPackage[Uml] ), as, cs, rs, unmappedS ) =>
           require( oclIsTypeOfPackage( pkgU ) )
 
-          System.out.println( s"nonProfilePackackageMapping(top): ${pkgU.qualifiedName.get}" )
           val ( mappedS, unmappedS ) = context.partitionAppliedStereotypesByMapping( pkgU )
           if ( unmappedS.nonEmpty ) {
-            System.out.println( unmappedS.map( "<<"+_.qualifiedName.get+">>" ) mkString (
-              s"*** ${unmappedS.size} unmapped stereotypes applied:\n- unmapped: ",
-              "\nunmapped: ",
-              "\n***\n" ) )
+            val foreign = unmappedS.filter( !context.otherStereotypesApplied.contains( _ ) )
+            require ( foreign.isEmpty )
           }
-          val mappedC = 
+
+          val mappedC =
             if ( mappedS.isEmpty ) Set( context.basePackageC )
             else mappedS.map( context.stereotype2Concept( _ ) )
 
@@ -48,26 +56,26 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
           // option1: only the OMG TBox graph
           // option2: OMF TBox as the graph for a named individual classified by mappedC (base:Package or its specializations) -- what is this individual in the OMF TBox?
           // option3: OMF TBox as the graph for a concept specializing mappedC (base:Package or its specializations)
-    
+
           // nested UML namespaces to map in this phase (excludes associations since they must be mapped in the subsequent content phase)
-          val pkgNested = pkgU.ownedElement.selectByKindOf( { case ns: UMLNamespace[Uml] => ns } ).filter( { 
-            case _: UMLAssociation[Uml] => false 
-            case _ => true  
+          val pkgNested = pkgU.ownedElement.selectByKindOf( { case ns: UMLNamespace[Uml] => ns } ).filter( {
+            case _: UMLAssociation[Uml] => false
+            case _                      => true
           } )
-          val morePairs = pkgNested.map( TboxNestedNamespacePair( Some( pkgTbox ), _ ) ) toList;
+          val morePairs = pkgNested.map( TboxUMLElementPair( Some( pkgTbox ), _ ) ) toList;
 
           // owned UML elements to map in the subsequent content phase
-          val pkgContents = pkgU.ownedElement.filter( { 
+          val pkgContents = pkgU.ownedElement.filter( {
             case _: UMLAssociation[Uml] => true
-            case _: UMLNamespace[Uml] => false 
-            case _ => true  
+            case _: UMLNamespace[Uml]   => false
+            case _                      => true
           } )
-          val moreContents = pkgContents.map( TboxNestedNamespacePair( Some( pkgTbox ), _ ) ) toList;
-          
+          val moreContents = pkgContents.map( TboxUMLElementPair( Some( pkgTbox ), _ ) ) toList;
+
           Success( ( morePairs, moreContents ) )
       }
 
-    MappingFunction[Uml, Omf]( "nonProfilePackackageMapping", context, mapping )
+    MappingFunction[Uml, Omf]( "nonProfilePackackageMapping", mapping )
 
   }
 }

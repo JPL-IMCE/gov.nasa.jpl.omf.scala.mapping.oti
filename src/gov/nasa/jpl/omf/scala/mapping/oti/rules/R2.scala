@@ -13,6 +13,19 @@ import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
 
+/**
+ * Mapping for a kind of UML Namespace (but not a kind of UML Package) to an OMF aspect or concept entity (but not relationship)
+ * 
+ * The mapping of a UML Namespace depends on the IMCE-generated profile stereotypes applied (or specializations of).
+ * There are 4 kinds of stereotypes:
+ * 1) as: Stereotypes that directly or indirectly map into a kind of OMF EntityAspect
+ * 2) cs: Stereotypes that directly or indirectly map into a kind of OMF EntityConcept
+ * 3) rs: Stereotypes that directly or indirectly map into a kind of OMF EntityRelationship
+ * 4) Stereotypes that have no direct or indirect mapping into any kind of OMF EntityDefinition (Aspect, Concept or Relationship)
+ * 
+ * `namespace2AspectMapping` applies only for (1) -- i.e., some as, no cs, no rs
+ * `namedElement2ConceptMapping` applies for (2) -- i.e., some cs, no rs
+ */
 case class R2[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf] ) {
 
   import umlOps._
@@ -25,16 +38,14 @@ case class R2[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
 
     val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction =
       {
-        case ( rule, TboxNestedNamespacePair( Some( tbox ), clsU: UMLClassifier[Uml] ), as, cs, rs, unmappedS ) if ( as.nonEmpty && cs.isEmpty && rs.isEmpty ) =>
-
+        case ( rule, TboxUMLElementPair( Some( tbox ), clsU: UMLClassifier[Uml] ), as, cs, rs, unmappedS ) if ( as.nonEmpty && cs.isEmpty && rs.isEmpty ) =>
+          
           if ( unmappedS.nonEmpty ) {
-            System.out.println( unmappedS.map( "<<"+_.qualifiedName.get+">>" ) mkString (
-              s"*** ${unmappedS.size} unmapped stereotypes applied:\n- unmapped: ",
-              "\nunmapped: ",
-              "\n***\n" ) )
+            val foreign = unmappedS.filter( !context.otherStereotypesApplied.contains( _ ) )
+            require ( foreign.isEmpty )
           }
           
-          val clsOmfAspect = context.element2aspectCtor.applyMapping( rule, tbox, clsU )
+          val clsOmfAspect = context.mapElement2Aspect( rule, tbox, clsU )
           as.foreach { case ( aS, aOmf ) =>
               context.addEntityDefinitionAspectSubClassAxiom( rule, tbox, clsOmfAspect, aOmf )
           }
@@ -50,12 +61,12 @@ case class R2[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
             case _: UMLNamespace[Uml] => false 
             case _ => true  
           } )
-          val moreContents = pkgContents.map( TboxNestedNamespacePair( Some( tbox ), _ ) ) toList;
+          val moreContents = pkgContents.map( TboxUMLElementPair( Some( tbox ), _ ) ) toList;
           
           Success( ( Nil, moreContents ) )
       }
 
-    MappingFunction[Uml, Omf]( "namespace2AspectMapping", context, mapping )
+    MappingFunction[Uml, Omf]( "namespace2AspectMapping", mapping )
 
   }
   
@@ -66,13 +77,11 @@ case class R2[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
 
     val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction =
       {
-        case ( rule, TboxNestedNamespacePair( Some( tbox ), neU: UMLNamedElement[Uml] ), as, cs, rs, unmappedS ) if ( cs.nonEmpty && rs.isEmpty ) =>
+        case ( rule, TboxUMLElementPair( Some( tbox ), neU: UMLNamedElement[Uml] ), as, cs, rs, unmappedS ) if ( cs.nonEmpty && rs.isEmpty ) =>
 
           if ( unmappedS.nonEmpty ) {
-            System.out.println( unmappedS.map( "<<"+_.qualifiedName.get+">>" ) mkString (
-              s"*** ${unmappedS.size} unmapped stereotypes applied:\n- unmapped: ",
-              "\nunmapped: ",
-              "\n***\n" ) )
+            val foreign = unmappedS.filter( !context.otherStereotypesApplied.contains( _ ) )
+            require ( foreign.isEmpty )
           }
           
           val isAbstract = neU match {
@@ -80,7 +89,7 @@ case class R2[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
             case _ => false
           }
           
-          val ( nsOmfConcept, nsOmfGraph ) = context.element2conceptCtor.applyMapping( rule, tbox, neU, isAbstract )
+          val ( nsOmfConcept, nsOmfGraph ) = context.mapElement2Concept( rule, tbox, neU, isAbstract )
           
           as.foreach { case ( aS, aOmf ) =>
               context.addEntityDefinitionAspectSubClassAxiom( rule, tbox, nsOmfConcept, aOmf )
@@ -96,12 +105,12 @@ case class R2[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
             case _: UMLNamespace[Uml] => false 
             case _ => true  
           } )
-          val moreContents = pkgContents.map( TboxNestedNamespacePair( Some( tbox ), _ ) ) toList;
+          val moreContents = pkgContents.map( TboxUMLElementPair( Some( tbox ), _ ) ) toList;
           
           Success( ( Nil, moreContents ) )
       }
 
-    MappingFunction[Uml, Omf]( "namedElement2ConceptMapping", context, mapping )
+    MappingFunction[Uml, Omf]( "namedElement2ConceptMapping", mapping )
 
   }
 }
