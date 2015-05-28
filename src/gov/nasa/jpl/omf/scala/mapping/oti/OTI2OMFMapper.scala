@@ -1,3 +1,42 @@
+/*
+ *
+ *  License Terms
+ *
+ *  Copyright (c) 2015, California Institute of Technology ("Caltech").
+ *  U.S. Government sponsorship acknowledged.
+ *
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are
+ *  met:
+ *
+ *
+ *   *   Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *
+ *   *   Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the
+ *       distribution.
+ *
+ *   *   Neither the name of Caltech nor its operating division, the Jet
+ *       Propulsion Laboratory, nor the names of its contributors may be
+ *       used to endorse or promote products derived from this software
+ *       without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ *  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ *  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ *  PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ *  OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ *  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package gov.nasa.jpl.omf.scala.mapping.oti
 
 import gov.nasa.jpl.omf.scala.core._
@@ -126,8 +165,8 @@ case class TboxUMLElementPair[Uml <: UML, Omf <: OMF](
 //  e: UMLElement[Uml] )
 
 case class MappingFunction[Uml <: UML, Omf <: OMF](
-  val name: String,
-  val mappingRule: OTI2OMFMappingContext[Uml, Omf]#RuleFunction )( implicit umlOps: UMLOps[Uml], omfOps: OMFOps[Omf] )
+  name: String,
+  mappingRule: OTI2OMFMappingContext[Uml, Omf]#RuleFunction )( implicit umlOps: UMLOps[Uml], omfOps: OMFOps[Omf] )
 
 trait Namespace2TBoxCtor[Uml <: UML, Omf <: OMF]
   extends Function2[MappingFunction[Uml, Omf], UMLNamespace[Uml], Omf#MutableModelTerminologyGraph]
@@ -139,7 +178,7 @@ trait AddEntityConceptSubClassAxiom[Uml <: UML, Omf <: OMF]
   extends Function4[MappingFunction[Uml, Omf], Omf#MutableModelTerminologyGraph, Omf#ModelEntityConcept, Omf#ModelEntityConcept, Omf#EntityConceptSubClassAxiom]
 
 trait AddEntityRelationshipSubClassAxiom[Uml <: UML, Omf <: OMF]
-  extends Function4[MappingFunction[Uml, Omf], Omf#MutableModelTerminologyGraph, Omf#ModelEntityRelationship, Omf#ModelEntityRelationship, Omf#EntityRelationshipSubClassAxiom]
+  extends Function4[MappingFunction[Uml, Omf], Omf#MutableModelTerminologyGraph, Omf#ModelEntityReifiedRelationship, Omf#ModelEntityReifiedRelationship, Omf#EntityRelationshipSubClassAxiom]
 
 case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
   iriPrefix: String,
@@ -156,7 +195,7 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
 
   stereotype2Aspect: Map[UMLStereotype[Uml], Omf#ModelEntityAspect],
   stereotype2Concept: Map[UMLStereotype[Uml], Omf#ModelEntityConcept],
-  stereotype2Relationship: Map[UMLStereotype[Uml], Omf#ModelEntityRelationship],
+  stereotype2Relationship: Map[UMLStereotype[Uml], Omf#ModelEntityReifiedRelationship],
   otherStereotypesApplied: Set[UMLStereotype[Uml]],
   ops: OMFOps[Omf] ) {
 
@@ -164,7 +203,7 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
 
   type UMLStereotype2EntityAspectMap = Map[UMLStereotype[Uml], Omf#ModelEntityAspect]
   type UMLStereotype2EntityConceptMap = Map[UMLStereotype[Uml], Omf#ModelEntityConcept]
-  type UMLStereotype2EntityRelationshipMap = Map[UMLStereotype[Uml], Omf#ModelEntityRelationship]
+  type UMLStereotype2EntityRelationshipMap = Map[UMLStereotype[Uml], Omf#ModelEntityReifiedRelationship]
   type TboxUMLElementPairs = List[TboxUMLElementPair[Uml, Omf]]
   
   type RuleFunction = PartialFunction[( MappingFunction[Uml, Omf], TboxUMLElementPair[Uml, Omf], UMLStereotype2EntityAspectMap, UMLStereotype2EntityConceptMap, UMLStereotype2EntityRelationshipMap, Set[UMLStereotype[Uml]] ), Try[( TboxUMLElementPairs, TboxUMLElementPairs )]]
@@ -173,12 +212,20 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
   type Element2RelationshipCTorRuleFunction = Function9[MappingFunction[Uml, Omf], Omf#MutableModelTerminologyGraph, UMLNamedElement[Uml], Omf#ModelEntityDefinition, Omf#ModelEntityDefinition, Iterable[RelationshipCharacteristics.RelationshipCharacteristics], Boolean, String, String, MappedEntityRelationship]
   
   type MappedEntityConcept = ( Omf#ModelEntityConcept, Option[Omf#MutableModelTerminologyGraph] )
-  type MappedEntityRelationship = ( Omf#ModelEntityRelationship, Option[Omf#MutableModelTerminologyGraph] )
+  type MappedEntityRelationship = ( Omf#ModelEntityReifiedRelationship, Option[Omf#MutableModelTerminologyGraph] )
 
-  val abbrevName2Aspect = stereotype2Aspect map { case ( _, a ) => ( toAbbreviatedName( fromEntityAspect( a ), false ).get -> a ) } toMap;
-  val abbrevName2Concept = stereotype2Concept map { case ( _, c ) => ( toAbbreviatedName( fromEntityConcept( c )._1, false ).get -> c ) } toMap;
-  val abbrevName2Relationship = stereotype2Relationship map { case ( _, r ) => ( toAbbreviatedName( fromEntityRelationship( r )._1, false ).get -> r ) } toMap;
+  val abbrevName2Aspect = stereotype2Aspect map { case ( _, a ) =>
+    toAbbreviatedName( fromEntityAspect( a ), false ).get -> a
+  }
 
+  val abbrevName2Concept = stereotype2Concept map { case ( _, c ) =>
+    toAbbreviatedName( fromEntityConcept( c )._1, false ).get -> c
+  }
+
+  val abbrevName2Relationship = stereotype2Relationship map { case ( _, r ) =>
+    toAbbreviatedName( fromEntityRelationship( r )._1, false ).get -> r
+  }
+  
   val abbrevName2Entity = abbrevName2Aspect ++ abbrevName2Concept ++ abbrevName2Relationship
 
   val allMappedStereotypes = stereotype2Aspect.keySet ++ stereotype2Concept.keySet ++ stereotype2Relationship.keySet
@@ -186,14 +233,14 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
   def isStereotypeMapped( s: UMLStereotype[Uml] ): Boolean = allMappedStereotypes.contains( s )
 
   def isStereotypedElementMapped( e: UMLElement[Uml] ): Boolean =
-    e.getAppliedStereotypes.keys.exists( isStereotypeMapped( _ ) )
+    e.getAppliedStereotypes.keys.exists( isStereotypeMapped )
 
   def getAppliedStereotypesMappedToOMF( e: UMLElement[Uml] ): ( UMLStereotype2EntityAspectMap, UMLStereotype2EntityConceptMap, UMLStereotype2EntityRelationshipMap, Set[UMLStereotype[Uml]] ) = {
     val appliedStereotypes = e.getAppliedStereotypes.keySet
     (
-      stereotype2Aspect.filterKeys( appliedStereotypes.contains( _ ) ),
-      stereotype2Concept.filterKeys( appliedStereotypes.contains( _ ) ),
-      stereotype2Relationship.filterKeys( appliedStereotypes.contains( _ ) ),
+      stereotype2Aspect.filterKeys( appliedStereotypes.contains ),
+      stereotype2Concept.filterKeys( appliedStereotypes.contains ),
+      stereotype2Relationship.filterKeys( appliedStereotypes.contains ),
       appliedStereotypes -- allMappedStereotypes )
   }
 
@@ -223,7 +270,7 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
     getAppliedStereotypesMappedToOMF( e )._3.nonEmpty
 
   def partitionAppliedStereotypesByMapping( e: UMLElement[Uml] ): ( Set[UMLStereotype[Uml]], Set[UMLStereotype[Uml]] ) =
-    e.getAppliedStereotypes.keySet.partition( isStereotypeMapped( _ ) )
+    e.getAppliedStereotypes.keySet.partition( isStereotypeMapped )
 
   lazy val basePackageC = abbrevName2Concept( "base:Package" )
   lazy val baseContainsR = abbrevName2Relationship( "base:Contains" )
@@ -254,7 +301,7 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
     element2conceptCtor.applyMapping( this, rule, tbox, u, isAbstract )
 
   val mappedElement2Relationship = scala.collection.mutable.HashMap[UMLElement[Uml], MappedEntityRelationship]()
-  def lookupElementRelationshipMapping( e: UMLElement[Uml] ): Option[Omf#ModelEntityRelationship] =
+  def lookupElementRelationshipMapping( e: UMLElement[Uml] ): Option[Omf#ModelEntityReifiedRelationship] =
     mappedElement2Relationship.get( e ) match {
       case None             => None
       case Some( ( r, _ ) ) => Some( r )
@@ -285,7 +332,7 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
     }
 
     ( lookupElementMapping( sourceU ), lookupElementMapping( targetU ) ) match {
-      case ( Some( sourceE ), Some( targetE ) ) => Some( ( sourceU, sourceE ), ( targetU, targetE ) )
+      case ( Some( sourceE ), Some( targetE ) ) => Some( Tuple2( Tuple2( sourceU, sourceE ), Tuple2( targetU, targetE ) ) )
       case ( _, _ )                             => None
     }
 
@@ -298,7 +345,7 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
         ( sourcePU._type, targetPU._type ) match {
           case ( Some( sourceTU: UMLClassifier[Uml] ), Some( targetTU: UMLClassifier[Uml] ) ) =>
             ( lookupElementMapping( sourceTU ), lookupElementMapping( targetTU ) ) match {
-              case ( Some( sourceE ), Some( targetE ) ) => Some( ( sourceTU, sourceE ), ( targetTU, targetE ) )
+              case ( Some( sourceE ), Some( targetE ) ) => Some( Tuple2( Tuple2( sourceTU, sourceE ), Tuple2( targetTU, targetE ) ) )
               case ( _, _ )                             => None
             }
           case ( _, _ ) => None
@@ -324,13 +371,13 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {
     current: TboxUMLElementPair[Uml, Omf],
     rules: List[MappingFunction[Uml, Omf]] ): Try[Option[RuleResult]] = {
     val ( as, cs, rs, us ) = context.getAppliedStereotypesMappedToOMF( current.ns )
-    rules.dropWhile( ( r ) => !r.mappingRule.isDefinedAt( r, current, as, cs, rs, us ) ) match {
+    rules.dropWhile( ( r ) => !r.mappingRule.isDefinedAt( Tuple6( r, current, as, cs, rs, us ) ) ) match {
       case Nil =>
         Success( None )
       case r :: _ =>
         r.mappingRule( r, current, as, cs, rs, us ) match {
           case Failure( t )                  => Failure( t )
-          case Success( ( pairs1, pairs2 ) ) => Success( Some( r, pairs1, pairs2 ) )
+          case Success( ( pairs1, pairs2 ) ) => Success( Some( Tuple3( r, pairs1, pairs2 ) ) )
         }
     }
   }

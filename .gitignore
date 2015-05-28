@@ -1,6 +1,9 @@
+.cache
+.classpath
+.idea
+.project
 bin
-project/project/target
+project/project
 project/target
 sbt.staging
-.cache
 target
