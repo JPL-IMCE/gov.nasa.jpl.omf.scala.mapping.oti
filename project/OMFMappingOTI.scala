@@ -57,7 +57,6 @@ object OMFMappingOTI extends Build {
 
       libraryDependencies ++= Seq(
         "gov.nasa.jpl.mbee.omf" %% "omf-scala-core" % Versions.jpl_omf_core intransitive() withSources() withJavadoc(),
-        "gov.nasa.jpl.mbee.omg.oti" %% "oti-core" % Versions.oti_core_version withJavadoc(),
         "gov.nasa.jpl.mbee.omg.oti" %% "oti-trees" % Versions.oti_trees_version withSources() withJavadoc(),
        "gov.nasa.jpl.mbee" %% "jpl-mbee-common-scala-libraries_core" % Versions.jpl_mbee_core
       )
