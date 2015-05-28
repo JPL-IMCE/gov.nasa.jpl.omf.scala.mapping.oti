@@ -1,22 +1,5 @@
 import com.banno.license.Plugin.LicenseKeys._
 
-name := "gov.nasa.jpl.omf.scala.mapping.oti"
-  
-version in ThisBuild := "0.2.1"
-
-version <<= version in ThisBuild
-
-organization := "JPL, Caltech"
-
-// enable publishing the jar produced by `test:package`
-publishArtifact in (Test, packageBin) := true
-
-// enable publishing the test API jar
-publishArtifact in (Test, packageDoc) := true
-
-// enable publishing the test sources jar
-publishArtifact in (Test, packageSrc) := true
-
 license := """|
  | License Terms
  |
