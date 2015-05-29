@@ -1,5 +1,15 @@
 import com.banno.license.Plugin.LicenseKeys._
 
+enablePlugins(GitVersioning, GitBranchPrompt)
+
+// the prefix for git-based versioning of the published artifacts
+git.baseVersion in ThisBuild := "1800.02"
+
+// turn on version detection
+git.useGitDescribe := true
+
+seq(versionWithGit: _*)
+
 license := """|
  | License Terms
  |
