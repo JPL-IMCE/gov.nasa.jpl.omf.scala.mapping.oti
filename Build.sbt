@@ -1,50 +1,29 @@
-import com.banno.license.Plugin.LicenseKeys._
+import gov.nasa.jpl.mbee.sbt._
+import sbt.Keys._
+import sbt._
 
-enablePlugins(GitVersioning, GitBranchPrompt)
+lazy val core = Project("omf-mapping-oti", file(".")).
+  settings(GitVersioning.buildSettings). // in principle, unnecessary; in practice: doesn't work without this
+  enablePlugins(MBEEGitPlugin).
+  settings(
+  MBEEKeys.mbeeLicenseYearOrRange := "2014-2015",
+  MBEEKeys.mbeeOrganizationInfo := MBEEPlugin.MBEEOrganizations.imce,
+  // include all test artifacts
+  publishArtifact in Test := true,
+  scalaSource in Compile := baseDirectory.value / "src",
+  scalaSource in Test := baseDirectory.value / "test",
 
-// the prefix for git-based versioning of the published artifacts
-git.baseVersion in ThisBuild := "1800.02"
+  // TODO: Jenkins CI: This should be unnecessary since the repo is in the library dependency POM!!!
+  resolvers += new MavenRepository("bintray-pchiusano-scalaz-stream", "http://dl.bintray.com/pchiusano/maven"),
 
-// turn on version detection
-git.useGitDescribe := true
-
-seq(versionWithGit: _*)
-
-license := """|
- | License Terms
- |
- | Copyright (c) 2015, California Institute of Technology ("Caltech").
- | U.S. Government sponsorship acknowledged.
- |
- | All rights reserved.
- |
- | Redistribution and use in source and binary forms, with or without
- | modification, are permitted provided that the following conditions are
- | met:
- |
- |
- |  *   Redistributions of source code must retain the above copyright
- |      notice, this list of conditions and the following disclaimer.
- |
- |  *   Redistributions in binary form must reproduce the above copyright
- |      notice, this list of conditions and the following disclaimer in the
- |      documentation and/or other materials provided with the
- |      distribution.
- |
- |  *   Neither the name of Caltech nor its operating division, the Jet
- |      Propulsion Laboratory, nor the names of its contributors may be
- |      used to endorse or promote products derived from this software
- |      without specific prior written permission.
- |
- | THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
- | IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- | TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- | PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
- | OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- | EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- | PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- | PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- | LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- | NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- | SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- |""".stripMargin
+  libraryDependencies ++= Seq(
+    MBEEPlugin.MBEEOrganizations.imce.mbeeZipArtifactVersion("jpl-mbee-common-scala-libraries_core", MBEEKeys.mbeeReleaseVersionPrefix.value, Versions.jpl_mbee_common_scala_libraries_revision),
+    MBEEPlugin.MBEEOrganizations.imce.mbeeZipArtifactVersion("jpl-mbee-common-scala-libraries_other", MBEEKeys.mbeeReleaseVersionPrefix.value, Versions.jpl_mbee_common_scala_libraries_revision),
+    MBEEPlugin.MBEEOrganizations.imce.mbeeArtifactVersion("omf-scala-core", MBEEKeys.mbeeReleaseVersionPrefix.value, Versions.jpl_omf_core_revision) % "compile" withSources() withJavadoc(),
+    MBEEPlugin.MBEEOrganizations.imce.mbeeArtifactVersion("omf-scala-core", MBEEKeys.mbeeReleaseVersionPrefix.value, Versions.jpl_omf_core_revision) % "test" classifier "tests"
+      artifacts(
+      Artifact.classified("omf-scala-core", "tests-sources"),
+      Artifact.classified("omf-scala-core", "tests-javadoc")),
+    MBEEPlugin.MBEEOrganizations.oti.mbeeArtifactVersion("oti-trees", Versions.oti_trees_prefix, Versions.oti_trees_suffix) % "compile" withSources() withJavadoc()
+  )
+)
