@@ -5,13 +5,13 @@ import sbt._
 lazy val core = Project("omf-mapping-oti", file(".")).
   settings(GitVersioning.buildSettings). // in principle, unnecessary; in practice: doesn't work without this
   enablePlugins(MBEEGitPlugin).
+  settings(MBEEPlugin.mbeeDynamicScriptsProjectResourceSettings(Some("gov.nasa.jpl.omf.scala.mapping.oti"))).
   settings(
   MBEEKeys.mbeeLicenseYearOrRange := "2014-2015",
   MBEEKeys.mbeeOrganizationInfo := MBEEPlugin.MBEEOrganizations.imce,
   // include all test artifacts
   publishArtifact in Test := true,
   scalaSource in Compile := baseDirectory.value / "src",
-  scalaSource in Test := baseDirectory.value / "test",
 
   // TODO: Jenkins CI: This should be unnecessary since the repo is in the library dependency POM!!!
   resolvers += new MavenRepository("bintray-pchiusano-scalaz-stream", "http://dl.bintray.com/pchiusano/maven"),

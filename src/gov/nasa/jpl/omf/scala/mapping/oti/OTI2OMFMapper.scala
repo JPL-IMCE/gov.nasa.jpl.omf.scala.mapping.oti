@@ -374,7 +374,7 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {
       case Nil =>
         Success( None )
       case r :: _ =>
-        r.mappingRule( r, current, as, cs, rs, us ) match {
+        r.mappingRule( Tuple6( r, current, as, cs, rs, us ) ) match {
           case Failure( t )                  => Failure( t )
           case Success( ( pairs1, pairs2 ) ) => Success( Some( Tuple3( r, pairs1, pairs2 ) ) )
         }
