@@ -8,6 +8,6 @@ object Versions {
 
   // OTI Trees version
   val oti_trees_prefix = "0.14.0"
-  val oti_trees_suffix = "897"
+  val oti_trees_suffix = "910"
 
 }
