@@ -80,7 +80,7 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
           sourceU.name.getOrElse(sourceU.id) + "-" + r1Name + "-" + targetU.name.getOrElse(targetU.id)
 
         for {
-          (depOmfRelation, depOmfGraph) <- context.mapElement2Relationship(
+          depOmfRelation <- context.mapElement2Relationship(
             rule, tbox, depU, sourceOmf, targetOmf,
             Iterable(), // @TODO
             isAbstract = false,
