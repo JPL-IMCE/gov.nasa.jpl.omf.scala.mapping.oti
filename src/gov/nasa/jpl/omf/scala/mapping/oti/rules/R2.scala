@@ -118,7 +118,7 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
         }
 
         for {
-          (nsOmfConcept, nsOmfGraph) <- context.mapElement2Concept(rule, tbox, neU, isAbstract, conceptGraphIRI = None)
+          nsOmfConcept <- context.mapElement2Concept(rule, tbox, neU, isAbstract )
           _ = System.out.println(
             s"#OTI/OMF R2 Element2Concept: ${neU.qualifiedName.get} / a:${as.size}, c:${cs.size}, r:${rs.size}")
           _ = as.foreach {

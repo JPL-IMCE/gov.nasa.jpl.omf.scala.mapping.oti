@@ -93,8 +93,7 @@ trait Element2ConceptCTor[Uml <: UML, Omf <: OMF] {
     rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
-    isAbstract: Boolean,
-    conceptGraphIRI: Option[Omf#IRI])
+    isAbstract: Boolean)
   : Try[OTI2OMFMappingContext[Uml, Omf]#MappedEntityConcept]
 }
 
@@ -107,11 +106,10 @@ trait Element2ConceptCTorFunction[Uml <: UML, Omf <: OMF]
     rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
-    isAbstract: Boolean,
-    conceptGraphIRI: Option[Omf#IRI] )
+    isAbstract: Boolean)
   : Try[OTI2OMFMappingContext[Uml, Omf]#MappedEntityConcept] =
   for {
-    conceptGraph <- apply(rule, tbox, u, isAbstract, conceptGraphIRI)
+    conceptGraph <- apply(rule, tbox, u, isAbstract)
     _ = context.mappedElement2Concept += (u -> conceptGraph)
   } yield conceptGraph
 
@@ -276,12 +274,11 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
     UMLClassifier[Uml],
     Try[Omf#ModelEntityAspect]]
 
-  type Element2ConceptCTorRuleFunction = Function5[
+  type Element2ConceptCTorRuleFunction = Function4[
     MappingFunction[Uml, Omf],
     Omf#MutableModelTerminologyGraph,
     UMLNamedElement[Uml],
     Boolean,
-    Option[Omf#IRI],
     Try[MappedEntityConcept]]
 
   type Element2RelationshipCTorRuleFunction = Function8[
@@ -295,8 +292,8 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
     Option[String],
     Try[MappedEntityRelationship]]
   
-  type MappedEntityConcept = ( Omf#ModelEntityConcept, Option[Omf#MutableModelTerminologyGraph] )
-  type MappedEntityRelationship = ( Omf#ModelEntityReifiedRelationship, Option[Omf#MutableModelTerminologyGraph] )
+  type MappedEntityConcept = Omf#ModelEntityConcept
+  type MappedEntityRelationship = Omf#ModelEntityReifiedRelationship
 
   val abbrevName2Aspect = stereotype2Aspect map { case ( _, a ) =>
     toAbbreviatedName( fromEntityAspect( a ), false ).get -> a
@@ -388,32 +385,22 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
   def lookupElementConceptMapping
   ( e: UMLElement[Uml] )
   : Option[Omf#ModelEntityConcept] =
-    mappedElement2Concept.get( e ) match {
-      case None =>
-        None
-      case Some( ( c, _ ) ) =>
-        Some( c )
-    }
+    mappedElement2Concept.get( e )
+
   def mapElement2Concept
   ( rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
-    isAbstract: Boolean,
-    conceptGraphIRI: Option[Omf#IRI])
+    isAbstract: Boolean)
   : Try[MappedEntityConcept] =
-    element2conceptCtor.applyMapping( this, rule, tbox, u, isAbstract, conceptGraphIRI )
+    element2conceptCtor.applyMapping( this, rule, tbox, u, isAbstract )
 
   val mappedElement2Relationship = scala.collection.mutable.HashMap[UMLElement[Uml], MappedEntityRelationship]()
 
   def lookupElementRelationshipMapping
   ( e: UMLElement[Uml] )
   : Option[Omf#ModelEntityReifiedRelationship] =
-    mappedElement2Relationship.get( e ) match {
-      case None =>
-        None
-      case Some( ( r, _ ) ) =>
-        Some( r )
-    }
+    mappedElement2Relationship.get( e )
 
   def mapElement2Relationship
   ( rule: MappingFunction[Uml, Omf],

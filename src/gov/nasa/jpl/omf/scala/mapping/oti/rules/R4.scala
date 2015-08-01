@@ -79,7 +79,7 @@ case class R4[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
         val hasName = bcaU.name
 
         for {
-          (bcaOmfRelation, bcaOmfGraph) <- context.mapElement2Relationship(
+          bcaOmfRelation <- context.mapElement2Relationship(
             rule, tbox, bcaU, sourceOmf, targetOmf,
             Iterable(), // @TODO
             isAbstract = bcaU.isAbstract,
