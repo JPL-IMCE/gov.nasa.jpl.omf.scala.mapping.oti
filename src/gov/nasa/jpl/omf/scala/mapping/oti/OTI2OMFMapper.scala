@@ -41,8 +41,9 @@ package gov.nasa.jpl.omf.scala.mapping.oti
 import gov.nasa.jpl.omf.scala.core._
 import gov.nasa.jpl.omf.scala.core.TerminologyKind._
 import org.omg.oti._
-import org.omg.oti.api._
-import org.omg.oti.operations._
+import org.omg.oti.uml.read.api._
+import org.omg.oti.uml.read.operations._
+import org.omg.oti.uml.trees._
 import scala.collection.JavaConversions._
 import scala.language.postfixOps
 import scala.util.Try
@@ -61,59 +62,64 @@ trait Namespace2TBoxLookupFunction[Uml <: UML, Omf <: OMF]
   extends Function1[UMLNamespace[Uml], Option[Omf#ModelTerminologyGraph]]
 
 trait Element2AspectCTor[Uml <: UML, Omf <: OMF] {
-  def applyMapping(
-    context: OTI2OMFMappingContext[Uml, Omf],
+  def applyMapping
+  ( context: OTI2OMFMappingContext[Uml, Omf],
     rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
-    u: UMLClassifier[Uml] ): Omf#ModelEntityAspect
+    u: UMLClassifier[Uml] )
+  : Try[Omf#ModelEntityAspect]
 }
 
 trait Element2AspectCTorFunction[Uml <: UML, Omf <: OMF]
   extends Element2AspectCTor[Uml, Omf]
   with OTI2OMFMappingContext[Uml, Omf]#Element2AspectCTorRuleFunction {
 
-  override def applyMapping(
-    context: OTI2OMFMappingContext[Uml, Omf],
+  override def applyMapping
+  ( context: OTI2OMFMappingContext[Uml, Omf],
     rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
-    u: UMLClassifier[Uml] ): Omf#ModelEntityAspect = {
-
-    val aspect = apply( rule, tbox, u )
-    context.mappedElement2Aspect += ( u -> aspect )
-    aspect
-  }
+    u: UMLClassifier[Uml] )
+  : Try[Omf#ModelEntityAspect] =
+  for {
+    aspect <- apply(rule, tbox, u)
+    _ = context.mappedElement2Aspect += (u -> aspect)
+  } yield aspect
 
 }
 
 trait Element2ConceptCTor[Uml <: UML, Omf <: OMF] {
-  def applyMapping(
-    context: OTI2OMFMappingContext[Uml, Omf],
+  def applyMapping
+  ( context: OTI2OMFMappingContext[Uml, Omf],
     rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
-    isAbstract: Boolean ): OTI2OMFMappingContext[Uml, Omf]#MappedEntityConcept
+    isAbstract: Boolean,
+    conceptGraphIRI: Option[Omf#IRI])
+  : Try[OTI2OMFMappingContext[Uml, Omf]#MappedEntityConcept]
 }
 
 trait Element2ConceptCTorFunction[Uml <: UML, Omf <: OMF]
   extends Element2ConceptCTor[Uml, Omf]
   with OTI2OMFMappingContext[Uml, Omf]#Element2ConceptCTorRuleFunction {
 
-  override def applyMapping(
-    context: OTI2OMFMappingContext[Uml, Omf],
+  override def applyMapping
+  ( context: OTI2OMFMappingContext[Uml, Omf],
     rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
-    isAbstract: Boolean ): OTI2OMFMappingContext[Uml, Omf]#MappedEntityConcept = {
-    val conceptGraph = apply( rule, tbox, u, isAbstract )
-    context.mappedElement2Concept += ( u -> conceptGraph )
-    conceptGraph
-  }
+    isAbstract: Boolean,
+    conceptGraphIRI: Option[Omf#IRI] )
+  : Try[OTI2OMFMappingContext[Uml, Omf]#MappedEntityConcept] =
+  for {
+    conceptGraph <- apply(rule, tbox, u, isAbstract, conceptGraphIRI)
+    _ = context.mappedElement2Concept += (u -> conceptGraph)
+  } yield conceptGraph
 
 }
 
 trait Element2RelationshipCTor[Uml <: UML, Omf <: OMF] {
-  def applyMapping(
-    context: OTI2OMFMappingContext[Uml, Omf],
+  def applyMapping
+  ( context: OTI2OMFMappingContext[Uml, Omf],
     rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
@@ -121,16 +127,16 @@ trait Element2RelationshipCTor[Uml <: UML, Omf <: OMF] {
     target: Omf#ModelEntityDefinition,
     characteristics: Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
     isAbstract: Boolean,
-    name: String,
-    qualifiedName: String ): OTI2OMFMappingContext[Uml, Omf]#MappedEntityRelationship
+    name: Option[String] )
+  : Try[OTI2OMFMappingContext[Uml, Omf]#MappedEntityRelationship]
 }
 
 trait Element2RelationshipCTorFunction[Uml <: UML, Omf <: OMF]
   extends Element2RelationshipCTor[Uml, Omf]
   with OTI2OMFMappingContext[Uml, Omf]#Element2RelationshipCTorRuleFunction {
 
-  override def applyMapping(
-    context: OTI2OMFMappingContext[Uml, Omf],
+  override def applyMapping
+  ( context: OTI2OMFMappingContext[Uml, Omf],
     rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
@@ -138,27 +144,49 @@ trait Element2RelationshipCTorFunction[Uml <: UML, Omf <: OMF]
     target: Omf#ModelEntityDefinition,
     characteristics: Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
     isAbstract: Boolean,
-    name: String,
-    qualifiedName: String ): OTI2OMFMappingContext[Uml, Omf]#MappedEntityRelationship = {
-
-    val relationshipGraph = apply( rule, tbox, u, source, target, characteristics, isAbstract, name, qualifiedName )
-    context.mappedElement2Relationship += ( u -> relationshipGraph )
-    relationshipGraph
-  }
+    name: Option[String] )
+  : Try[OTI2OMFMappingContext[Uml, Omf]#MappedEntityRelationship] =
+  for {
+    relationshipGraph <- apply(rule, tbox, u, source, target, characteristics, isAbstract, name )
+    _ = context.mappedElement2Relationship += (u -> relationshipGraph)
+  } yield relationshipGraph
 }
 
-case class TboxUMLElementPair[Uml <: UML, Omf <: OMF](
-  tbox: Option[Omf#MutableModelTerminologyGraph],
-  ns: UMLElement[Uml] )( implicit omfOps: OMFOps[Omf] ) {
+sealed abstract class TboxUMLElementPair[Uml <: UML, Omf <: OMF]
+( val tbox: Option[Omf#MutableModelTerminologyGraph],
+  val e: UMLElement[Uml] )
+( implicit omfOps: OMFOps[Omf] )
+
+case class TboxUMLElementTuple[Uml <: UML, Omf <: OMF]
+( override val tbox: Option[Omf#MutableModelTerminologyGraph],
+  override val e: UMLElement[Uml] )
+( implicit omfOps: OMFOps[Omf] )
+extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
+
   override def toString: String =
     tbox match {
       case None =>
-        s"[tbox=<none>, ${ns.xmiType.head}: ${ns.xmiID.head}]"
+        s"Tuple[tbox=<none>, ${e.xmiType.head}: ${e.xmiID.head}]"
       case Some( g ) =>
-        s"[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${ns.xmiType.head}: ${ns.xmiID.head}]"
+        s"Tuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.xmiID.head}]"
     }
 }
 
+case class TboxUMLElementTreeType[Uml <: UML, Omf <: OMF]
+( override val tbox: Option[Omf#MutableModelTerminologyGraph],
+  override val e: UMLType[Uml],
+  val tree: TreeType[Uml])
+( implicit omfOps: OMFOps[Omf] )
+  extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
+
+  override def toString: String =
+    tbox match {
+      case None =>
+        s"Tree[tbox=<none>, ${e.xmiType.head}: ${e.xmiID.head}]"
+      case Some( g ) =>
+        s"Tree[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.xmiID.head}]"
+    }
+}
 //case class TboxContentPair[Uml <: UML, Omf <: OMF](
 //  tbox: Omf#MutableModelTerminologyGraph,
 //  e: UMLElement[Uml] )
@@ -168,19 +196,44 @@ case class MappingFunction[Uml <: UML, Omf <: OMF](
   mappingRule: OTI2OMFMappingContext[Uml, Omf]#RuleFunction )( implicit umlOps: UMLOps[Uml], omfOps: OMFOps[Omf] )
 
 trait Namespace2TBoxCtor[Uml <: UML, Omf <: OMF]
-  extends Function2[MappingFunction[Uml, Omf], UMLNamespace[Uml], Omf#MutableModelTerminologyGraph]
+  extends Function2[
+    MappingFunction[Uml, Omf],
+    UMLNamespace[Uml],
+    Try[Omf#MutableModelTerminologyGraph]]
+
+trait AddDirectlyNestedTerminologyGraph[Uml <: UML, Omf <: OMF]
+  extends Function3[
+    MappingFunction[Uml, Omf],
+    Omf#MutableModelTerminologyGraph,
+    Omf#MutableModelTerminologyGraph,
+    Try[Unit]]
 
 trait AddEntityDefinitionAspectSubClassAxiom[Uml <: UML, Omf <: OMF]
-  extends Function4[MappingFunction[Uml, Omf], Omf#MutableModelTerminologyGraph, Omf#ModelEntityDefinition, Omf#ModelEntityAspect, Omf#EntityDefinitionAspectSubClassAxiom]
+  extends Function4[
+    MappingFunction[Uml, Omf],
+    Omf#MutableModelTerminologyGraph,
+    Omf#ModelEntityDefinition,
+    Omf#ModelEntityAspect,
+    Try[Omf#EntityDefinitionAspectSubClassAxiom]]
 
 trait AddEntityConceptSubClassAxiom[Uml <: UML, Omf <: OMF]
-  extends Function4[MappingFunction[Uml, Omf], Omf#MutableModelTerminologyGraph, Omf#ModelEntityConcept, Omf#ModelEntityConcept, Omf#EntityConceptSubClassAxiom]
+  extends Function4[
+    MappingFunction[Uml, Omf],
+    Omf#MutableModelTerminologyGraph,
+    Omf#ModelEntityConcept,
+    Omf#ModelEntityConcept,
+    Try[Omf#EntityConceptSubClassAxiom]]
 
-trait AddEntityRelationshipSubClassAxiom[Uml <: UML, Omf <: OMF]
-  extends Function4[MappingFunction[Uml, Omf], Omf#MutableModelTerminologyGraph, Omf#ModelEntityReifiedRelationship, Omf#ModelEntityReifiedRelationship, Omf#EntityRelationshipSubClassAxiom]
+trait AddEntityReifiedRelationshipSubClassAxiom[Uml <: UML, Omf <: OMF]
+  extends Function4[
+    MappingFunction[Uml, Omf],
+    Omf#MutableModelTerminologyGraph,
+    Omf#ModelEntityReifiedRelationship,
+    Omf#ModelEntityReifiedRelationship,
+    Try[Omf#EntityReifiedRelationshipSubClassAxiom]]
 
-case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
-  iriPrefix: String,
+case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
+( iriPrefix: String,
   tboxLookup: Namespace2TBoxLookupFunction[Uml, Omf],
   ns2tboxCtor: Namespace2TBoxCtor[Uml, Omf],
 
@@ -188,15 +241,17 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
   protected val element2conceptCtor: Element2ConceptCTor[Uml, Omf],
   protected val element2relationshipCtor: Element2RelationshipCTor[Uml, Omf],
 
+  addDirectlyNestedTerminologyGraph: AddDirectlyNestedTerminologyGraph[Uml, Omf],
   addEntityDefinitionAspectSubClassAxiom: AddEntityDefinitionAspectSubClassAxiom[Uml, Omf],
   addEntityConceptSubClassAxiom: AddEntityConceptSubClassAxiom[Uml, Omf],
-  addEntityRelationshipSubClassAxiom: AddEntityRelationshipSubClassAxiom[Uml, Omf],
+  addEntityRelationshipSubClassAxiom: AddEntityReifiedRelationshipSubClassAxiom[Uml, Omf],
 
   stereotype2Aspect: Map[UMLStereotype[Uml], Omf#ModelEntityAspect],
   stereotype2Concept: Map[UMLStereotype[Uml], Omf#ModelEntityConcept],
   stereotype2Relationship: Map[UMLStereotype[Uml], Omf#ModelEntityReifiedRelationship],
   otherStereotypesApplied: Set[UMLStereotype[Uml]],
-  ops: OMFOps[Omf] ) {
+  ops: OMFOps[Omf],
+  treeOps: TreeOps[Uml]) {
 
   import ops._
 
@@ -205,10 +260,40 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
   type UMLStereotype2EntityRelationshipMap = Map[UMLStereotype[Uml], Omf#ModelEntityReifiedRelationship]
   type TboxUMLElementPairs = List[TboxUMLElementPair[Uml, Omf]]
   
-  type RuleFunction = PartialFunction[( MappingFunction[Uml, Omf], TboxUMLElementPair[Uml, Omf], UMLStereotype2EntityAspectMap, UMLStereotype2EntityConceptMap, UMLStereotype2EntityRelationshipMap, Set[UMLStereotype[Uml]] ), Try[( TboxUMLElementPairs, TboxUMLElementPairs )]]
-  type Element2AspectCTorRuleFunction = Function3[MappingFunction[Uml, Omf], Omf#MutableModelTerminologyGraph, UMLClassifier[Uml], Omf#ModelEntityAspect]
-  type Element2ConceptCTorRuleFunction = Function4[MappingFunction[Uml, Omf], Omf#MutableModelTerminologyGraph, UMLNamedElement[Uml], Boolean, MappedEntityConcept]
-  type Element2RelationshipCTorRuleFunction = Function9[MappingFunction[Uml, Omf], Omf#MutableModelTerminologyGraph, UMLNamedElement[Uml], Omf#ModelEntityDefinition, Omf#ModelEntityDefinition, Iterable[RelationshipCharacteristics.RelationshipCharacteristics], Boolean, String, String, MappedEntityRelationship]
+  type RuleFunction =
+  PartialFunction[
+    ( MappingFunction[Uml, Omf],
+      TboxUMLElementPair[Uml, Omf],
+      UMLStereotype2EntityAspectMap,
+      UMLStereotype2EntityConceptMap,
+      UMLStereotype2EntityRelationshipMap,
+      Set[UMLStereotype[Uml]] ),
+    Try[( TboxUMLElementPairs, TboxUMLElementPairs )]]
+
+  type Element2AspectCTorRuleFunction = Function3[
+    MappingFunction[Uml, Omf],
+    Omf#MutableModelTerminologyGraph,
+    UMLClassifier[Uml],
+    Try[Omf#ModelEntityAspect]]
+
+  type Element2ConceptCTorRuleFunction = Function5[
+    MappingFunction[Uml, Omf],
+    Omf#MutableModelTerminologyGraph,
+    UMLNamedElement[Uml],
+    Boolean,
+    Option[Omf#IRI],
+    Try[MappedEntityConcept]]
+
+  type Element2RelationshipCTorRuleFunction = Function8[
+    MappingFunction[Uml, Omf],
+    Omf#MutableModelTerminologyGraph,
+    UMLNamedElement[Uml],
+    Omf#ModelEntityDefinition,
+    Omf#ModelEntityDefinition,
+    Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
+    Boolean,
+    Option[String],
+    Try[MappedEntityRelationship]]
   
   type MappedEntityConcept = ( Omf#ModelEntityConcept, Option[Omf#MutableModelTerminologyGraph] )
   type MappedEntityRelationship = ( Omf#ModelEntityReifiedRelationship, Option[Omf#MutableModelTerminologyGraph] )
@@ -218,11 +303,11 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
   }
 
   val abbrevName2Concept = stereotype2Concept map { case ( _, c ) =>
-    toAbbreviatedName( fromEntityConcept( c )._1, false ).get -> c
+    toAbbreviatedName( fromEntityConcept( c ).iri, false ).get -> c
   }
 
   val abbrevName2Relationship = stereotype2Relationship map { case ( _, r ) =>
-    toAbbreviatedName( fromEntityRelationship( r )._1, false ).get -> r
+    toAbbreviatedName( fromEntityReifiedRelationship( r ).iri, false ).get -> r
   }
   
   val abbrevName2Entity = abbrevName2Aspect ++ abbrevName2Concept ++ abbrevName2Relationship
@@ -234,7 +319,12 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
   def isStereotypedElementMapped( e: UMLElement[Uml] ): Boolean =
     e.getAppliedStereotypes.keys.exists( isStereotypeMapped )
 
-  def getAppliedStereotypesMappedToOMF( e: UMLElement[Uml] ): ( UMLStereotype2EntityAspectMap, UMLStereotype2EntityConceptMap, UMLStereotype2EntityRelationshipMap, Set[UMLStereotype[Uml]] ) = {
+  def getAppliedStereotypesMappedToOMF
+  ( e: UMLElement[Uml] )
+  : ( UMLStereotype2EntityAspectMap,
+    UMLStereotype2EntityConceptMap,
+    UMLStereotype2EntityRelationshipMap,
+    Set[UMLStereotype[Uml]] ) = {
     val appliedStereotypes = e.getAppliedStereotypes.keySet
     (
       stereotype2Aspect.filterKeys( appliedStereotypes.contains ),
@@ -243,7 +333,9 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
       appliedStereotypes -- allMappedStereotypes )
   }
 
-  def getSortedAppliedStereotypesMappedToOMF( e: UMLElement[Uml] ): ( List[UMLStereotype[Uml]], List[UMLStereotype[Uml]], List[UMLStereotype[Uml]], List[UMLStereotype[Uml]] ) = {
+  def getSortedAppliedStereotypesMappedToOMF
+  ( e: UMLElement[Uml] )
+  : ( List[UMLStereotype[Uml]], List[UMLStereotype[Uml]], List[UMLStereotype[Uml]], List[UMLStereotype[Uml]] ) = {
     val ( as, cs, rs, us ) = getAppliedStereotypesMappedToOMF( e )
     (
       as.keys.toList.sortBy( _.qualifiedName.get ),
@@ -268,7 +360,9 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
   def doesStereotypedElementMap2Relationship( e: UMLElement[Uml] ): Boolean =
     getAppliedStereotypesMappedToOMF( e )._3.nonEmpty
 
-  def partitionAppliedStereotypesByMapping( e: UMLElement[Uml] ): ( Set[UMLStereotype[Uml]], Set[UMLStereotype[Uml]] ) =
+  def partitionAppliedStereotypesByMapping
+  ( e: UMLElement[Uml] )
+  : ( Set[UMLStereotype[Uml]], Set[UMLStereotype[Uml]] ) =
     e.getAppliedStereotypes.keySet.partition( isStereotypeMapped )
 
   lazy val basePackageC = abbrevName2Concept( "base:Package" )
@@ -277,50 +371,75 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
   val mappedElement2Aspect = scala.collection.mutable.HashMap[UMLElement[Uml], Omf#ModelEntityAspect]()
   def lookupElementAspectMapping( e: UMLElement[Uml] ): Option[Omf#ModelEntityAspect] =
     mappedElement2Aspect.get( e ) match {
-      case None      => None
-      case Some( a ) => Some( a )
+      case None =>
+        None
+      case Some( a ) =>
+        Some( a )
     }
-  def mapElement2Aspect(
-    rule: MappingFunction[Uml, Omf],
+  def mapElement2Aspect
+  ( rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
-    u: UMLClassifier[Uml] ): Omf#ModelEntityAspect =
+    u: UMLClassifier[Uml] )
+  : Try[Omf#ModelEntityAspect] =
     element2aspectCtor.applyMapping( this, rule, tbox, u )
 
   val mappedElement2Concept = scala.collection.mutable.HashMap[UMLElement[Uml], MappedEntityConcept]()
-  def lookupElementConceptMapping( e: UMLElement[Uml] ): Option[Omf#ModelEntityConcept] =
+
+  def lookupElementConceptMapping
+  ( e: UMLElement[Uml] )
+  : Option[Omf#ModelEntityConcept] =
     mappedElement2Concept.get( e ) match {
-      case None             => None
-      case Some( ( c, _ ) ) => Some( c )
+      case None =>
+        None
+      case Some( ( c, _ ) ) =>
+        Some( c )
     }
-  def mapElement2Concept(
-    rule: MappingFunction[Uml, Omf],
+  def mapElement2Concept
+  ( rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
-    isAbstract: Boolean ): MappedEntityConcept =
-    element2conceptCtor.applyMapping( this, rule, tbox, u, isAbstract )
+    isAbstract: Boolean,
+    conceptGraphIRI: Option[Omf#IRI])
+  : Try[MappedEntityConcept] =
+    element2conceptCtor.applyMapping( this, rule, tbox, u, isAbstract, conceptGraphIRI )
 
   val mappedElement2Relationship = scala.collection.mutable.HashMap[UMLElement[Uml], MappedEntityRelationship]()
-  def lookupElementRelationshipMapping( e: UMLElement[Uml] ): Option[Omf#ModelEntityReifiedRelationship] =
+
+  def lookupElementRelationshipMapping
+  ( e: UMLElement[Uml] )
+  : Option[Omf#ModelEntityReifiedRelationship] =
     mappedElement2Relationship.get( e ) match {
-      case None             => None
-      case Some( ( r, _ ) ) => Some( r )
+      case None =>
+        None
+      case Some( ( r, _ ) ) =>
+        Some( r )
     }
-  def mapElement2Relationship(
-    rule: MappingFunction[Uml, Omf],
+
+  def mapElement2Relationship
+  ( rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
     source: Omf#ModelEntityDefinition,
     target: Omf#ModelEntityDefinition,
     characteristics: Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
     isAbstract: Boolean,
-    name: String,
-    qualifiedName: String ): MappedEntityRelationship =
-    element2relationshipCtor.applyMapping( this, rule, tbox, u, source, target, characteristics, isAbstract, name, qualifiedName )
+    hasName: Option[String] )
+  : Try[MappedEntityRelationship] =
+    element2relationshipCtor.applyMapping(
+      this, rule, tbox, u, source, target, characteristics, isAbstract, hasName )
 
-  def lookupElementMapping( e: UMLElement[Uml] ): Option[Omf#ModelEntityDefinition] =
-    lookupElementAspectMapping( e ) orElse lookupElementConceptMapping( e ) orElse lookupElementRelationshipMapping( e )
+  def lookupElementMapping
+  ( e: UMLElement[Uml] )
+  : Option[Omf#ModelEntityDefinition] =
+    lookupElementAspectMapping( e ) orElse
+      lookupElementConceptMapping( e ) orElse
+      lookupElementRelationshipMapping( e )
 
-  def getDependencySourceAndTargetMappings( d: UMLDependency[Uml] ): Option[( ( UMLNamedElement[Uml], Omf#ModelEntityDefinition ), ( UMLNamedElement[Uml], Omf#ModelEntityDefinition ) )] = {
+  def getDependencySourceAndTargetMappings
+  ( d: UMLDependency[Uml] )
+  : Option[
+    ( ( UMLNamedElement[Uml], Omf#ModelEntityDefinition ),
+    ( UMLNamedElement[Uml], Omf#ModelEntityDefinition ) )] = {
     val sourceU = {
       require( d.client.size == 1 )
       d.client.head
@@ -331,23 +450,33 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF](
     }
 
     ( lookupElementMapping( sourceU ), lookupElementMapping( targetU ) ) match {
-      case ( Some( sourceE ), Some( targetE ) ) => Some( Tuple2( Tuple2( sourceU, sourceE ), Tuple2( targetU, targetE ) ) )
-      case ( _, _ )                             => None
+      case ( Some( sourceE ), Some( targetE ) ) =>
+        Some( Tuple2( Tuple2( sourceU, sourceE ), Tuple2( targetU, targetE ) ) )
+      case ( _, _ )  =>
+        None
     }
 
   }
 
-  def getDirectedBinaryAssociationSourceAndTargetMappings( a: UMLAssociation[Uml] ): Option[( ( UMLClassifier[Uml], Omf#ModelEntityDefinition ), ( UMLClassifier[Uml], Omf#ModelEntityDefinition ) )] =
+  def getDirectedBinaryAssociationSourceAndTargetMappings
+  ( a: UMLAssociation[Uml] )
+  : Option[
+    ( ( UMLClassifier[Uml], Omf#ModelEntityDefinition ),
+      ( UMLClassifier[Uml], Omf#ModelEntityDefinition ) )] =
     a.getDirectedAssociationEnd match {
-      case None => None
+      case None =>
+        None
       case Some( ( sourcePU, targetPU ) ) =>
         ( sourcePU._type, targetPU._type ) match {
           case ( Some( sourceTU: UMLClassifier[Uml] ), Some( targetTU: UMLClassifier[Uml] ) ) =>
             ( lookupElementMapping( sourceTU ), lookupElementMapping( targetTU ) ) match {
-              case ( Some( sourceE ), Some( targetE ) ) => Some( Tuple2( Tuple2( sourceTU, sourceE ), Tuple2( targetTU, targetE ) ) )
-              case ( _, _ )                             => None
+              case ( Some( sourceE ), Some( targetE ) ) =>
+                Some( Tuple2( Tuple2( sourceTU, sourceE ), Tuple2( targetTU, targetE ) ) )
+              case ( _, _ ) =>
+                None
             }
-          case ( _, _ ) => None
+          case ( _, _ ) =>
+            None
         }
     }
 }
@@ -360,47 +489,61 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {
    * - a list of Tbox / UML Element pairs to be processed within this phase 
    * - a list of Tbox / UML Element pairs to be processed in the next phase
    */
-  type RuleResult = ( MappingFunction[Uml, Omf], OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs )
+  type RuleResult =
+  ( MappingFunction[Uml, Omf],
+    OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs,
+    OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs )
   
   /**
    * Apply the first matching rule
    */
-  def applyMatchingRule(
-    context: OTI2OMFMappingContext[Uml, Omf],
+  def applyMatchingRule
+  ( context: OTI2OMFMappingContext[Uml, Omf],
     current: TboxUMLElementPair[Uml, Omf],
-    rules: List[MappingFunction[Uml, Omf]] ): Try[Option[RuleResult]] = {
-    val ( as, cs, rs, us ) = context.getAppliedStereotypesMappedToOMF( current.ns )
+    rules: List[MappingFunction[Uml, Omf]] )
+  : Try[Option[RuleResult]] = {
+    val ( as, cs, rs, us ) = context.getAppliedStereotypesMappedToOMF( current.e )
     rules.dropWhile( ( r ) => !r.mappingRule.isDefinedAt( Tuple6( r, current, as, cs, rs, us ) ) ) match {
       case Nil =>
         Success( None )
       case r :: _ =>
         r.mappingRule( Tuple6( r, current, as, cs, rs, us ) ) match {
-          case Failure( t )                  => Failure( t )
-          case Success( ( pairs1, pairs2 ) ) => Success( Some( Tuple3( r, pairs1, pairs2 ) ) )
+          case Failure( t )  =>
+            Failure( t )
+          case Success( ( pairs1, pairs2 ) ) =>
+            Success( Some( Tuple3( r, pairs1, pairs2 ) ) )
         }
     }
   }
 
-  type RulesResult = ( OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs )
+  type RulesResult =
+  ( OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs,
+    OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs )
   
   /**
-   * Successively apply all matching rules to each content pair until there are no follow-on namespaces to apply to or none of the rules match.
+   * Successively apply all matching rules to each content pair until
+   * there are no follow-on namespaces to apply to or none of the rules match.
    */
-  def applyAllRules(
-    context: OTI2OMFMappingContext[Uml, Omf],
+  def applyAllRules
+  ( context: OTI2OMFMappingContext[Uml, Omf],
     tbox: Option[Omf#MutableModelTerminologyGraph],
     contentPairs: List[TboxUMLElementPair[Uml, Omf]],
-    rules: List[MappingFunction[Uml, Omf]] )( implicit omfOps: OMFOps[Omf] ): Try[RulesResult] = {
+    rules: List[MappingFunction[Uml, Omf]] )
+  ( implicit omfOps: OMFOps[Omf] )
+  : Try[RulesResult] = {
 
-    @annotation.tailrec def step(
-      queue: List[TboxUMLElementPair[Uml, Omf]],
+    @annotation.tailrec def step
+    ( queue: List[TboxUMLElementPair[Uml, Omf]],
       deferred: List[TboxUMLElementPair[Uml, Omf]],
-      results: List[TboxUMLElementPair[Uml, Omf]] ): Try[RulesResult] =
+      results: List[TboxUMLElementPair[Uml, Omf]] )
+    : Try[RulesResult] =
       queue match {
-        case Nil => Success( ( deferred, results ) )
+        case Nil =>
+          Success( ( deferred, results ) )
         case pair :: pairs =>
           applyMatchingRule( context, pair, rules ) match {
-            case Failure( t ) => Failure( t )
+            case Failure( t ) =>
+              Failure( t )
             case Success( None ) =>
               step( pairs, pair :: deferred, results )
             case Success( Some( ( rule, morePairs, moreResults ) ) ) =>

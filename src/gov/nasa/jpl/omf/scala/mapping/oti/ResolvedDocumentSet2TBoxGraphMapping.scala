@@ -40,9 +40,9 @@ package gov.nasa.jpl.omf.scala.mapping.oti
 
 import gov.nasa.jpl.omf.scala.core._
 import org.omg.oti._
-import org.omg.oti.api._
-import org.omg.oti.operations._
-import org.omg.oti.canonicalXMI._
+import org.omg.oti.uml.read.api._
+import org.omg.oti.uml.read.operations._
+import org.omg.oti.uml.canonicalXMI._
 import scala.reflect.runtime.universe._
 import scala.util.Failure
 import scala.util.Success

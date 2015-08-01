@@ -42,59 +42,31 @@ import gov.nasa.jpl.omf.scala.core._
 import gov.nasa.jpl.omf.scala.mapping.oti._
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
+import org.omg.oti.uml.trees._
 
 import scala.language.postfixOps
+import scala.util._
 
-/**
- * Mapping for a kind of UML Dependency to an OMF relationship entity according to IMCE-generated profile stereotypes
- *
- * There must at least 1 stereotype applied to the dependency that maps directly or indirectly to
- * a kind of OMF relationship entity.
- *
- * The UML dependency maps to an OMF entity relationship that specializes
- * the OMF entity relationships corresponding to the stereotypes applied.
- */
-case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf]) {
+case class R5[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf]) {
 
-  def dependency2RelationshipMapping(context: OTI2OMFMappingContext[Uml, Omf]) = {
+  def treeTypeMapping(context: OTI2OMFMappingContext[Uml, Omf]) = {
 
     val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction = {
-      case (rule, TboxUMLElementTuple(Some(tbox), depU: UMLDependency[Uml]), as, cs, rs, unmappedS)
-        if rs.nonEmpty && context.getDependencySourceAndTargetMappings(depU).isDefined =>
+      case (rule,
+      ett @ TboxUMLElementTreeType(Some(tbox), aClass: UMLClass[Uml], tree: TreeCompositeStructureType[Uml]),
+      as, cs, rs, unmappedS) =>
 
-        if (unmappedS.nonEmpty) {
-          val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
-          require(foreign.isEmpty)
+        if (TreeType.getIllFormedTreeBranchPairs(tree).nonEmpty) {
+          System.out.println(s"*** Skip BST: $tree")
+          Success(Tuple2(Nil, ett :: Nil))
         }
-
-        val ((sourceU, sourceOmf), (targetU, targetOmf)) =
-          context.getDependencySourceAndTargetMappings(depU).get
-
-        val r1 =
-          if (rs.size == 1) Some(rs.head._1) else None
-
-        val r1Name =
-          if (r1.isDefined) r1.get.name.get else ""
-
-        val hasName =
-          sourceU.name.getOrElse(sourceU.id) + "-" + r1Name + "-" + targetU.name.getOrElse(targetU.id)
-
-        for {
-          (depOmfRelation, depOmfGraph) <- context.mapElement2Relationship(
-            rule, tbox, depU, sourceOmf, targetOmf,
-            Iterable(), // @TODO
-            isAbstract = false,
-            Some(hasName))
-
-          _ = rs.foreach {
-            case (relUml, relOmf) =>
-              context.addEntityRelationshipSubClassAxiom(rule, tbox, depOmfRelation, relOmf).get
-          }
-
-        } yield Tuple2(Nil, Nil)
+        else {
+          System.out.println(s"*** Convert BST: $tree")
+          Success(Tuple2(Nil, Nil))
+        }
     }
 
-    MappingFunction[Uml, Omf]("dependency2RelationshipMapping", mapping)
+    MappingFunction[Uml, Omf]("treeTypeMapping", mapping)
 
   }
 }
