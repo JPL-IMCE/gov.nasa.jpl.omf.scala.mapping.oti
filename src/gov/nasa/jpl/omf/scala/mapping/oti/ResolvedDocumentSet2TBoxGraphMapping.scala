@@ -42,6 +42,7 @@ import gov.nasa.jpl.omf.scala.core._
 import org.omg.oti._
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
+import org.omg.oti.uml.xmi._
 import org.omg.oti.uml.canonicalXMI._
 import scala.reflect.runtime.universe._
 import scala.util.Failure
@@ -83,7 +84,7 @@ object ResolvedDocumentSet2TBoxGraphMapping {
       ( ( Map[Document[Uml], Omf#ImmutableModelTerminologyGraph](),
         Set[Document[Uml]]() ) /: sortedDocuments ) {
           case ( ( ( document2tboxMap, d2map ), document ) ) =>
-            catalogIRIMapper.resolveURI( document.uri, catalogIRIMapper.loadResolutionStrategy ) match {
+            catalogIRIMapper.resolveURI( document.uri, catalogIRIMapper.loadResolutionStrategy(_, None) ) match {
               case Failure( t ) =>
                 return Failure( t )
               case Success( None ) =>
@@ -97,7 +98,7 @@ object ResolvedDocumentSet2TBoxGraphMapping {
                     t.printStackTrace(System.out)
                     //return Failure( t )
                     ( document2tboxMap, d2map + document )
-                  case Success( tbox ) =>
+                  case Success( (tbox, _) ) =>
                     System.out.println(s"==> document: ${document.uri}")
                     ( document2tboxMap + ( document -> tbox ), d2map )
                 }

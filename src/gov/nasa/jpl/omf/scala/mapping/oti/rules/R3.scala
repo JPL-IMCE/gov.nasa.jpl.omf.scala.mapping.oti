@@ -77,10 +77,10 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
           if (r1.isDefined) r1.get.name.get else ""
 
         val hasName =
-          sourceU.name.getOrElse(sourceU.id) + "-" + r1Name + "-" + targetU.name.getOrElse(targetU.id)
+          sourceU.name.getOrElse(sourceU.toolSpecific_id) + "-" + r1Name + "-" + targetU.name.getOrElse(targetU.toolSpecific_id)
 
         for {
-          (depOmfRelation, depOmfGraph) <- context.mapElement2Relationship(
+          depOmfRelation <- context.mapElement2Relationship(
             rule, tbox, depU, sourceOmf, targetOmf,
             Iterable(), // @TODO
             isAbstract = false,

@@ -83,7 +83,7 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
             else mappedS.map( context.stereotype2Concept( _ ) )
 
           for {
-            pkgTbox <- context.ns2tboxCtor(rule, pkgU)
+            pkgTbox <- context.ns2tboxCtor(rule, pkgU, TerminologyKind.isDefinition)
             _ = context.addDirectlyNestedTerminologyGraph(rule, tbox, pkgTbox)
 
             pkgNested = pkgU.nestedPackage.filter({
