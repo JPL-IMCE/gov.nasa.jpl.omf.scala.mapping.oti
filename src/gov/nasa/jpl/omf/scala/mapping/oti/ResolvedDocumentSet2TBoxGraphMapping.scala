@@ -44,6 +44,8 @@ import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 import org.omg.oti.uml.xmi._
 import org.omg.oti.uml.canonicalXMI._
+
+import scala.collection.immutable._
 import scala.reflect.runtime.universe._
 import scala.util.Failure
 import scala.util.Success

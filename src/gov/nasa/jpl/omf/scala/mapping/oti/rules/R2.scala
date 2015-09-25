@@ -44,6 +44,7 @@ import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 import org.omg.oti.uml.trees._
 
+import scala.collection.immutable._
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 

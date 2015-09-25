@@ -44,6 +44,7 @@ import org.omg.oti.uml._
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
+import scala.collection.immutable._
 import scala.language.postfixOps
 import scala.util.Success
 

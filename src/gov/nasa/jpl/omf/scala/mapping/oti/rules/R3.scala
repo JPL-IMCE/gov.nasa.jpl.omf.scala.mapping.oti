@@ -43,6 +43,7 @@ import gov.nasa.jpl.omf.scala.mapping.oti._
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
+import scala.collection.immutable._
 import scala.language.postfixOps
 
 /**
