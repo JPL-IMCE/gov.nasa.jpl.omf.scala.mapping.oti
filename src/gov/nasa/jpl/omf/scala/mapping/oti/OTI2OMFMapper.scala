@@ -110,9 +110,9 @@ trait Element2ConceptCTorFunction[Uml <: UML, Omf <: OMF]
     isAbstract: Boolean)
   : Try[OTI2OMFMappingContext[Uml, Omf]#MappedEntityConcept] =
   for {
-    concept <- apply(rule, tbox, u, isAbstract)
-    _ = context.mappedElement2Concept += (u -> concept)
-  } yield concept
+    conceptGraph <- apply(rule, tbox, u, isAbstract)
+    _ = context.mappedElement2Concept += (u -> conceptGraph)
+  } yield conceptGraph
 
 }
 
