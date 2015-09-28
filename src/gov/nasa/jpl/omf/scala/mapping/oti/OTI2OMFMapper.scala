@@ -260,7 +260,8 @@ trait AddEntityConceptDesignationTerminologyGraphAxiom[Uml <: UML, Omf <: OMF]
     Try[Omf#EntityConceptDesignationTerminologyGraphAxiom]]
 
 case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
-( iriPrefix: String,
+( ignoreCrossReferencedElementFilter: Function1[UMLElement[Uml], Boolean],
+  iriPrefix: String,
   tboxLookup: Namespace2TBoxLookupFunction[Uml, Omf],
   ns2tboxCtor: Namespace2TBoxCtor[Uml, Omf],
 
@@ -345,7 +346,10 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
   def isStereotypeMapped( s: UMLStereotype[Uml] ): Boolean = allMappedStereotypes.contains( s )
 
   def isStereotypedElementMapped( e: UMLElement[Uml] ): Boolean =
-    e.getAppliedStereotypes.keys.exists( isStereotypeMapped )
+    e
+    .getAppliedStereotypes
+    .keys
+    .exists( isStereotypeMapped )
 
   def getAppliedStereotypesMappedToOMF
   ( e: UMLElement[Uml] )
@@ -353,7 +357,12 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
     UMLStereotype2EntityConceptMap,
     UMLStereotype2EntityRelationshipMap,
     Set[UMLStereotype[Uml]] ) = {
-    val appliedStereotypes = e.getAppliedStereotypes.keySet
+    val appliedStereotypes =
+      e
+      .getAppliedStereotypes
+      .keySet
+      .filter(s => !ignoreCrossReferencedElementFilter(s))
+
     (
       stereotype2Aspect.filterKeys( appliedStereotypes.contains ),
       stereotype2Concept.filterKeys( appliedStereotypes.contains ),
@@ -391,7 +400,11 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
   def partitionAppliedStereotypesByMapping
   ( e: UMLElement[Uml] )
   : ( Set[UMLStereotype[Uml]], Set[UMLStereotype[Uml]] ) =
-    e.getAppliedStereotypes.keySet.partition( isStereotypeMapped )
+    e
+    .getAppliedStereotypes
+    .keySet
+    .filter(s => !ignoreCrossReferencedElementFilter(s))
+    .partition( isStereotypeMapped )
 
   lazy val basePackageC = abbrevName2Concept( "base:Package" )
   lazy val baseContainsR = abbrevName2Relationship( "base:Contains" )
