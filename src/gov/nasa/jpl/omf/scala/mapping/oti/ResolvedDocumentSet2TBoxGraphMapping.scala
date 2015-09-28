@@ -86,7 +86,7 @@ object ResolvedDocumentSet2TBoxGraphMapping {
       ( ( Map[Document[Uml], Omf#ImmutableModelTerminologyGraph](),
         Set[Document[Uml]]() ) /: sortedDocuments ) {
           case ( ( ( document2tboxMap, d2map ), document ) ) =>
-            catalogIRIMapper.resolveURI( document.uri, catalogIRIMapper.loadResolutionStrategy(_, None) ) match {
+            catalogIRIMapper.resolveURI( document.uri, catalogIRIMapper.loadResolutionStrategy(Some(".owl")) ) match {
               case Failure( t ) =>
                 return Failure( t )
               case Success( None ) =>
@@ -94,6 +94,7 @@ object ResolvedDocumentSet2TBoxGraphMapping {
                 ( document2tboxMap, d2map + document )
               case Success( Some( uri ) ) =>
                 System.out.println(s"document2load: ${document.uri}\nresolved: $uri")
+                // @todo it seems this should use the resolved uri instead of document.uri
                 loadTerminologyGraph( makeIRI( document.uri.toString ) ) match {
                   case Failure( t ) => 
                     System.out.println(s"*** document: ${document.uri}\n*** ${t.getClass.getName}: ${t.getMessage}")
