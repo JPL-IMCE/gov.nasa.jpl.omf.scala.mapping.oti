@@ -40,13 +40,15 @@ package gov.nasa.jpl.omf.scala.mapping.oti.rules
 
 import gov.nasa.jpl.omf.scala.core._
 import gov.nasa.jpl.omf.scala.mapping.oti._
+
+import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 import org.omg.oti.uml.trees._
 
 import scala.collection.immutable._
 import scala.language.postfixOps
-import scala.util._
+import scalaz._, Scalaz._
 
 case class R5[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf]) {
 
@@ -59,11 +61,11 @@ case class R5[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
 
         if (TreeType.getIllFormedTreeBranchPairs(tree).nonEmpty) {
           System.out.println(s"*** Skip BST: $tree")
-          Success(Tuple2(Nil, ett :: Nil))
+          \/-((Nil, ett :: Nil))
         }
         else {
           System.out.println(s"*** Convert BST: $tree")
-          Success(Tuple2(Nil, Nil))
+          \/-((Nil, Nil))
         }
     }
 

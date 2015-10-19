@@ -40,11 +40,14 @@ package gov.nasa.jpl.omf.scala.mapping.oti.rules
 
 import gov.nasa.jpl.omf.scala.core._
 import gov.nasa.jpl.omf.scala.mapping.oti._
+
+import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
 import scala.collection.immutable._
 import scala.language.postfixOps
+import scalaz._, Scalaz._
 
 /**
  * Mapping for a kind of UML Dependency to an OMF relationship entity according to IMCE-generated profile stereotypes
@@ -89,7 +92,7 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
 
           _ = rs.foreach {
             case (relUml, relOmf) =>
-              context.addEntityRelationshipSubClassAxiom(rule, tbox, depOmfRelation, relOmf).get
+              context.addEntityRelationshipSubClassAxiom(rule, tbox, depOmfRelation, relOmf)
           }
 
         } yield Tuple2(Nil, Nil)

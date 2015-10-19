@@ -39,7 +39,7 @@
 package gov.nasa.jpl.omf.scala.mapping.oti
 
 import gov.nasa.jpl.omf.scala.core._
-import org.omg.oti._
+import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 import org.omg.oti.uml.xmi._
@@ -47,33 +47,33 @@ import org.omg.oti.uml.canonicalXMI._
 
 import scala.collection.immutable._
 import scala.reflect.runtime.universe._
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
+import scalaz._, Scalaz._
 
 case class ResolvedDocumentSet2TBoxGraphMapping[Uml <: UML, Omf <: OMF]()(
   implicit umlOps: UMLOps[Uml], omfOps: OMFOps[Omf], omfStore: Omf#Store )
 
-case class ResolvedDocumentTBoxGraph[Uml <: UML, Omf <: OMF](
-  document: Document[Uml],
+case class ResolvedDocumentTBoxGraph[Uml <: UML, Omf <: OMF]
+( document: Document[Uml],
   tbox: Omf#ImmutableModelTerminologyGraph,
   aspects: Map[UMLElement[Uml], Omf#ModelEntityAspect],
-  concepts: Map[UMLElement[Uml], Omf#ModelEntityConcept] )(
-    implicit umlOps: UMLOps[Uml], omfOps: OMFOps[Omf], omfStore: Omf#Store )
+  concepts: Map[UMLElement[Uml], Omf#ModelEntityConcept] )
+( implicit umlOps: UMLOps[Uml], omfOps: OMFOps[Omf], omfStore: Omf#Store )
 
-case class Document2TBoxGraphCorrespondences[Uml <: UML, Omf <: OMF](
-  resolved: ResolvedDocumentSet[Uml],
+case class Document2TBoxGraphCorrespondences[Uml <: UML, Omf <: OMF]
+( resolved: ResolvedDocumentSet[Uml],
   document2tboxGraphs: Map[Document[Uml], Omf#ImmutableModelTerminologyGraph],
-  documents2map: Set[Document[Uml]] )(
-    implicit umlOps: UMLOps[Uml], omfOps: OMFOps[Omf], omfStore: Omf#Store )
+  documents2map: Set[Document[Uml]] )
+( implicit umlOps: UMLOps[Uml], omfOps: OMFOps[Omf], omfStore: Omf#Store )
 
 object ResolvedDocumentSet2TBoxGraphMapping {
 
-  def resolvedDocumentSet2TBoxGraphCorrespondences[Uml <: UML, Omf <: OMF]( resolved: ResolvedDocumentSet[Uml] )(
-    implicit umlOps: UMLOps[Uml],
+  def resolvedDocumentSet2TBoxGraphCorrespondences[Uml <: UML, Omf <: OMF]
+  ( resolved: ResolvedDocumentSet[Uml] )
+  ( implicit umlOps: UMLOps[Uml],
     omfOps: OMFOps[Omf],
     omfStore: Omf#Store,
-    catalogIRIMapper: CatalogURIMapper ): Try[Document2TBoxGraphCorrespondences[Uml, Omf]] = {
+    catalogIRIMapper: CatalogURIMapper )
+  : NonEmptyList[java.lang.Throwable] \/ Document2TBoxGraphCorrespondences[Uml, Omf] = {
 
     val sortedDocuments = resolved.ds.topologicalSort( resolved.g ) match {
       case Left( document )         => List( document )
@@ -82,42 +82,43 @@ object ResolvedDocumentSet2TBoxGraphMapping {
 
     import omfOps._
 
-    val ( document2tboxGraphs, documents2map ) =
-      ( ( Map[Document[Uml], Omf#ImmutableModelTerminologyGraph](),
-        Set[Document[Uml]]() ) /: sortedDocuments ) {
-          case ( ( ( document2tboxMap, d2map ), document ) ) =>
-            catalogIRIMapper.resolveURI( document.uri, catalogIRIMapper.loadResolutionStrategy(Some(".owl")) ) match {
-              case Failure( t ) =>
-                return Failure( t )
-              case Success( None ) =>
-                System.out.println(s"document2map: ${document.uri}")
-                ( document2tboxMap, d2map + document )
-              case Success( Some( uri ) ) =>
-                System.out.println(s"document2load: ${document.uri}\nresolved: $uri")
-                // @todo it seems this should use the resolved uri instead of document.uri
-                loadTerminologyGraph( makeIRI( document.uri.toString ) ) match {
-                  case Failure( t ) => 
-                    System.out.println(s"*** document: ${document.uri}\n*** ${t.getClass.getName}: ${t.getMessage}")
-                    t.printStackTrace(System.out)
-                    //return Failure( t )
-                    ( document2tboxMap, d2map + document )
-                  case Success( (tbox, _) ) =>
-                    System.out.println(s"==> document: ${document.uri}")
-                    ( document2tboxMap + ( document -> tbox ), d2map )
-                }
+    type DocumentGraphMap = ( Map[Document[Uml], Omf#ImmutableModelTerminologyGraph], Set[Document[Uml]] )
+    val m0: NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap = (Map[Document[Uml], Omf#ImmutableModelTerminologyGraph](), Set[Document[Uml]]()).right
+    val mN: NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap = (m0 /: sortedDocuments ) {
+      (mi, document) =>
+        catalogIRIMapper.resolveURI(document.uri, catalogIRIMapper.loadResolutionStrategy(Some(".owl")))
+        .flatMap {
+          _.fold[NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap](
+            mi.map { case (document2tboxMap, d2map) =>
+              System.out.println(s"document2map: ${document.uri}")
+              (document2tboxMap, d2map + document)
             }
+          ) { uri =>
+            System.out.println(s"document2load: ${document.uri}\nresolved: $uri")
+            mi.flatMap { case (document2tboxMap, d2map) =>
+              // @todo it seems this should use the resolved uri instead of document.uri
+              loadTerminologyGraph(makeIRI(uri.toString))
+              .flatMap { case (iTbox, _) =>
+                System.out.println(s"==> document: ${document.uri}")
+                (document2tboxMap + (document -> iTbox), d2map).right
+              }
+            }
+          }
         }
+    }
 
-    System.out.println(s"**** Document2TBoxGraphCorrespondences( d2tbox=${document2tboxGraphs.size}, documents2map=${documents2map.size} )")
-    Success( Document2TBoxGraphCorrespondences( resolved, document2tboxGraphs, documents2map ) )
+    mN.map { case (document2tboxGraphs, documents2map) =>
+      System.out.println(s"**** Document2TBoxGraphCorrespondences( d2tbox=${document2tboxGraphs.size}, documents2map=${documents2map.size} )")
+      Document2TBoxGraphCorrespondences(resolved, document2tboxGraphs, documents2map)
+    }
   }
 
   def mapDocument2TBoxGraphCorrespondences[Uml <: UML, Omf <: OMF](
     correspondences: Document2TBoxGraphCorrespondences[Uml, Omf],
-    document2BuiltInTBoxGraph: Function1[Document[Uml], Try[Option[Omf#ImmutableModelTerminologyGraph]]] )(
+    document2BuiltInTBoxGraph: Function1[Document[Uml], NonEmptyList[java.lang.Throwable] \/ Option[Omf#ImmutableModelTerminologyGraph]] )(
       implicit umlOps: UMLOps[Uml],
       omfOps: OMFOps[Omf],
       omfStore: Omf#Store,
-      catalogIRIMapper: CatalogURIMapper ): Try[ResolvedDocumentSet2TBoxGraphMapping[Uml, Omf]] = ???
+      catalogIRIMapper: CatalogURIMapper ): NonEmptyList[java.lang.Throwable] \/ ResolvedDocumentSet2TBoxGraphMapping[Uml, Omf] = ???
 
 }

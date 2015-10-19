@@ -40,11 +40,14 @@ package gov.nasa.jpl.omf.scala.mapping.oti.rules
 
 import gov.nasa.jpl.omf.scala.core._
 import gov.nasa.jpl.omf.scala.mapping.oti._
+
+import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
 import scala.collection.immutable._
 import scala.language.postfixOps
+import scalaz._, Scalaz._
 
 /**
  * Mapping for a kind of binary, directed, composite UML Association to

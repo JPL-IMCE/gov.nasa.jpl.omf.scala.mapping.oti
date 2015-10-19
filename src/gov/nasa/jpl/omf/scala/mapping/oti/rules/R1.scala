@@ -73,35 +73,37 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
         case ( rule, TboxUMLElementTuple( Some( tbox ), pkgU: UMLPackage[Uml] ), as, cs, rs, unmappedS ) =>
           require( oclIsTypeOfPackage( pkgU ) )
 
-          val ( mappedS, unmappedS ) = context.partitionAppliedStereotypesByMapping( pkgU )
-          if ( unmappedS.nonEmpty ) {
-            val foreign = unmappedS.filter( !context.otherStereotypesApplied.contains( _ ) )
-            require ( foreign.isEmpty )
+          context.partitionAppliedStereotypesByMapping( pkgU )
+          .flatMap { case (mappedS, unmappedS) =>
+            if (unmappedS.nonEmpty) {
+              val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
+              require(foreign.isEmpty)
+            }
+
+            val mappedC =
+              if (mappedS.isEmpty) Set(context.basePackageC)
+              else mappedS.map(context.stereotype2Concept(_))
+
+            for {
+              pkgTbox <- context.ns2tboxCtor(rule, pkgU, TerminologyKind.isDefinition)
+              _ = context.addDirectlyNestedTerminologyGraph(rule, tbox, pkgTbox)
+
+              pkgNested = pkgU.nestedPackage.filter({
+                case _: UMLProfile[Uml] => false
+                case _ => true
+              })
+
+              morePairs = pkgNested.map(TboxUMLElementTuple(Some(pkgTbox), _))
+
+              // owned UML elements to map in the subsequent content phase
+              pkgContents = pkgU.ownedElement.filter({
+                case _: UMLPackage[Uml] => false
+                case _ => true
+              })
+
+              moreContents = pkgContents.map(TboxUMLElementTuple(Some(pkgTbox), _))
+            } yield Tuple2(morePairs ++ moreContents toList, Nil)
           }
-
-          val mappedC =
-            if ( mappedS.isEmpty ) Set( context.basePackageC )
-            else mappedS.map( context.stereotype2Concept( _ ) )
-
-          for {
-            pkgTbox <- context.ns2tboxCtor(rule, pkgU, TerminologyKind.isDefinition)
-            _ = context.addDirectlyNestedTerminologyGraph(rule, tbox, pkgTbox)
-
-            pkgNested = pkgU.nestedPackage.filter({
-              case _: UMLProfile[Uml] => false
-              case _ => true
-            })
-
-            morePairs = pkgNested.map(TboxUMLElementTuple(Some(pkgTbox), _))
-
-            // owned UML elements to map in the subsequent content phase
-            pkgContents = pkgU.ownedElement.filter({
-              case _: UMLPackage[Uml] => false
-              case _ => true
-            })
-
-            moreContents = pkgContents.map(TboxUMLElementTuple(Some(pkgTbox), _))
-          } yield Tuple2( morePairs ++ moreContents toList, Nil )
       }
 
     MappingFunction[Uml, Omf]( "nonProfilePackackageMapping", mapping )

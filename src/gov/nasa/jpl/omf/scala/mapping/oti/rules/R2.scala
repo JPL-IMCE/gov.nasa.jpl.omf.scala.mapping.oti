@@ -40,13 +40,15 @@ package gov.nasa.jpl.omf.scala.mapping.oti.rules
 
 import gov.nasa.jpl.omf.scala.core._
 import gov.nasa.jpl.omf.scala.mapping.oti._
+
+import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 import org.omg.oti.uml.trees._
 
 import scala.collection.immutable._
 import scala.language.postfixOps
-import scala.util.{Failure, Success, Try}
+import scalaz._, Scalaz._
 
 /**
  * Mapping for a kind of UML Namespace (but not a kind of UML Package) to
@@ -81,11 +83,14 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
 
         for {
           clsOmfAspect <- context.mapElement2Aspect(rule, tbox, clsU)
-          _ = as
+          _ = {
+            //val ok:
+            as
               .foreach {
-                         case (aS, aOmf) =>
-                           context.addEntityDefinitionAspectSubClassAxiom(rule, tbox, clsOmfAspect, aOmf).get
-                       }
+                case (aS, aOmf) =>
+                  context.addEntityDefinitionAspectSubClassAxiom(rule, tbox, clsOmfAspect, aOmf)
+              }
+          }
 
           pkgContents =
           clsU
@@ -115,47 +120,70 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
      c: UMLClass[Uml],
      as: OTI2OMFMappingContext[Uml, Omf]#UMLStereotype2EntityAspectMap,
      cs: OTI2OMFMappingContext[Uml, Omf]#UMLStereotype2EntityConceptMap)
-    : Try[(OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs)] =
-      for {
-        cConcept <- context.mapElement2Concept(rule, tbox, c, c.isAbstract)
-        _ = System.out
-            .println(s"#OTI/OMF R2 Element2Concept: ${c.qualifiedName.get} / a:${as.size}, c:${cs.size}")
-        _ = as
-            .foreach {
-                       case (a1, aOmf) =>
-                         System.out.println(
-                                             s"""|#OTI/OMF R2 EntityDefinitionAspectSubClassAxiom:
-                                                 | sup=${a1.name.get}, sub=${c.qualifiedName.get}""".stripMargin)
-                         context.addEntityDefinitionAspectSubClassAxiom(rule, tbox, cConcept, aOmf).get
-                     }
+    : NonEmptyList[java.lang.Throwable] \/ (OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs) =
+      context.mapElement2Concept(rule, tbox, c, c.isAbstract)
+      .flatMap { cConcept =>
+        System.out
+          .println(s"#OTI/OMF R2 Element2Concept: ${c.qualifiedName.get} / a:${as.size}, c:${cs.size}")
 
-        _ = cs
-            .foreach {
-                       case (c1, cOmf) =>
-                         System.out.println(
-                                             s"""|#OTI/OMF R2 EntityConceptSubClassAxiom:
-                                                 | sup=${c1.name.get}, sub=${c.qualifiedName.get}""".stripMargin)
-                         context.addEntityConceptSubClassAxiom(rule, tbox, cConcept, cOmf).get
-                     }
+        val r0: NonEmptyList[java.lang.Throwable] \/ Unit = \/-(())
+        val rA: NonEmptyList[java.lang.Throwable] \/ Unit = (r0 /: as) {
+          case (ri, (ai, aiOmf)) =>
+            System.out.println(
+              s"""|#OTI/OMF R2 EntityDefinitionAspectSubClassAxiom:
+                  | sup=${ai.name.get}, sub=${c.qualifiedName.get}""".stripMargin)
+            ri +++
+              context
+                .addEntityDefinitionAspectSubClassAxiom(rule, tbox, cConcept, aiOmf)
+                .map(_ => ())
+        }
 
-        treeType: Option[TboxUMLElementTreeType[Uml, Omf]] <-
-        if (context.treeOps.isRootBlockSpecificType(c))
-          analyze(c)(context.treeOps, context.idg) match {
-            case bst: TreeCompositeStructureType[Uml] =>
-              val problems = TreeType.getIllFormedTreeBranchPairs(bst)
-              if (problems.isEmpty)
-                Success(Some(TboxUMLElementTreeType(Some(tbox), cConcept, bst)))
-              else
-                Failure(new IllegalArgumentException(problems
-                                                     .map(_.toString)
-                                                     .mkString(s"TreeCompositeStructure has ${problems.size} problems\n",
-                                                               "\n", "\n")))
-            case tree =>
-              Failure(new IllegalArgumentException(tree.toString))
-          }
-        else
-          Success(None)
-      } yield Tuple2(treeType.toList, Nil)
+        val rC: NonEmptyList[java.lang.Throwable] \/ Unit = (rA /: cs) {
+          case (ri, (ci, ciOmf)) =>
+            System.out.println(
+              s"""|#OTI/OMF R2 EntityConceptSubClassAxiom:
+                  | sup=${ci.name.get}, sub=${c.qualifiedName.get}""".stripMargin)
+            ri +++
+              context
+                .addEntityConceptSubClassAxiom(rule, tbox, cConcept, ciOmf)
+                .map(_ => ())
+        }
+
+        val result
+        : NonEmptyList[java.lang.Throwable] \/ (OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs)  =
+          context.treeOps.isRootBlockSpecificType(c)
+            .flatMap { isRBST =>
+              analyze(c)(context.treeOps, context.idg)
+                .flatMap {
+                  case bst: TreeCompositeStructureType[Uml] =>
+                    val problems = TreeType.getIllFormedTreeBranchPairs(bst)
+                    if (problems.isEmpty)
+                      (List(
+                        TboxUMLElementTreeType(Some(
+                          tbox), cConcept, bst)),
+                        Nil
+                        ).right
+                    else
+                      NonEmptyList(
+                        treeOpsException(
+                          context.treeOps,
+                          problems
+                            .map(_.toString)
+                            .mkString(s"TreeCompositeStructure has ${problems.size} problems\n", "\n", "\n"))
+                      ).left
+                  case tree =>
+                    NonEmptyList(
+                      treeOpsException(
+                        context.treeOps,
+                        s"Not a TreeCompositeStructureType: $tree")
+                    ).left
+                }
+            }
+
+        rC.flatMap{ _ =>
+          result
+        }
+      }
 
     val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction = {
       case (rule, TboxUMLElementTuple(Some(tbox), neU: UMLNamedElement[Uml]), as, cs, rs, unmappedS)
@@ -170,10 +198,16 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
           case c: UMLClass[Uml] =>
             class2concept(rule, tbox, c, as, cs)
           case _                =>
-            Failure(new IllegalArgumentException("#OTI/OMF R2 Element2Concept not a Class:" +
-                                                 neU.qualifiedName.get + ": " +
-                                                 neU.xmiType.head +
-                                                 s" / a:${as.size}, c:${cs.size}, r:${rs.size}"))
+            NonEmptyList(
+              treeOpsException(
+                context.treeOps,
+                s"R2 is not applicable to: $neU",
+                UMLError
+                .illegalElementError[Uml, UMLElement[Uml]]("#OTI/OMF R2 Element2Concept not a Class:" +
+                  neU.qualifiedName.get + ": " +
+                  neU.xmiType.head +
+                  s" / a:${as.size}, c:${cs.size}, r:${rs.size}", Iterable(neU)).some)
+            ).left
         }
     }
 
