@@ -6,6 +6,8 @@ lazy val core = Project("omf-mapping-oti", file("."))
   .settings(GitVersioning.buildSettings) // in principle, unnecessary; in practice: doesn't work without this
   .enablePlugins(MBEEGitPlugin)
   .settings(MBEEPlugin.mbeeDynamicScriptsProjectResourceSettings(Some("gov.nasa.jpl.omf.scala.mapping.oti")))
+  .settings(MBEEPlugin.mbeeStrictScalacFatalWarningsSettings)
+  .settings(MBEEPlugin.mbeeScalaDoc(diagrams=true)) // ok?
   .settings(
     MBEEKeys.mbeeLicenseYearOrRange := "2014-2015",
     MBEEKeys.mbeeOrganizationInfo := MBEEPlugin.MBEEOrganizations.imce,
@@ -47,5 +49,5 @@ lazy val core = Project("omf-mapping-oti", file("."))
         "oti-trees",
         Versions.oti_trees_prefix,
         Versions.oti_trees_suffix) % "compile" withSources() withJavadoc()
+    )
   )
-)
