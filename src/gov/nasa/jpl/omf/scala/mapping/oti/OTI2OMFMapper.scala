@@ -46,10 +46,11 @@ import org.omg.oti.uml.read.operations._
 import org.omg.oti.uml.trees._
 import org.omg.oti.uml.xmi._
 
+import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
-import scala.collection.JavaConversions._
+import scala.{annotation,Boolean,Enumeration,Function1,Function2,Function3,Function4,Function5,Function8}
+import scala.{Option,None,PartialFunction,Some,StringContext,Tuple2,Tuple6,Unit}
 import scala.language.postfixOps
-import scala.reflect.runtime.universe._
 import scalaz._, Scalaz._
 
 object Namespace2OMFTypeTermKind extends Enumeration {
@@ -163,10 +164,10 @@ case class TboxUMLElementTuple[Uml <: UML, Omf <: OMF]
 extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
 
   override def toString: String =
-    tbox match {
-      case None =>
-        s"Tuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
-      case Some( g ) =>
+    tbox
+    .fold[String](
+      s"Tuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    ){ g =>
         s"Tuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}]"
     }
 }
@@ -181,12 +182,12 @@ case class TboxUMLElementTreeType[Uml <: UML, Omf <: OMF]
   override val e = tree.treeFeatureType
 
   override def toString: String =
-    tbox match {
-      case None =>
+    tbox
+      .fold[String](
         s"Tree[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
-      case Some( g ) =>
+      ){ g =>
         s"Tree[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}]"
-    }
+      }
 }
 
 case class TboxUMLElementTreeTypedFeatureBranchType[Uml <: UML, Omf <: OMF]
@@ -198,12 +199,12 @@ case class TboxUMLElementTreeTypedFeatureBranchType[Uml <: UML, Omf <: OMF]
   extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
 
   override def toString: String =
-    tbox match {
-      case None =>
+    tbox
+      .fold[String](
         s"Branch[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
-      case Some( g ) =>
+      ){ g =>
         s"Branch[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}]"
-    }
+      }
 }
 
 case class MappingFunction[Uml <: UML, Omf <: OMF]
@@ -282,6 +283,8 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
   treeOps: TreeOps[Uml],
   idg: IDGenerator[Uml]) {
 
+  implicit val umlOps = idg.umlOps
+  import umlOps._
   import ops._
 
   type UMLStereotype2EntityAspectMap = Map[UMLStereotype[Uml], Omf#ModelEntityAspect]
@@ -433,12 +436,9 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
 
   val mappedElement2Aspect = scala.collection.mutable.HashMap[UMLElement[Uml], Omf#ModelEntityAspect]()
   def lookupElementAspectMapping( e: UMLElement[Uml] ): Option[Omf#ModelEntityAspect] =
-    mappedElement2Aspect.get( e ) match {
-      case None =>
-        None
-      case Some( a ) =>
-        Some( a )
-    }
+    mappedElement2Aspect
+      .get( e )
+
   def mapElement2Aspect
   ( rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
@@ -502,13 +502,10 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
       d.supplier.head
     }
 
-    ( lookupElementMapping( sourceU ), lookupElementMapping( targetU ) ) match {
-      case ( Some( sourceE ), Some( targetE ) ) =>
-        Some( Tuple2( Tuple2( sourceU, sourceE ), Tuple2( targetU, targetE ) ) )
-      case ( _, _ )  =>
-        None
-    }
-
+    for {
+      sourceE <- lookupElementMapping(sourceU)
+      targetE <- lookupElementMapping(targetU)
+    } yield Tuple2( Tuple2( sourceU, sourceE ), Tuple2( targetU, targetE ) )
   }
 
   def getDirectedBinaryAssociationSourceAndTargetMappings
@@ -516,22 +513,19 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
   : Option[
     ( ( UMLClassifier[Uml], Omf#ModelEntityDefinition ),
       ( UMLClassifier[Uml], Omf#ModelEntityDefinition ) )] =
-    a.getDirectedAssociationEnd match {
-      case None =>
-        None
-      case Some( ( sourcePU, targetPU ) ) =>
-        ( sourcePU._type, targetPU._type ) match {
-          case ( Some( sourceTU: UMLClassifier[Uml] ), Some( targetTU: UMLClassifier[Uml] ) ) =>
-            ( lookupElementMapping( sourceTU ), lookupElementMapping( targetTU ) ) match {
-              case ( Some( sourceE ), Some( targetE ) ) =>
-                Some( Tuple2( Tuple2( sourceTU, sourceE ), Tuple2( targetTU, targetE ) ) )
-              case ( _, _ ) =>
-                None
-            }
-          case ( _, _ ) =>
-            None
-        }
-    }
+    for {
+
+      directedEnds <- a.getDirectedAssociationEnd
+      (sourcePU, targetPU) = directedEnds
+
+      sourceTU <- sourcePU._type.selectByKindOf { case cls: UMLClassifier[Uml] => cls }
+      sourceE <- lookupElementMapping(sourceTU)
+
+      targetTU <- targetPU._type.selectByKindOf { case cls: UMLClassifier[Uml] => cls }
+      targetE <- lookupElementMapping(targetTU)
+
+    } yield
+      Tuple2( Tuple2( sourceTU, sourceE ), Tuple2( targetTU, targetE ) )
 }
 
 case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {

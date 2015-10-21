@@ -44,9 +44,10 @@ import org.omg.oti.uml._
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
+import scala.{Some,Tuple2}
+import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
 import scala.language.postfixOps
-import scala.util.Success
 
 /**
  * Mapping for a kind of UML Package (but not a Profile)

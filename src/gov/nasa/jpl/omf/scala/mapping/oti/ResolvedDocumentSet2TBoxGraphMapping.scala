@@ -38,6 +38,8 @@
  */
 package gov.nasa.jpl.omf.scala.mapping.oti
 
+import java.lang.System
+
 import gov.nasa.jpl.omf.scala.core._
 import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
@@ -45,8 +47,9 @@ import org.omg.oti.uml.read.operations._
 import org.omg.oti.uml.xmi._
 import org.omg.oti.uml.canonicalXMI._
 
+import scala.{Function1,Option,StringContext}
+import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
-import scala.reflect.runtime.universe._
 import scalaz._, Scalaz._
 
 case class ResolvedDocumentSet2TBoxGraphMapping[Uml <: UML, Omf <: OMF]()(
@@ -75,18 +78,24 @@ object ResolvedDocumentSet2TBoxGraphMapping {
     catalogIRIMapper: CatalogURIMapper )
   : NonEmptyList[java.lang.Throwable] \/ Document2TBoxGraphCorrespondences[Uml, Omf] = {
 
-    val sortedDocuments = resolved.ds.topologicalSort( resolved.g ) match {
-      case Left( document )         => List( document )
-      case Right( documents ) => documents
-    }
+    val sortedDocuments =
+      resolved
+        .ds
+        .topologicalSort( resolved.g )
+        .fold[List[Document[Uml]]](
+          ( _d: Document[Uml] )         => _d :: Nil,
+          ( _ds: List[Document[Uml]] )  => _ds
+        )
 
     import omfOps._
 
     type DocumentGraphMap = ( Map[Document[Uml], Omf#ImmutableModelTerminologyGraph], Set[Document[Uml]] )
-    val m0: NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap = (Map[Document[Uml], Omf#ImmutableModelTerminologyGraph](), Set[Document[Uml]]()).right
-    val mN: NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap = (m0 /: sortedDocuments ) {
+    val m0: NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap =
+      (Map[Document[Uml], Omf#ImmutableModelTerminologyGraph](), Set[Document[Uml]]()).right
+    val mN: NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap =
+      (m0 /: sortedDocuments ) {
       (mi, document) =>
-        catalogIRIMapper.resolveURI(document.uri, catalogIRIMapper.loadResolutionStrategy(Some(".owl")))
+        catalogIRIMapper.resolveURI(document.uri, catalogIRIMapper.loadResolutionStrategy(".owl".some))
         .flatMap {
           _.fold[NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap](
             mi.map { case (document2tboxMap, d2map) =>
@@ -97,10 +106,13 @@ object ResolvedDocumentSet2TBoxGraphMapping {
             System.out.println(s"document2load: ${document.uri}\nresolved: $uri")
             mi.flatMap { case (document2tboxMap, d2map) =>
               // @todo it seems this should use the resolved uri instead of document.uri
-              loadTerminologyGraph(makeIRI(uri.toString))
-              .flatMap { case (iTbox, _) =>
-                System.out.println(s"==> document: ${document.uri}")
-                (document2tboxMap + (document -> iTbox), d2map).right
+              makeIRI(uri.toString)
+              .flatMap { iri =>
+                loadTerminologyGraph(iri)
+                  .flatMap { case (iTbox, _) =>
+                    System.out.println(s"==> document: ${document.uri}")
+                    (document2tboxMap + (document -> iTbox), d2map).right
+                  }
               }
             }
           }

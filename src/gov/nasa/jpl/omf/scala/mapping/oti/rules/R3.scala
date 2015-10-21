@@ -38,6 +38,8 @@
  */
 package gov.nasa.jpl.omf.scala.mapping.oti.rules
 
+import java.lang.System
+
 import gov.nasa.jpl.omf.scala.core._
 import gov.nasa.jpl.omf.scala.mapping.oti._
 
@@ -45,6 +47,8 @@ import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
+import scala.{Option,Some,StringContext,Tuple2,Unit}
+import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
 import scala.language.postfixOps
 import scalaz._, Scalaz._
@@ -75,20 +79,27 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
           context.getDependencySourceAndTargetMappings(depU).get
 
         val r1 =
-          if (rs.size == 1) Some(rs.head._1) else None
+          if (rs.size == 1)
+            rs.head._1.some
+          else
+            Option.empty[UMLStereotype[Uml]]
 
         val r1Name =
-          if (r1.isDefined) r1.get.name.get else ""
+          r1.fold[String](""){ s =>
+            s.name.getOrElse("")
+          }
 
         val hasName =
-          sourceU.name.getOrElse(sourceU.toolSpecific_id) + "-" + r1Name + "-" + targetU.name.getOrElse(targetU.toolSpecific_id)
+          sourceU.name.getOrElse(sourceU.toolSpecific_id) +
+          "-" + r1Name + "-" +
+          targetU.name.getOrElse(targetU.toolSpecific_id)
 
         for {
           depOmfRelation <- context.mapElement2Relationship(
             rule, tbox, depU, sourceOmf, targetOmf,
             Iterable(), // @TODO
             isAbstract = false,
-            Some(hasName))
+            hasName.some)
 
           _ = rs.foreach {
             case (relUml, relOmf) =>

@@ -45,9 +45,10 @@ import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
+import scala.{Option,Some,StringContext,Tuple2,Unit}
+import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
 import scala.language.postfixOps
-import scalaz._, Scalaz._
 
 /**
  * Mapping for a kind of binary, directed, composite UML Association to
