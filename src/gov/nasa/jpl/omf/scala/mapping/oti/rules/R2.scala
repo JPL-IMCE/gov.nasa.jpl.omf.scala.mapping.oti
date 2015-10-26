@@ -210,7 +210,7 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
                 .illegalElementError[Uml, UMLElement[Uml]]("#OTI/OMF R2 Element2Concept not a Class:" +
                   neU.qualifiedName.get + ": " +
                   neU.xmiType.head +
-                  s" / a:${as.size}, c:${cs.size}, r:${rs.size}", Iterable(neU)).some)
+                  s" / a:${as.size}, c:${cs.size}, r:${rs.size}", Iterable(neU)))
             ).left
         }
     }

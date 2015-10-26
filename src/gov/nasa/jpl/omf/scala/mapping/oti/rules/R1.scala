@@ -48,6 +48,7 @@ import scala.{Some,Tuple2}
 import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
 import scala.language.postfixOps
+import scalaz._
 
 /**
  * Mapping for a kind of UML Package (but not a Profile)
@@ -62,6 +63,14 @@ import scala.language.postfixOps
  * Currently, this rule does not map a UML Package according to the IMCE authorization pattern.
  */
 case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf] ) {
+
+  def r1Error
+  (message: String, e: UMLElement[Uml])
+  (nels: NonEmptyList[java.lang.Throwable])
+  : NonEmptyList[java.lang.Throwable] =
+    NonEmptyList(
+      UMLError.illegalElementException[Uml, UMLElement[Uml]](message, Iterable(e), nels)
+    )
 
   /**
    * Map an OTI non-profile Package P to OMF
@@ -86,8 +95,8 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
               else mappedS.map(context.stereotype2Concept(_))
 
             for {
-              pkgTbox <- context.ns2tboxCtor(rule, pkgU, TerminologyKind.isDefinition)
-              _ = context.addDirectlyNestedTerminologyGraph(rule, tbox, pkgTbox)
+              pkgTbox <- context.ns2tboxCtor(rule, pkgU, TerminologyKind.isDefinition) leftMap r1Error("ns2tboxCtor", pkgU)
+              _ = context.addDirectlyNestedTerminologyGraph(rule, tbox, pkgTbox) leftMap r1Error("nested graph", pkgU)
 
               pkgNested = pkgU.nestedPackage.filter({
                 case _: UMLProfile[Uml] => false
