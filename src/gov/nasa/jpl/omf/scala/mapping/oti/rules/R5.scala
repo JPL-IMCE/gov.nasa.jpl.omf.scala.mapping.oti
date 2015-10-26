@@ -59,7 +59,7 @@ case class R5[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
 
     val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction = {
       case (rule,
-      ett @ TboxUMLElementTreeType(Some(tbox), aClass: UMLClass[Uml], tree: TreeCompositeStructureType[Uml]),
+      ett @ TboxUMLElementTreeType(Some(tbox), omfConcept, tree: TreeCompositeStructureType[Uml]),
       as, cs, rs, unmappedS) =>
 
         if (TreeType.getIllFormedTreeBranchPairs(tree).nonEmpty) {
@@ -70,6 +70,7 @@ case class R5[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
           System.out.println(s"*** Convert BST: $tree")
           \/-((Nil, Nil))
         }
+
     }
 
     MappingFunction[Uml, Omf]("treeTypeMapping", mapping)

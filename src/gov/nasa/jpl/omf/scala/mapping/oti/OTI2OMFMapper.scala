@@ -551,8 +551,13 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {
   : NonEmptyList[java.lang.Throwable] \/ Option[RuleResult] =
     context.getAppliedStereotypesMappedToOMF( current.e )
     .flatMap { case ( as, cs, rs, us ) =>
-      rules
-      .dropWhile( ( r ) => !r.mappingRule.isDefinedAt( Tuple6( r, current, as, cs, rs, us ) ) ) match {
+      val remaining =
+        rules.dropWhile { r =>
+          val isApplicable = r.mappingRule.isDefinedAt(Tuple6(r, current, as, cs, rs, us))
+          !isApplicable
+        }
+
+      remaining match {
         case Nil =>
           Option.empty[RuleResult]
             .right
