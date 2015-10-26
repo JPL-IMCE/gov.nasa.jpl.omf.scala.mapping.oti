@@ -47,7 +47,7 @@ import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
-import scala.{Option,Some,StringContext,Tuple2,Unit}
+import scala.{Option,Some,StringContext,Tuple3,Unit}
 import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
 import scala.language.postfixOps
@@ -106,7 +106,10 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
               context.addEntityRelationshipSubClassAxiom(rule, tbox, depOmfRelation, relOmf)
           }
 
-        } yield Tuple2(Nil, Nil)
+        } yield Tuple3(
+            TboxUMLElement2EntityDefinition(Some(tbox), depOmfRelation, depU) :: Nil,
+            Nil,
+            Nil)
     }
 
     MappingFunction[Uml, Omf]("dependency2RelationshipMapping", mapping)

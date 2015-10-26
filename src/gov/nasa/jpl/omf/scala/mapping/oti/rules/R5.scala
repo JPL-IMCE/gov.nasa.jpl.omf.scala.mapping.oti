@@ -64,11 +64,11 @@ case class R5[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
 
         if (TreeType.getIllFormedTreeBranchPairs(tree).nonEmpty) {
           System.out.println(s"*** Skip BST: $tree")
-          \/-((Nil, ett :: Nil))
+          \/-((Nil, Nil, ett :: Nil))
         }
         else {
           System.out.println(s"*** Convert BST: $tree")
-          \/-((Nil, Nil))
+          \/-((ett :: Nil, Nil, Nil))
         }
 
     }

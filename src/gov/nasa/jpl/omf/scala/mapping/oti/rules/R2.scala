@@ -48,7 +48,7 @@ import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 import org.omg.oti.uml.trees._
 
-import scala.{Some,StringContext,Tuple2,Unit}
+import scala.{Some,StringContext,Tuple3,Unit}
 import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
 import scala.language.postfixOps
@@ -106,7 +106,10 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
                                 })
 
           moreContents = pkgContents.map(TboxUMLElementTuple(Some(tbox), _)) toList
-        } yield Tuple2(Nil, moreContents)
+        } yield Tuple3(
+          TboxUMLElement2EntityDefinition(Some(tbox), clsOmfAspect, clsU) :: Nil,
+          Nil,
+          moreContents)
     }
 
     MappingFunction[Uml, Omf]("namespace2AspectMapping", mapping)
@@ -124,7 +127,7 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
      c: UMLClass[Uml],
      as: OTI2OMFMappingContext[Uml, Omf]#UMLStereotype2EntityAspectMap,
      cs: OTI2OMFMappingContext[Uml, Omf]#UMLStereotype2EntityConceptMap)
-    : NonEmptyList[java.lang.Throwable] \/ (OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs) =
+    : NonEmptyList[java.lang.Throwable] \/ (OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs) =
       context.mapElement2Concept(rule, tbox, c, c.isAbstract)
       .flatMap { cConcept =>
         System.out
@@ -154,20 +157,21 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
         }
 
         val result
-        : NonEmptyList[java.lang.Throwable] \/ (OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs)  =
+        : NonEmptyList[java.lang.Throwable] \/ (OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs)  =
           context.treeOps.isRootBlockSpecificType(c)
             .flatMap { isRBST =>
               analyze(c)(context.treeOps, context.idg)
                 .flatMap {
                   case bst: TreeCompositeStructureType[Uml] =>
                     val problems = TreeType.getIllFormedTreeBranchPairs(bst)
-                    if (problems.isEmpty)
-                      (List(
-                        TboxUMLElementTreeType(Some(
-                          tbox), cConcept, bst)),
+                    if (problems.isEmpty) {
+                      val one = TboxUMLElementTreeType(Some(tbox), cConcept, bst)
+                      Tuple3(
+                        one :: Nil, // this is a result
+                        one :: Nil, // it needs to be further expanded too
                         Nil
-                        ).right
-                    else
+                      ).right
+                    } else
                       NonEmptyList(
                         treeOpsException(
                           context.treeOps,

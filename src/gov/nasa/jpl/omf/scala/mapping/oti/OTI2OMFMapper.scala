@@ -157,6 +157,22 @@ sealed abstract class TboxUMLElementPair[Uml <: UML, Omf <: OMF]
   val e: UMLElement[Uml] )
 ( implicit omfOps: OMFOps[Omf] )
 
+case class TboxUMLElement2EntityDefinition[Uml <: UML, Omf <: OMF]
+( override val tbox: Option[Omf#MutableModelTerminologyGraph],
+  omfEntity: Omf#ModelEntityDefinition,
+  override val e: UMLElement[Uml] )
+( implicit omfOps: OMFOps[Omf] )
+  extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
+
+  override def toString: String =
+    tbox
+      .fold[String](
+      s"UMLELement / OMF EntityDefinition Tuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    ){ g =>
+      s"UMLELement / OMF EntityDefinition Tuple [tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}] entity: $omfEntity"
+    }
+}
+
 case class TboxUMLElementTuple[Uml <: UML, Omf <: OMF]
 ( override val tbox: Option[Omf#MutableModelTerminologyGraph],
   override val e: UMLElement[Uml] )
@@ -300,7 +316,7 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
       UMLStereotype2EntityConceptMap,
       UMLStereotype2EntityRelationshipMap,
       Set[UMLStereotype[Uml]] ),
-    NonEmptyList[java.lang.Throwable] \/ ( TboxUMLElementPairs, TboxUMLElementPairs )]
+    NonEmptyList[java.lang.Throwable] \/ ( TboxUMLElementPairs, TboxUMLElementPairs, TboxUMLElementPairs)]
 
   type Element2AspectCTorRuleFunction = Function3[
     MappingFunction[Uml, Omf],
@@ -533,11 +549,13 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {
   /**
    * A rule result is a 3-tuple:
    * - the rule itself that produced the results
+   * - a list of Tbox / UML Element pairs to be added as the result of this phase
    * - a list of Tbox / UML Element pairs to be processed within this phase 
-   * - a list of Tbox / UML Element pairs to be processed in the next phase
+   * - a list of Tbox / UML Element pairs to be processed in the next phase (or as errors)
    */
   type RuleResult =
   ( MappingFunction[Uml, Omf],
+    OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs,
     OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs,
     OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs )
   
@@ -564,8 +582,8 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {
         case r :: _ =>
           r
           .mappingRule(Tuple6(r, current, as, cs, rs, us))
-          .map { case (pairs1, pairs2) =>
-            val result: RuleResult = (r, pairs1, pairs2)
+          .map { case (pairs1, pairs2, pairs3) =>
+            val result: RuleResult = (r, pairs1, pairs2, pairs3)
             result.some
           }
       }
@@ -573,6 +591,7 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {
 
   type RulesResult =
   ( OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs,
+    OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs,
     OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs )
   
   /**
@@ -589,24 +608,25 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {
 
     @annotation.tailrec def step
     ( queue: List[TboxUMLElementPair[Uml, Omf]],
+      results: List[TboxUMLElementPair[Uml, Omf]],
       deferred: List[TboxUMLElementPair[Uml, Omf]],
-      results: List[TboxUMLElementPair[Uml, Omf]] )
+      outputs: List[TboxUMLElementPair[Uml, Omf]] )
     : NonEmptyList[java.lang.Throwable] \/ RulesResult =
       queue match {
         case Nil =>
-          \/-( ( deferred, results ) )
+          \/-( ( results, deferred, outputs ) )
         case pair :: pairs =>
           applyMatchingRule( context, pair, rules ) match {
             case -\/( f ) =>
               -\/( f )
             case \/-( None ) =>
-              step( pairs, pair :: deferred, results )
-            case \/-( Some( ( rule, morePairs, moreResults ) ) ) =>
-              step( morePairs ::: pairs, deferred, moreResults ::: results )
+              step( pairs, results, pair :: deferred, outputs )
+            case \/-( Some( ( rule, moreResults, morePairs, moreOutputs ) ) ) =>
+              step( morePairs ::: pairs, moreResults ::: results, deferred, moreOutputs ::: outputs )
           }
       }
 
-    step( contentPairs, Nil, Nil )
+    step( contentPairs, Nil, Nil, Nil )
   }
 
 }

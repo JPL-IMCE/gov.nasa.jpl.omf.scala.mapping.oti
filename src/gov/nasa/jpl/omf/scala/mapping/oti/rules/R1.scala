@@ -44,7 +44,7 @@ import org.omg.oti.uml._
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
-import scala.{Some,Tuple2}
+import scala.{Some,Tuple3}
 import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
 import scala.language.postfixOps
@@ -112,7 +112,10 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
               })
 
               moreContents = pkgContents.map(TboxUMLElementTuple(Some(pkgTbox), _))
-            } yield Tuple2(morePairs ++ moreContents toList, Nil)
+            } yield Tuple3(
+                TboxUMLElementTuple(Some(pkgTbox), pkgU) :: Nil,
+                morePairs ++ moreContents toList,
+                Nil)
           }
       }
 
