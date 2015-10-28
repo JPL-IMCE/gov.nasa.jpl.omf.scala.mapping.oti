@@ -168,8 +168,8 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
                       val one = TboxUMLElementTreeType(Some(tbox), cConcept, bst)
                       Tuple3(
                         one :: Nil, // this is a result
-                        one :: Nil, // it needs to be further expanded too
-                        Nil
+                        Nil,
+                        one :: Nil // it needs to be further expanded in the next phase
                       ).right
                     } else
                       NonEmptyList(

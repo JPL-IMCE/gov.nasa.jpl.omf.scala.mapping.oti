@@ -68,7 +68,7 @@ case class R5[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
         }
         else {
           System.out.println(s"*** Convert BST: $tree")
-          \/-((ett :: Nil, Nil, Nil))
+          \/-((Nil, Nil, Nil))
         }
 
     }

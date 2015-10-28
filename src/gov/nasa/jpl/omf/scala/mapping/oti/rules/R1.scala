@@ -80,8 +80,8 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
 
     val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction =
       {
-        case ( rule, TboxUMLElementTuple( Some( tbox ), pkgU: UMLPackage[Uml] ), as, cs, rs, unmappedS ) =>
-          require( oclIsTypeOfPackage( pkgU ) )
+        case ( rule, TboxUMLElementTuple( Some( tbox ), pkgU: UMLPackage[Uml] ), as, cs, rs, unmappedS )
+          if oclIsTypeOfPackage( pkgU ) =>
 
           context.partitionAppliedStereotypesByMapping( pkgU )
           .flatMap { case (mappedS, unmappedS) =>
@@ -112,8 +112,11 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
               })
 
               moreContents = pkgContents.map(TboxUMLElementTuple(Some(pkgTbox), _))
+
+              pkgPair = TboxUMLElementTuple(Some(pkgTbox), pkgU)
+
             } yield Tuple3(
-                TboxUMLElementTuple(Some(pkgTbox), pkgU) :: Nil,
+                pkgPair :: Nil,
                 morePairs ++ moreContents toList,
                 Nil)
           }
