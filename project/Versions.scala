@@ -1,21 +1,21 @@
 
 object Versions {
   // JPL MBEE Common Scala Libraries
-  val jpl_mbee_common_scala_libraries_revision="202d290d17805d26522329ceb8c09fe5945ffebf"
+  val jpl_mbee_common_scala_libraries_revision="d44cf0591f31cb1005a9b4a2fab47bfd235e005c"
 
   // JPL Ontology Modeling Framework Core
-  val jpl_omf_core_revision="6aab7d74ebd60a1cf2dbe06ed891680f895569ed"
+  val jpl_omf_core_revision="1cdc8c3528e3eb7227670d7f8435a16ef8627af5"
 
   val version_prefix = "0.19.0"
 
   // OTI Trees version
 
   val oti_trees_prefix = version_prefix
-  val oti_trees_suffix = "445094"
+  val oti_trees_suffix = "445147"
 
   // OTI Canonical XMI version
 
   val oti_canonical_xmi_prefix = version_prefix
-  val oti_canonical_xmi_suffix = "445091"
+  val oti_canonical_xmi_suffix = "445153"
 
 }
