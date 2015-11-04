@@ -94,30 +94,42 @@ object ResolvedDocumentSet2TBoxGraphMapping {
       (Map[Document[Uml], Omf#ImmutableModelTerminologyGraph](), Set[Document[Uml]]()).right
     val mN: NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap =
       (m0 /: sortedDocuments ) {
-      (mi, document) =>
-        catalogIRIMapper.resolveURI(document.uri, catalogIRIMapper.loadResolutionStrategy(".owl".some))
-        .flatMap {
-          _.fold[NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap](
-            mi.map { case (document2tboxMap, d2map) =>
-              System.out.println(s"document2map: ${document.uri}")
-              (document2tboxMap, d2map + document)
-            }
-          ) { uri =>
-            System.out.println(s"document2load: ${document.uri}\nresolved: $uri")
-            mi.flatMap { case (document2tboxMap, d2map) =>
-              // @todo it seems this should use the resolved uri instead of document.uri
-              makeIRI(uri.toString)
-              .flatMap { iri =>
-                loadTerminologyGraph(iri)
-                  .flatMap { case (iTbox, _) =>
-                    System.out.println(s"==> document: ${document.uri}")
-                    (document2tboxMap + (document -> iTbox), d2map).right
+        (mi, document) =>
+          \/.fromTryCatchNonFatal[java.net.URI](new java.net.URI(document.info.packageURI))
+            .fold[NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap](
+            l = (t: java.lang.Throwable) =>
+              -\/(
+                NonEmptyList(
+                  UMLError.illegalElementException[Uml, UMLPackage[Uml]](
+                    s"Cannnot create a valid URI for the package's document URL: ${document.info}",
+                    Iterable(document.scope),
+                    t))),
+            r = (duri: java.net.URI) => {
+              catalogIRIMapper.resolveURI(duri, catalogIRIMapper.loadResolutionStrategy(".owl".some))
+                .flatMap {
+                  _.fold[NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap](
+                    mi.map { case (document2tboxMap, d2map) =>
+                      System.out.println(s"document2map: $duri")
+                      (document2tboxMap, d2map + document)
+                    }
+                  ) { uri =>
+                    System.out.println(s"document2load: $duri\nresolved: $uri")
+                    mi.flatMap { case (document2tboxMap, d2map) =>
+                      // @todo it seems this should use the resolved uri instead of document.uri
+                      makeIRI(uri.toString)
+                        .flatMap { iri =>
+                          loadTerminologyGraph(iri)
+                            .flatMap { case (iTbox, _) =>
+                              System.out.println(s"==> document: $duri")
+                              (document2tboxMap + (document -> iTbox), d2map).right
+                            }
+                        }
+                    }
                   }
-              }
+                }
             }
-          }
-        }
-    }
+          )
+      }
 
     mN.map { case (document2tboxGraphs, documents2map) =>
       System.out.println(s"**** Document2TBoxGraphCorrespondences( d2tbox=${document2tboxGraphs.size}, documents2map=${documents2map.size} )")

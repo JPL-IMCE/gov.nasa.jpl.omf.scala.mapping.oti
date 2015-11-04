@@ -160,7 +160,7 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
         : NonEmptyList[java.lang.Throwable] \/ (OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs)  =
           context.treeOps.isRootBlockSpecificType(c)
             .flatMap { isRBST =>
-              analyze(c)(context.treeOps, context.idg)
+              analyze(c)(context.treeOps, context.idg, context.idg.otiCharacteristicsProvider)
                 .flatMap {
                   case bst: TreeCompositeStructureType[Uml] =>
                     val problems = TreeType.getIllFormedTreeBranchPairs(bst)
