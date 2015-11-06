@@ -67,50 +67,82 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
   def dependency2RelationshipMapping(context: OTI2OMFMappingContext[Uml, Omf]) = {
 
     val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction = {
-      case (rule, TboxUMLElementTuple(Some(tbox), depU: UMLDependency[Uml]), as, cs, rs, unmappedS)
-        if rs.nonEmpty && context.getDependencySourceAndTargetMappings(depU).isDefined =>
+      case (rule, TboxUMLElementTuple(Some(tbox), depU: UMLDependency[Uml]), as, cs, rs, unmappedS) =>
+        if (rs.isEmpty) {
+          System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => error: ${depU.xmiElementLabel}: ${depU.toolSpecific_id}")
+          NonEmptyList(
+            UMLError.illegalElementError[Uml, UMLDependency[Uml]](
+              s"R2 is not applicable to: $depU",
+              Iterable(depU))
+          ).left
+        } else {
+          val ( ( sourceU, osourceE ), ( targetU, otargetE )) =
+            context.getDependencySourceAndTargetMappings(depU)
 
-        if (unmappedS.nonEmpty) {
-          val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
-          require(foreign.isEmpty)
+          osourceE
+          .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
+            System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped source (target? ${otargetE.isDefined}): ${depU.xmiElementLabel}: ${depU.toolSpecific_id}")
+            Tuple3(
+              Nil,
+              Nil,
+              TboxUMLElementTuple(Some(tbox), depU) :: Nil
+            ).right
+          }) { sourceOmf =>
+
+            otargetE
+            .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
+              System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped target (source? true): ${depU.xmiElementLabel}: ${depU.toolSpecific_id}")
+              Tuple3(
+                Nil,
+                Nil,
+                TboxUMLElementTuple(Some(tbox), depU) :: Nil
+              ).right
+            }) { targetOmf =>
+
+              if (unmappedS.nonEmpty) {
+                val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
+                require(foreign.isEmpty)
+              }
+
+              val r1 =
+                if (rs.size == 1)
+                  rs.head._1.some
+                else
+                  Option.empty[UMLStereotype[Uml]]
+
+              val r1Name =
+                r1.fold[String]("") { s =>
+                  s.name.getOrElse("")
+                }
+
+              val hasName =
+                sourceU.name.getOrElse(sourceU.toolSpecific_id) +
+                  "-" + r1Name + "-" +
+                  targetU.name.getOrElse(targetU.toolSpecific_id)
+
+              for {
+                depOmfRelation <- context.mapElement2Relationship(
+                  rule, tbox, depU, sourceOmf, targetOmf,
+                  Iterable(), // @TODO
+                  isAbstract = false,
+                  hasName.some)
+
+                _ = rs.foreach {
+                  case (relUml, relOmf) =>
+                    context.addEntityRelationshipSubClassAxiom(rule, tbox, depOmfRelation, relOmf)
+                }
+
+                refiedRelationPair = TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), depOmfRelation, depU) :: Nil
+              } yield {
+                System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapped: ${depU.xmiElementLabel}: ${depU.toolSpecific_id}")
+                Tuple3(
+                  refiedRelationPair,
+                  Nil,
+                  refiedRelationPair)
+              }
+            }
+          }
         }
-
-        val ((sourceU, sourceOmf), (targetU, targetOmf)) =
-          context.getDependencySourceAndTargetMappings(depU).get
-
-        val r1 =
-          if (rs.size == 1)
-            rs.head._1.some
-          else
-            Option.empty[UMLStereotype[Uml]]
-
-        val r1Name =
-          r1.fold[String](""){ s =>
-            s.name.getOrElse("")
-          }
-
-        val hasName =
-          sourceU.name.getOrElse(sourceU.toolSpecific_id) +
-          "-" + r1Name + "-" +
-          targetU.name.getOrElse(targetU.toolSpecific_id)
-
-        for {
-          depOmfRelation <- context.mapElement2Relationship(
-            rule, tbox, depU, sourceOmf, targetOmf,
-            Iterable(), // @TODO
-            isAbstract = false,
-            hasName.some)
-
-          _ = rs.foreach {
-            case (relUml, relOmf) =>
-              context.addEntityRelationshipSubClassAxiom(rule, tbox, depOmfRelation, relOmf)
-          }
-
-          refiedRelationPair = TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), depOmfRelation, depU) :: Nil
-        } yield Tuple3(
-            refiedRelationPair,
-            Nil,
-            Nil)
     }
 
     MappingFunction[Uml, Omf]("dependency2RelationshipMapping", mapping)

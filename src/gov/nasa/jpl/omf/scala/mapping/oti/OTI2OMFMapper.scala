@@ -561,9 +561,8 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
 
   def getDependencySourceAndTargetMappings
   ( d: UMLDependency[Uml] )
-  : Option[
-    ( ( UMLNamedElement[Uml], Omf#ModelEntityDefinition ),
-    ( UMLNamedElement[Uml], Omf#ModelEntityDefinition ) )] = {
+  : ( ( UMLNamedElement[Uml], Option[Omf#ModelEntityDefinition] ),
+      ( UMLNamedElement[Uml], Option[Omf#ModelEntityDefinition] ) ) = {
     val sourceU = {
       require( d.client.size == 1 )
       d.client.head
@@ -573,10 +572,9 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
       d.supplier.head
     }
 
-    for {
-      sourceE <- lookupElementMapping(sourceU)
-      targetE <- lookupElementMapping(targetU)
-    } yield Tuple2( Tuple2( sourceU, sourceE ), Tuple2( targetU, targetE ) )
+    Tuple2(
+      Tuple2( sourceU, lookupElementMapping(sourceU) ),
+      Tuple2( targetU, lookupElementMapping(targetU) ) )
   }
 
   def getDirectedBinaryAssociationSourceAndTargetMappings
@@ -678,7 +676,7 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {
             case \/-( None ) =>
               step( errors, pairs, results, pair :: deferred, outputs )
             case \/-( Some( ( rule, moreResults, morePairs, moreOutputs ) ) ) =>
-              step( errors, morePairs ::: pairs, moreResults ::: results, deferred, moreOutputs ::: outputs )
+              step( errors, pairs ::: morePairs, moreResults ::: results, deferred, moreOutputs ::: outputs )
           }
       }
 

@@ -257,7 +257,7 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
           case cls: UMLClassifier[Uml] =>
             other2concept(rule, tbox, cls, as, cs)
           case _                =>
-            System.out.println(s"#OTI/OMF R2 EntityConcept => unknown: ${neU.xmiElementLabel}")
+            System.out.println(s"#OTI/OMF R2 EntityConcept => unknown: ${neU.xmiElementLabel} ${neU.toolSpecific_id}")
             NonEmptyList(
               treeOpsException(
                 context.treeOps,

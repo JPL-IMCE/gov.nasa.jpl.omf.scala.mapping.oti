@@ -110,9 +110,11 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
               require(foreign.isEmpty)
             }
 
-            val mappedC =
-              if (mappedS.isEmpty) Set(context.basePackageC)
-              else mappedS.map(context.stereotype2Concept(_))
+            // @todo packages are now OMF TBoxes.
+            // @todo how do we map the distinction between base:Package, mission:WorkPackage, etc..
+//            val mappedC =
+//              if (mappedS.isEmpty) Set(context.basePackageC)
+//              else mappedS.map(context.stereotype2Concept(_))
 
             for {
               pkgTbox <- context.ns2tboxCtor(rule, pkgU, TerminologyKind.isDefinition) leftMap r1Error("ns2tboxCtor", pkgU)
