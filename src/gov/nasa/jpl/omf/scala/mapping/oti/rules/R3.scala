@@ -81,21 +81,21 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
 
           osourceE
           .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
-            System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped source (target? ${otargetE.isDefined}): ${depU.xmiElementLabel}: ${depU.toolSpecific_id}")
+            System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped source (target? ${otargetE.isDefined}): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
             Tuple3(
               Nil,
               Nil,
-              TboxUMLElementTuple(Some(tbox), depU) :: Nil
+              TboxUMLElementTuple(Some(tbox), depU) :: Nil // try again at next phase
             ).right
           }) { sourceOmf =>
 
             otargetE
             .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
-              System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped target (source? true): ${depU.xmiElementLabel}: ${depU.toolSpecific_id}")
+              System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped target (source? true): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
               Tuple3(
                 Nil,
                 Nil,
-                TboxUMLElementTuple(Some(tbox), depU) :: Nil
+                TboxUMLElementTuple(Some(tbox), depU) :: Nil // try again at next phase
               ).right
             }) { targetOmf =>
 
@@ -134,11 +134,11 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
 
                 refiedRelationPair = TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), depOmfRelation, depU) :: Nil
               } yield {
-                System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapped: ${depU.xmiElementLabel}: ${depU.toolSpecific_id}")
+                System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapped: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
                 Tuple3(
                   refiedRelationPair,
                   Nil,
-                  refiedRelationPair)
+                  Nil) // nothing further to do
               }
             }
           }

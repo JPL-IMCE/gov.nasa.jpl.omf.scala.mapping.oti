@@ -97,7 +97,8 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
         } yield Tuple3(
           aspectPair,
           Nil,
-          aspectPair)
+          Nil // @todo enable when there are data property mapping rules aspectPair
+        )
     }
 
     MappingFunction[Uml, Omf]("namespace2AspectMapping", mapping)
@@ -187,7 +188,7 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
                 Tuple3(
                   conceptPair, // this is a result
                   Nil,
-                  conceptPair // it needs to be further expanded in the next phase
+                  Nil // @todo enable when there are data property mapping rules conceptPair
                 ).right
               }
             }
@@ -237,7 +238,7 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
             Tuple3(
               conceptPair, // this is a result
               Nil,
-              conceptPair // it needs to be further expanded in the next phase
+              Nil // @todo enable when there are data property mapping rules conceptPair
             ).right
           }
         }
