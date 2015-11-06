@@ -659,29 +659,30 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {
     contentPairs: List[TboxUMLElementPair[Uml, Omf]],
     rules: List[MappingFunction[Uml, Omf]] )
   ( implicit omfOps: OMFOps[Omf] )
-  : NonEmptyList[java.lang.Throwable] \/ RulesResult = {
+  : NonEmptyList[java.lang.Throwable] \&/ RulesResult = {
 
     @annotation.tailrec def step
-    ( queue: List[TboxUMLElementPair[Uml, Omf]],
+    ( errors: Option[NonEmptyList[java.lang.Throwable]],
+      queue: List[TboxUMLElementPair[Uml, Omf]],
       results: List[TboxUMLElementPair[Uml, Omf]],
       deferred: List[TboxUMLElementPair[Uml, Omf]],
       outputs: List[TboxUMLElementPair[Uml, Omf]] )
-    : NonEmptyList[java.lang.Throwable] \/ RulesResult =
+    : NonEmptyList[java.lang.Throwable] \&/ RulesResult =
       queue match {
         case Nil =>
-          \/-( ( results, deferred, outputs ) )
+          \&/.That( ( results, deferred, outputs ) )
         case pair :: pairs =>
           applyMatchingRule( context, pair, rules ) match {
             case -\/( f ) =>
-              -\/( f )
+              step( f.some mappend errors, pairs, results, deferred, outputs )
             case \/-( None ) =>
-              step( pairs, results, pair :: deferred, outputs )
+              step( errors, pairs, results, pair :: deferred, outputs )
             case \/-( Some( ( rule, moreResults, morePairs, moreOutputs ) ) ) =>
-              step( morePairs ::: pairs, moreResults ::: results, deferred, moreOutputs ::: outputs )
+              step( errors, morePairs ::: pairs, moreResults ::: results, deferred, moreOutputs ::: outputs )
           }
       }
 
-    step( contentPairs, Nil, Nil, Nil )
+    step( Option.empty[NonEmptyList[java.lang.Throwable]], contentPairs, Nil, Nil, Nil )
   }
 
 }

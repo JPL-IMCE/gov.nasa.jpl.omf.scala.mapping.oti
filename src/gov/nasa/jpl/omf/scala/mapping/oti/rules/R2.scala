@@ -119,14 +119,14 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
       context.mapElement2Concept(rule, tbox, c, c.isAbstract)
       .flatMap { cConcept =>
         System.out
-          .println(s"#OTI/OMF R2 Element2Concept: ${c.qualifiedName.get} / a:${as.size}, c:${cs.size}")
+          .println(s"#OTI/OMF R2 class2concept: ${c.qualifiedName.get} / a:${as.size}, c:${cs.size}")
 
         val r0: NonEmptyList[java.lang.Throwable] \/ Unit = \/-(())
         val rA: NonEmptyList[java.lang.Throwable] \/ Unit = (r0 /: as) {
           case (ri, (ai, aiOmf)) =>
-            System.out.println(
-              s"""|#OTI/OMF R2 EntityDefinitionAspectSubClassAxiom:
-                  | sup=${ai.name.get}, sub=${c.qualifiedName.get}""".stripMargin)
+//            System.out.println(
+//              s"""|#OTI/OMF R2 EntityDefinitionAspectSubClassAxiom:
+//                  | sup=${ai.name.get}, sub=${c.qualifiedName.get}""".stripMargin)
             ri +++
               context
                 .addEntityDefinitionAspectSubClassAxiom(rule, tbox, cConcept, aiOmf)
@@ -135,51 +135,112 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
 
         val rC: NonEmptyList[java.lang.Throwable] \/ Unit = (rA /: cs) {
           case (ri, (ci, ciOmf)) =>
-            System.out.println(
-              s"""|#OTI/OMF R2 EntityConceptSubClassAxiom:
-                  | sup=${ci.name.get}, sub=${c.qualifiedName.get}""".stripMargin)
+//            System.out.println(
+//              s"""|#OTI/OMF R2 EntityConceptSubClassAxiom:
+//                  | sup=${ci.name.get}, sub=${c.qualifiedName.get}""".stripMargin)
             ri +++
               context
                 .addEntityConceptSubClassAxiom(rule, tbox, cConcept, ciOmf)
                 .map(_ => ())
         }
 
+        System.out.println(s"#OTI/OMF R2 class2concept: error? ${rC.isLeft} ok? ${rC.isRight}")
         val result
         : NonEmptyList[java.lang.Throwable] \/ (OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs)  =
           context.treeOps.isRootBlockSpecificType(c)
             .flatMap { isRBST =>
-              analyze(c)(context.treeOps, context.idg, context.idg.otiCharacteristicsProvider)
-                .flatMap {
-                  case bst: TreeCompositeStructureType[Uml] =>
-                    val problems = TreeType.getIllFormedTreeBranchPairs(bst)
-                    if (problems.isEmpty) {
-                      val conceptPair = TboxUMLElementTreeType(Some(tbox), cConcept, bst) :: Nil
-                      Tuple3(
-                        conceptPair, // this is a result
-                        Nil,
-                        conceptPair // it needs to be further expanded in the next phase
-                      ).right
-                    } else
+
+              if (isRBST)
+                analyze(c)(context.treeOps, context.idg, context.idg.otiCharacteristicsProvider)
+                  .flatMap {
+                    case bst: TreeCompositeStructureType[Uml] =>
+                      val problems = TreeType.getIllFormedTreeBranchPairs(bst)
+                      if (problems.isEmpty) {
+                        System.out.println(s"#OTI/OMF R2 class2concept => RBST OK")
+                        val conceptPair = TboxUMLElementTreeType(Some(tbox), cConcept, bst) :: Nil
+                        Tuple3(
+                          conceptPair, // this is a result
+                          Nil,
+                          conceptPair // it needs to be further expanded in the next phase
+                        ).right
+                      } else {
+                        System.out.println(s"#OTI/OMF R2 class2concept => RBST ${problems.size} problems")
+                        NonEmptyList(
+                          treeOpsException(
+                            context.treeOps,
+                            problems
+                              .map(_.toString)
+                              .mkString(s"TreeCompositeStructure has ${problems.size} problems\n", "\n", "\n"))
+                        ).left
+                      }
+                    case tree =>
+                      System.out.println(s"#OTI/OMF R2 class2concept => other $tree")
                       NonEmptyList(
                         treeOpsException(
                           context.treeOps,
-                          problems
-                            .map(_.toString)
-                            .mkString(s"TreeCompositeStructure has ${problems.size} problems\n", "\n", "\n"))
+                          s"Not a TreeCompositeStructureType: $tree")
                       ).left
-                  case tree =>
-                    NonEmptyList(
-                      treeOpsException(
-                        context.treeOps,
-                        s"Not a TreeCompositeStructureType: $tree")
-                    ).left
-                }
+                  }
+              else {
+                System.out.println(s"#OTI/OMF R2 class2concept => not RBST")
+                val conceptPair = TboxUMLElement2ConceptDefinition(Some(tbox), cConcept, c) :: Nil
+                Tuple3(
+                  conceptPair, // this is a result
+                  Nil,
+                  conceptPair // it needs to be further expanded in the next phase
+                ).right
+              }
             }
 
         rC.flatMap{ _ =>
           result
         }
       }
+
+    def other2concept
+    (rule: MappingFunction[Uml, Omf],
+     tbox: Omf#MutableModelTerminologyGraph,
+     cls: UMLClassifier[Uml],
+     as: OTI2OMFMappingContext[Uml, Omf]#UMLStereotype2EntityAspectMap,
+     cs: OTI2OMFMappingContext[Uml, Omf]#UMLStereotype2EntityConceptMap)
+    : NonEmptyList[java.lang.Throwable] \/ (OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs) =
+      context.mapElement2Concept(rule, tbox, cls, cls.isAbstract)
+        .flatMap { cConcept =>
+          System.out
+            .println(s"#OTI/OMF R2 other2concept: ${cls.qualifiedName.get} / a:${as.size}, c:${cs.size}")
+
+          val r0: NonEmptyList[java.lang.Throwable] \/ Unit = \/-(())
+          val rA: NonEmptyList[java.lang.Throwable] \/ Unit = (r0 /: as) {
+            case (ri, (ai, aiOmf)) =>
+//              System.out.println(
+//                s"""|#OTI/OMF R2 EntityDefinitionAspectSubClassAxiom:
+//                    | sup=${ai.name.get}, sub=${cls.qualifiedName.get}""".stripMargin)
+              ri +++
+                context
+                  .addEntityDefinitionAspectSubClassAxiom(rule, tbox, cConcept, aiOmf)
+                  .map(_ => ())
+          }
+
+          val rC: NonEmptyList[java.lang.Throwable] \/ Unit = (rA /: cs) {
+            case (ri, (ci, ciOmf)) =>
+//              System.out.println(
+//                s"""|#OTI/OMF R2 EntityConceptSubClassAxiom:
+//                    | sup=${ci.name.get}, sub=${cls.qualifiedName.get}""".stripMargin)
+              ri +++
+                context
+                  .addEntityConceptSubClassAxiom(rule, tbox, cConcept, ciOmf)
+                  .map(_ => ())
+          }
+
+          rC.flatMap{ _ =>
+            val conceptPair = TboxUMLElement2ConceptDefinition(Some(tbox), cConcept, cls) :: Nil
+            Tuple3(
+              conceptPair, // this is a result
+              Nil,
+              conceptPair // it needs to be further expanded in the next phase
+            ).right
+          }
+        }
 
     val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction = {
       case (rule, TboxUMLElementTuple(Some(tbox), neU: UMLNamedElement[Uml]), as, cs, rs, unmappedS)
@@ -193,7 +254,10 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
         neU match {
           case c: UMLClass[Uml] =>
             class2concept(rule, tbox, c, as, cs)
+          case cls: UMLClassifier[Uml] =>
+            other2concept(rule, tbox, cls, as, cs)
           case _                =>
+            System.out.println(s"#OTI/OMF R2 EntityConcept => unknown: ${neU.xmiElementLabel}")
             NonEmptyList(
               treeOpsException(
                 context.treeOps,
