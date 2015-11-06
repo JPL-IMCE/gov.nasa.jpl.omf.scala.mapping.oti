@@ -153,13 +153,67 @@ trait Element2RelationshipCTorFunction[Uml <: UML, Omf <: OMF]
 }
 
 sealed abstract class TboxUMLElementPair[Uml <: UML, Omf <: OMF]
-( val tbox: Option[Omf#MutableModelTerminologyGraph],
+( val tbox: Option[Omf#ModelTerminologyGraph],
   val e: UMLElement[Uml] )
 ( implicit omfOps: OMFOps[Omf] )
 
-case class TboxUMLElement2EntityDefinition[Uml <: UML, Omf <: OMF]
+sealed abstract class TboxUMLElement2EntityDefinition[Uml <: UML, Omf <: OMF]
 ( override val tbox: Option[Omf#MutableModelTerminologyGraph],
-  omfEntity: Omf#ModelEntityDefinition,
+  val omfEntity: Omf#ModelEntityDefinition,
+  override val e: UMLElement[Uml] )
+( implicit omfOps: OMFOps[Omf] )
+  extends TboxUMLElementPair[Uml, Omf]( tbox, e )
+
+case class TboxUMLElement2AspectDefinition[Uml <: UML, Omf <: OMF]
+( override val tbox: Option[Omf#MutableModelTerminologyGraph],
+  override val omfEntity: Omf#ModelEntityAspect,
+  override val e: UMLElement[Uml] )
+( implicit omfOps: OMFOps[Omf] )
+  extends TboxUMLElement2EntityDefinition[Uml, Omf]( tbox, omfEntity, e ) {
+
+  override def toString: String =
+    tbox
+      .fold[String](
+      s"${e.xmiElementLabel} / OMF EntityAspect Tuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    ){ g =>
+      s"${e.xmiElementLabel} / OMF EntityAspect Tuple [tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}] entity: $omfEntity"
+    }
+}
+
+case class TboxUMLElement2ConceptDefinition[Uml <: UML, Omf <: OMF]
+( override val tbox: Option[Omf#MutableModelTerminologyGraph],
+  override val omfEntity: Omf#ModelEntityConcept,
+  override val e: UMLElement[Uml] )
+( implicit omfOps: OMFOps[Omf] )
+  extends TboxUMLElement2EntityDefinition[Uml, Omf]( tbox, omfEntity, e ) {
+
+  override def toString: String =
+    tbox
+      .fold[String](
+      s"${e.xmiElementLabel} / OMF EntityConcept Tuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    ){ g =>
+      s"${e.xmiElementLabel} / OMF EntityConcept Tuple [tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}] entity: $omfEntity"
+    }
+}
+
+case class TboxUMLElement2ReifiedRelationshipDefinition[Uml <: UML, Omf <: OMF]
+( override val tbox: Option[Omf#MutableModelTerminologyGraph],
+  override val omfEntity: Omf#ModelEntityReifiedRelationship,
+  override val e: UMLElement[Uml] )
+( implicit omfOps: OMFOps[Omf] )
+  extends TboxUMLElement2EntityDefinition[Uml, Omf]( tbox, omfEntity, e ) {
+
+  override def toString: String =
+    tbox
+      .fold[String](
+      s"${e.xmiElementLabel} / OMF EntityReifiedRelationship Tuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    ){ g =>
+      s"${e.xmiElementLabel} / OMF EntityReifiedRelationship Tuple [tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}] entity: $omfEntity"
+    }
+}
+
+case class TboxUMLProfile2ImmutableTBoxTuple[Uml <: UML, Omf <: OMF]
+( override val tbox: Option[Omf#ImmutableModelTerminologyGraph],
   override val e: UMLElement[Uml] )
 ( implicit omfOps: OMFOps[Omf] )
   extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
@@ -167,9 +221,9 @@ case class TboxUMLElement2EntityDefinition[Uml <: UML, Omf <: OMF]
   override def toString: String =
     tbox
       .fold[String](
-      s"UMLELement / OMF EntityDefinition Tuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+      s"TboxUMLProfile2ImmutableTBoxTuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
     ){ g =>
-      s"UMLELement / OMF EntityDefinition Tuple [tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}] entity: $omfEntity"
+      s"TboxUMLProfile2ImmutableTBoxTuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}]"
     }
 }
 
@@ -295,6 +349,7 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
   stereotype2Concept: Map[UMLStereotype[Uml], Omf#ModelEntityConcept],
   stereotype2Relationship: Map[UMLStereotype[Uml], Omf#ModelEntityReifiedRelationship],
   otherStereotypesApplied: Set[UMLStereotype[Uml]],
+  pf2ont: Map[UMLProfile[Uml], Omf#ImmutableModelTerminologyGraph],
   ops: OMFOps[Omf],
   treeOps: TreeOps[Uml],
   idg: IDGenerator[Uml]) {

@@ -44,11 +44,11 @@ import org.omg.oti.uml._
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
-import scala.{Some,Tuple3}
+import scala.{Some,StringContext,Tuple3}
 import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
 import scala.language.postfixOps
-import scalaz._
+import scalaz._, Scalaz._
 
 /**
  * Mapping for a kind of UML Package (but not a Profile)
@@ -73,15 +73,35 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
     )
 
   /**
-   * Map an OTI non-profile Package P to OMF
-   * If no stereotype is applied to P, treat P as if base:Package had been applied.
-   */
-  def nonProfilePackageMapping( context: OTI2OMFMappingContext[Uml, Omf] ) = {
+    * Mapping of an OTI profile PF to OMF:
+    * - Verify that there is already an immutable OMF Tbox corresponding to PF
+    *
+    * Mapping of an OTI non-profile Package P to OMF:
+    * - If no stereotype is applied to P, treat P as if base:Package had been applied.
+    *
+    * @param context The OTI2OMF Mapping Context
+    */
+  def profileOrPackageMapping( context: OTI2OMFMappingContext[Uml, Omf] ) = {
 
     val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction =
       {
-        case ( rule, TboxUMLElementTuple( Some( tbox ), pkgU: UMLPackage[Uml] ), as, cs, rs, unmappedS )
-          if oclIsTypeOfPackage( pkgU ) =>
+
+        case ( rule, TboxUMLElementTuple( Some( tbox ), pfU: UMLProfile[Uml] ), as, cs, rs, unmappedS ) =>
+          context.pf2ont.get(pfU).fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult](
+            NonEmptyList(
+              UMLError.illegalElementError[Uml, UMLProfile[Uml]](
+                s"profile ${pfU.qualifiedName.get} should have been mapped to an immutable OMF graph",
+                Iterable(pfU))
+            ).left
+          ) { pfOnt =>
+            Tuple3(
+              TboxUMLProfile2ImmutableTBoxTuple(pfOnt.some, pfU) :: Nil,
+              Nil,
+              Nil
+            ).right
+          }
+
+        case ( rule, TboxUMLElementTuple( Some( tbox ), pkgU: UMLPackage[Uml] ), as, cs, rs, unmappedS ) =>
 
           context.partitionAppliedStereotypesByMapping( pkgU )
           .flatMap { case (mappedS, unmappedS) =>
@@ -103,7 +123,7 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
                 case _ => true
               })
 
-              morePairs = pkgNested.map(TboxUMLElementTuple(Some(pkgTbox), _))
+              morePairs = pkgNested.map(TboxUMLElementTuple(pkgTbox.some, _)).toList
 
               // owned UML elements to map in the subsequent content phase
               pkgContents = pkgU.ownedElement.filter({
@@ -111,18 +131,18 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
                 case _ => true
               })
 
-              moreContents = pkgContents.map(TboxUMLElementTuple(Some(pkgTbox), _))
+              moreContents = pkgContents.map(TboxUMLElementTuple(Some(pkgTbox), _)).toList
 
-              pkgPair = TboxUMLElementTuple(Some(pkgTbox), pkgU)
+              pkgPair = TboxUMLElementTuple(Some(pkgTbox), pkgU) :: Nil
 
             } yield Tuple3(
-                pkgPair :: Nil,
-                morePairs ++ moreContents toList,
-                Nil)
+                pkgPair,
+                morePairs,
+                moreContents)
           }
       }
 
-    MappingFunction[Uml, Omf]( "nonProfilePackackageMapping", mapping )
+    MappingFunction[Uml, Omf]( "profileOrPackageMapping", mapping )
 
   }
 }

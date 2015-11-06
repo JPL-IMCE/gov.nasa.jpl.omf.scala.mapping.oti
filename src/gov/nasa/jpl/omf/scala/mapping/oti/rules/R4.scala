@@ -98,8 +98,9 @@ case class R4[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
             context.addEntityRelationshipSubClassAxiom(rule, tbox, bcaOmfRelation, rel)
           }
 
+          reifiedRelationPair = TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), bcaOmfRelation, bcaU) :: Nil
         } yield Tuple3(
-          TboxUMLElement2EntityDefinition(Some(tbox), bcaOmfRelation, bcaU) :: Nil,
+          reifiedRelationPair,
           Nil,
           Nil)
     }

@@ -87,29 +87,17 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
 
         for {
           clsOmfAspect <- context.mapElement2Aspect(rule, tbox, clsU)
-          _ = {
-            //val ok:
-            as
-              .foreach {
-                case (aS, aOmf) =>
-                  context.addEntityDefinitionAspectSubClassAxiom(rule, tbox, clsOmfAspect, aOmf)
-              }
-          }
 
-          pkgContents =
-          clsU
-                        .ownedElement
-                        .filter({
-                                  case _: UMLAssociation[Uml] => true
-                                  case _: UMLNamespace[Uml]   => false
-                                  case _                      => true
-                                })
+          _ = as.foreach {
+              case (aS, aOmf) =>
+                context.addEntityDefinitionAspectSubClassAxiom(rule, tbox, clsOmfAspect, aOmf)
+            }
 
-          moreContents = pkgContents.map(TboxUMLElementTuple(Some(tbox), _)) toList
+          aspectPair = TboxUMLElement2AspectDefinition(Some(tbox), clsOmfAspect, clsU) :: Nil
         } yield Tuple3(
-          TboxUMLElement2EntityDefinition(Some(tbox), clsOmfAspect, clsU) :: Nil,
+          aspectPair,
           Nil,
-          moreContents)
+          aspectPair)
     }
 
     MappingFunction[Uml, Omf]("namespace2AspectMapping", mapping)
@@ -165,11 +153,11 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
                   case bst: TreeCompositeStructureType[Uml] =>
                     val problems = TreeType.getIllFormedTreeBranchPairs(bst)
                     if (problems.isEmpty) {
-                      val one = TboxUMLElementTreeType(Some(tbox), cConcept, bst)
+                      val conceptPair = TboxUMLElementTreeType(Some(tbox), cConcept, bst) :: Nil
                       Tuple3(
-                        one :: Nil, // this is a result
+                        conceptPair, // this is a result
                         Nil,
-                        one :: Nil // it needs to be further expanded in the next phase
+                        conceptPair // it needs to be further expanded in the next phase
                       ).right
                     } else
                       NonEmptyList(
