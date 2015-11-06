@@ -68,7 +68,7 @@ trait Element2AspectCTor[Uml <: UML, Omf <: OMF] {
   ( context: OTI2OMFMappingContext[Uml, Omf],
     rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
-    u: UMLClassifier[Uml] )
+    u: UMLElement[Uml] )
   : NonEmptyList[java.lang.Throwable] \/ Omf#ModelEntityAspect
 }
 
@@ -80,11 +80,14 @@ trait Element2AspectCTorFunction[Uml <: UML, Omf <: OMF]
   ( context: OTI2OMFMappingContext[Uml, Omf],
     rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
-    u: UMLClassifier[Uml] )
+    u: UMLElement[Uml] )
   : NonEmptyList[java.lang.Throwable] \/ Omf#ModelEntityAspect =
   for {
     aspect <- apply(rule, tbox, u)
+    sizePre = context.mappedElement2Aspect.size
     _ = context.mappedElement2Aspect += (u -> aspect)
+    sizeDelta = context.mappedElement2Aspect.size - sizePre
+    _ = java.lang.System.out.println(s"## mappedElement2Aspect $sizePre => +$sizeDelta")
   } yield aspect
 
 }
@@ -112,7 +115,10 @@ trait Element2ConceptCTorFunction[Uml <: UML, Omf <: OMF]
   : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf]#MappedEntityConcept =
   for {
     conceptGraph <- apply(rule, tbox, u, isAbstract)
+    sizePre = context.mappedElement2Concept.size
     _ = context.mappedElement2Concept += (u -> conceptGraph)
+    sizeDelta = context.mappedElement2Concept.size - sizePre
+    _ = java.lang.System.out.println(s"## mappedElement2Concept $sizePre => +$sizeDelta")
   } yield conceptGraph
 
 }
@@ -148,7 +154,10 @@ trait Element2RelationshipCTorFunction[Uml <: UML, Omf <: OMF]
   : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf]#MappedEntityRelationship =
   for {
     relationship <- apply(rule, tbox, u, source, target, characteristics, isAbstract, name )
+    sizePre = context.mappedElement2Relationship.size
     _ = context.mappedElement2Relationship += (u -> relationship)
+    sizeDelta = context.mappedElement2Relationship.size - sizePre
+    _ = java.lang.System.out.println(s"## mappedElement2Relationship $sizePre => +$sizeDelta")
   } yield relationship
 }
 
@@ -376,7 +385,7 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
   type Element2AspectCTorRuleFunction = Function3[
     MappingFunction[Uml, Omf],
     Omf#MutableModelTerminologyGraph,
-    UMLClassifier[Uml],
+    UMLElement[Uml],
     NonEmptyList[java.lang.Throwable] \/ Omf#ModelEntityAspect]
 
   type Element2ConceptCTorRuleFunction = Function4[
@@ -513,7 +522,7 @@ case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
   def mapElement2Aspect
   ( rule: MappingFunction[Uml, Omf],
     tbox: Omf#MutableModelTerminologyGraph,
-    u: UMLClassifier[Uml] )
+    u: UMLElement[Uml] )
   : NonEmptyList[java.lang.Throwable] \/ Omf#ModelEntityAspect =
     element2aspectCtor.applyMapping( this, rule, tbox, u )
 

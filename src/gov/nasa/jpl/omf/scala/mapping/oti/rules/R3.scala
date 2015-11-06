@@ -81,7 +81,10 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
 
           osourceE
           .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
-            System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped source (target? ${otargetE.isDefined}): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
+            System.out.println(
+              s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped source "+
+              s"(target? ${otargetE.isDefined}): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel} "+
+              s"- source: ${sourceU.toolSpecific_id.get} ${sourceU.xmiElementLabel} ${sourceU.qualifiedName.get}")
             Tuple3(
               Nil,
               Nil,
@@ -91,7 +94,10 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
 
             otargetE
             .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
-              System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped target (source? true): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
+              System.out.println(
+                s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped target "+
+                s"(source? true): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel} "+
+                s"- target: ${targetU.toolSpecific_id.get} ${targetU.xmiElementLabel} ${targetU.qualifiedName.get}")
               Tuple3(
                 Nil,
                 Nil,

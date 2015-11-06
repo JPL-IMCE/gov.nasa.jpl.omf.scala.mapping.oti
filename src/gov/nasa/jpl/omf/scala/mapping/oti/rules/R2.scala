@@ -77,7 +77,7 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
   def namespace2AspectMapping(context: OTI2OMFMappingContext[Uml, Omf]) = {
 
     val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction = {
-      case (rule, TboxUMLElementTuple(Some(tbox), clsU: UMLClassifier[Uml]), as, cs, rs, unmappedS)
+      case (rule, TboxUMLElementTuple(Some(tbox), nsU: UMLNamespace[Uml]), as, cs, rs, unmappedS)
         if as.nonEmpty && cs.isEmpty && rs.isEmpty =>
 
         if (unmappedS.nonEmpty) {
@@ -86,14 +86,14 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
         }
 
         for {
-          clsOmfAspect <- context.mapElement2Aspect(rule, tbox, clsU)
+          clsOmfAspect <- context.mapElement2Aspect(rule, tbox, nsU)
 
           _ = as.foreach {
               case (aS, aOmf) =>
                 context.addEntityDefinitionAspectSubClassAxiom(rule, tbox, clsOmfAspect, aOmf)
             }
 
-          aspectPair = TboxUMLElement2AspectDefinition(Some(tbox), clsOmfAspect, clsU) :: Nil
+          aspectPair = TboxUMLElement2AspectDefinition(Some(tbox), clsOmfAspect, nsU) :: Nil
         } yield Tuple3(
           aspectPair,
           Nil,
