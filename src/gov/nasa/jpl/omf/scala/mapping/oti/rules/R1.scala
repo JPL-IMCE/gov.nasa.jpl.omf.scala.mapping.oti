@@ -87,13 +87,15 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
       {
 
         case ( rule, TboxUMLElementTuple( Some( tbox ), pfU: UMLProfile[Uml] ), as, cs, rs, unmappedS ) =>
-          context.pf2ont.get(pfU).fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult](
+          context.pf2ont.get(pfU).fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
+            java.lang.System.out.println(s"-R1.profile: [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => no OMF Graph")
             NonEmptyList(
               UMLError.illegalElementError[Uml, UMLProfile[Uml]](
                 s"profile ${pfU.qualifiedName.get} should have been mapped to an immutable OMF graph",
                 Iterable(pfU))
             ).left
-          ) { pfOnt =>
+          }) { pfOnt =>
+            java.lang.System.out.println(s"+R1.profile: [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => ${pfOnt}")
             Tuple3(
               TboxUMLProfile2ImmutableTBoxTuple(pfOnt.some, pfU) :: Nil,
               Nil,
@@ -102,11 +104,12 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
           }
 
         case ( rule, TboxUMLElementTuple( Some( tbox ), pkgU: UMLPackage[Uml] ), as, cs, rs, unmappedS ) =>
+          java.lang.System.out.println(s"@R1.package: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
 
           context.partitionAppliedStereotypesByMapping( pkgU )
-          .flatMap { case (mappedS, unmappedS) =>
-            if (unmappedS.nonEmpty) {
-              val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
+          .flatMap { case (pkMappedS, pkgUnmappedS) =>
+            if (pkgUnmappedS.nonEmpty) {
+              val foreign = pkgUnmappedS.filter(!context.otherStereotypesApplied.contains(_))
               require(foreign.isEmpty)
             }
 

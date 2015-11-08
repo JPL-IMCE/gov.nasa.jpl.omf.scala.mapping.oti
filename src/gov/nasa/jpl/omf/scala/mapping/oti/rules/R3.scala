@@ -69,10 +69,11 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
     val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction = {
       case (rule, TboxUMLElementTuple(Some(tbox), depU: UMLDependency[Uml]), as, cs, rs, unmappedS) =>
         if (rs.isEmpty) {
-          System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => error: ${depU.xmiElementLabel}: ${depU.toolSpecific_id}")
+          val explanation: String = unmappedS.toList.map(_.qualifiedName.get).mkString(s"${unmappedS.size} unmapped stereotypes (",",",")")
+          System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => error: ${depU.xmiElementLabel}: ${depU.toolSpecific_id} $explanation")
           NonEmptyList(
             UMLError.illegalElementError[Uml, UMLDependency[Uml]](
-              s"R2 is not applicable to: $depU",
+              s"R3 is not applicable to: $depU because $explanation",
               Iterable(depU))
           ).left
         } else {
@@ -126,6 +127,7 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
                   "-" + r1Name + "-" +
                   targetU.name.getOrElse(targetU.toolSpecific_id)
 
+              System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapping1: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}\nsource=$sourceOmf\ntarget=$targetOmf")
               for {
                 depOmfRelation <- context.mapElement2Relationship(
                   rule, tbox, depU, sourceOmf, targetOmf,
@@ -133,12 +135,18 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
                   isAbstract = false,
                   hasName.some)
 
+                _ = System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapping2: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
+
+
                 _ = rs.foreach {
                   case (relUml, relOmf) =>
                     context.addEntityRelationshipSubClassAxiom(rule, tbox, depOmfRelation, relOmf)
                 }
+                _ = System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapping3: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
 
                 refiedRelationPair = TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), depOmfRelation, depU) :: Nil
+                _ = System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapping4: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
+
               } yield {
                 System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapped: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
                 Tuple3(

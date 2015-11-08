@@ -151,14 +151,16 @@ trait Element2RelationshipCTorFunction[Uml <: UML, Omf <: OMF]
     characteristics: Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
     isAbstract: Boolean,
     name: Option[String] )
-  : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf]#MappedEntityRelationship =
-  for {
-    relationship <- apply(rule, tbox, u, source, target, characteristics, isAbstract, name )
-    sizePre = context.mappedElement2Relationship.size
-    _ = context.mappedElement2Relationship += (u -> relationship)
-    sizeDelta = context.mappedElement2Relationship.size - sizePre
-    _ = java.lang.System.out.println(s"## mappedElement2Relationship $sizePre => +$sizeDelta")
-  } yield relationship
+  : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf]#MappedEntityRelationship = {
+    java.lang.System.out.println(s">> Element2RelationshipCTor: ${u.toolSpecific_id.get}")
+    for {
+      relationship <- apply(rule, tbox, u, source, target, characteristics, isAbstract, name)
+      sizePre = context.mappedElement2Relationship.size
+      _ = context.mappedElement2Relationship += (u -> relationship)
+      sizeDelta = context.mappedElement2Relationship.size - sizePre
+      _ = java.lang.System.out.println(s"## mappedElement2Relationship $sizePre => +$sizeDelta")
+    } yield relationship
+  }
 }
 
 sealed abstract class TboxUMLElementPair[Uml <: UML, Omf <: OMF]
