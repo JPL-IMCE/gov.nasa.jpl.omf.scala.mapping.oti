@@ -127,7 +127,6 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
                   "-" + r1Name + "-" +
                   targetU.name.getOrElse(targetU.toolSpecific_id)
 
-              System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapping1: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}\nsource=$sourceOmf\ntarget=$targetOmf")
               val result = for {
                 depOmfRelation <- context.mapElement2Relationship(
                   rule, tbox, depU, sourceOmf, targetOmf,
@@ -135,18 +134,11 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
                   isAbstract = false,
                   hasName.some)
 
-                _ = System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapping2: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
-
-
                 _ = rs.foreach {
                   case (relUml, relOmf) =>
                     context.addEntityRelationshipSubClassAxiom(rule, tbox, depOmfRelation, relOmf)
                 }
-                _ = System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapping3: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
-
                 refiedRelationPair = TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), depOmfRelation, depU) :: Nil
-                _ = System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapping4: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
-
               } yield {
                 System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapped: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
                 Tuple3(
@@ -154,7 +146,6 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
                   Nil,
                   Nil) // nothing further to do
               }
-              System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mappingR: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}\n$result")
               result
             }
           }
