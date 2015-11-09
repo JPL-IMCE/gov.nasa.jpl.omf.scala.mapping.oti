@@ -98,7 +98,7 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
                 Iterable(pfU))
             ).left
           }) { pfOnt =>
-            java.lang.System.out.println(s"+R1.profile(M): [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => $pfOnt")
+            java.lang.System.out.println(s"+R1.profile(M): [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get}")
             Tuple3(
               TboxUMLProfile2MutableTBoxTuple(pfOnt.some, pfU) :: Nil,
               Nil,
@@ -106,7 +106,7 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
             ).right
           }
         }) { pfOnt =>
-          java.lang.System.out.println(s"+R1.profile(I): [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => $pfOnt")
+          java.lang.System.out.println(s"+R1.profile(I): [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get}")
           Tuple3(
             TboxUMLProfile2ImmutableTBoxTuple(pfOnt.some, pfU) :: Nil,
             Nil,
@@ -171,14 +171,14 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
                   }
               }
           }) { pkgOnt =>
-            java.lang.System.out.println(s"+R1.package(M): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} => $pkgOnt")
+            java.lang.System.out.println(s"+R1.package(M): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
             Tuple3(
               TboxUMLPackage2MutableTBoxTuple(pkgOnt.some, pkgU) :: Nil,
               Nil,
               Nil
             ).right
           }) { pkgOnt =>
-          java.lang.System.out.println(s"+R1.package(I): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} => $pkgOnt")
+          java.lang.System.out.println(s"+R1.package(I): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
           Tuple3(
             TboxUMLPackage2ImmutableTBoxTuple(pkgOnt.some, pkgU) :: Nil,
             Nil,
