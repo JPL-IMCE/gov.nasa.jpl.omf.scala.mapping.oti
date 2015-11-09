@@ -41,6 +41,7 @@ package gov.nasa.jpl.omf.scala.mapping.oti
 import gov.nasa.jpl.omf.scala.core._
 import gov.nasa.jpl.omf.scala.core.TerminologyKind._
 import org.omg.oti.uml.UMLError
+import org.omg.oti.uml.canonicalXMI.ResolvedDocumentSet
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 import org.omg.oti.uml.trees._
@@ -191,6 +192,22 @@ case class TboxUMLElement2AspectDefinition[Uml <: UML, Omf <: OMF]
     }
 }
 
+case class TboxUMLPackage2ConceptDefinition[Uml <: UML, Omf <: OMF]
+( override val tbox: Option[Omf#MutableModelTerminologyGraph],
+  override val omfEntity: Omf#ModelEntityConcept,
+  override val e: UMLPackage[Uml] )
+( implicit omfOps: OMFOps[Omf] )
+  extends TboxUMLElement2EntityDefinition[Uml, Omf]( tbox, omfEntity, e ) {
+
+  override def toString: String =
+    tbox
+      .fold[String](
+      s"${e.xmiElementLabel} / OMF PackageConcept Tuple[tbox=<none>, ${e.xmiType.head}: ${e.qualifiedName.get}]"
+    ){ g =>
+      s"${e.xmiElementLabel} / OMF PackageConcept Tuple [tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.qualifiedName.get}] entity: $omfEntity"
+    }
+}
+
 case class TboxUMLElement2ConceptDefinition[Uml <: UML, Omf <: OMF]
 ( override val tbox: Option[Omf#MutableModelTerminologyGraph],
   override val omfEntity: Omf#ModelEntityConcept,
@@ -223,9 +240,54 @@ case class TboxUMLElement2ReifiedRelationshipDefinition[Uml <: UML, Omf <: OMF]
     }
 }
 
+case class TboxUMLPackage2MutableTBoxTuple[Uml <: UML, Omf <: OMF]
+( override val tbox: Option[Omf#MutableModelTerminologyGraph],
+  override val e: UMLPackage[Uml] )
+( implicit omfOps: OMFOps[Omf] )
+  extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
+
+  override def toString: String =
+    tbox
+      .fold[String](
+      s"TboxUMLPackage2MutableTBoxTuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    ){ g =>
+      s"TboxUMLPackage2MutableTBoxTuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    }
+}
+
+case class TboxUMLPackage2ImmutableTBoxTuple[Uml <: UML, Omf <: OMF]
+( override val tbox: Option[Omf#ImmutableModelTerminologyGraph],
+  override val e: UMLPackage[Uml] )
+( implicit omfOps: OMFOps[Omf] )
+  extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
+
+  override def toString: String =
+    tbox
+      .fold[String](
+      s"TboxUMLPackage2ImmutableTBoxTuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    ){ g =>
+      s"TboxUMLPackage2ImmutableTBoxTuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    }
+}
+
+case class TboxUMLProfile2MutableTBoxTuple[Uml <: UML, Omf <: OMF]
+( override val tbox: Option[Omf#MutableModelTerminologyGraph],
+  override val e: UMLProfile[Uml] )
+( implicit omfOps: OMFOps[Omf] )
+  extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
+
+  override def toString: String =
+    tbox
+      .fold[String](
+      s"TboxUMLProfile2MutableTBoxTuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    ){ g =>
+      s"TboxUMLProfile2MutableTBoxTuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    }
+}
+
 case class TboxUMLProfile2ImmutableTBoxTuple[Uml <: UML, Omf <: OMF]
 ( override val tbox: Option[Omf#ImmutableModelTerminologyGraph],
-  override val e: UMLElement[Uml] )
+  override val e: UMLProfile[Uml] )
 ( implicit omfOps: OMFOps[Omf] )
   extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
 
@@ -340,34 +402,55 @@ trait AddEntityConceptDesignationTerminologyGraphAxiom[Uml <: UML, Omf <: OMF]
     Omf#MutableModelTerminologyGraph,
     NonEmptyList[java.lang.Throwable] \/ Omf#EntityConceptDesignationTerminologyGraphAxiom]
 
-case class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
-( ignoreCrossReferencedElementFilter: Function1[UMLElement[Uml], Boolean],
-  iriPrefix: String,
-  tboxLookup: Namespace2TBoxLookupFunction[Uml, Omf],
-  ns2tboxCtor: Namespace2TBoxCtor[Uml, Omf],
+abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
+( val ignoreCrossReferencedElementFilter: Function1[UMLElement[Uml], Boolean],
+  val iriPrefix: String,
+  val tboxLookup: Namespace2TBoxLookupFunction[Uml, Omf],
+  val ns2tboxCtor: Namespace2TBoxCtor[Uml, Omf],
 
   protected val element2aspectCtor: Element2AspectCTor[Uml, Omf],
   protected val element2conceptCtor: Element2ConceptCTor[Uml, Omf],
   protected val element2relationshipCtor: Element2RelationshipCTor[Uml, Omf],
 
-  addDirectlyNestedTerminologyGraph: AddDirectlyNestedTerminologyGraph[Uml, Omf],
-  addEntityDefinitionAspectSubClassAxiom: AddEntityDefinitionAspectSubClassAxiom[Uml, Omf],
-  addEntityConceptSubClassAxiom: AddEntityConceptSubClassAxiom[Uml, Omf],
-  addEntityRelationshipSubClassAxiom: AddEntityReifiedRelationshipSubClassAxiom[Uml, Omf],
-  addEntityConceptDesignationTerminologyGraphAxiom: AddEntityConceptDesignationTerminologyGraphAxiom[Uml, Omf],
+  val addDirectlyNestedTerminologyGraph: AddDirectlyNestedTerminologyGraph[Uml, Omf],
+  val addEntityDefinitionAspectSubClassAxiom: AddEntityDefinitionAspectSubClassAxiom[Uml, Omf],
+  val addEntityConceptSubClassAxiom: AddEntityConceptSubClassAxiom[Uml, Omf],
+  val addEntityRelationshipSubClassAxiom: AddEntityReifiedRelationshipSubClassAxiom[Uml, Omf],
+  val addEntityConceptDesignationTerminologyGraphAxiom: AddEntityConceptDesignationTerminologyGraphAxiom[Uml, Omf],
 
-  stereotype2Aspect: Map[UMLStereotype[Uml], Omf#ModelEntityAspect],
-  stereotype2Concept: Map[UMLStereotype[Uml], Omf#ModelEntityConcept],
-  stereotype2Relationship: Map[UMLStereotype[Uml], Omf#ModelEntityReifiedRelationship],
-  otherStereotypesApplied: Set[UMLStereotype[Uml]],
-  pf2ont: Map[UMLProfile[Uml], Omf#ImmutableModelTerminologyGraph],
-  ops: OMFOps[Omf],
-  treeOps: TreeOps[Uml],
-  idg: IDGenerator[Uml]) {
+  val stereotype2Aspect: Map[UMLStereotype[Uml], Omf#ModelEntityAspect],
+  val stereotype2Concept: Map[UMLStereotype[Uml], Omf#ModelEntityConcept],
+  val stereotype2Relationship: Map[UMLStereotype[Uml], Omf#ModelEntityReifiedRelationship],
+  val otherStereotypesApplied: Set[UMLStereotype[Uml]],
+  val pkg2ont: Map[UMLPackage[Uml], Omf#ImmutableModelTerminologyGraph],
+  val pf2ont: Map[UMLProfile[Uml], Omf#ImmutableModelTerminologyGraph],
+  val rds: ResolvedDocumentSet[Uml],
+  val ops: OMFOps[Omf],
+  val treeOps: TreeOps[Uml],
+  val idg: IDGenerator[Uml]) {
 
   implicit val umlOps = idg.umlOps
   import umlOps._
   import ops._
+
+  val package2SerializableDocument: Map[UMLPackage[Uml], SerializableDocument[Uml]] =
+    rds.ds.serializableDocuments.map { d => d.scope -> d }.toMap
+
+  val package2BuiltInDocument: Map[UMLPackage[Uml], BuiltInDocument[Uml]] =
+    rds.ds.builtInDocuments.map { d => d.scope -> d }.toMap
+
+  def lookupDocumentByPackageScope(pkg: UMLPackage[Uml]): Option[Document[Uml]] =
+    package2SerializableDocument.get(pkg).orElse(package2BuiltInDocument.get(pkg))
+
+  def lookupImmutableModelTerminologyGraphByPackage(pkg: UMLPackage[Uml]): Option[Omf#ImmutableModelTerminologyGraph] =
+    pkg2ont.get(pkg)
+
+  def lookupMutableModelTerminologyGraphByPackage(pkg: UMLPackage[Uml]): Option[Omf#MutableModelTerminologyGraph]
+
+  def lookupImmutableModelTerminologyGraphByProfile(pf: UMLProfile[Uml]): Option[Omf#ImmutableModelTerminologyGraph] =
+    pf2ont.get(pf)
+
+  def lookupMutableModelTerminologyGraphByProfile(pf: UMLProfile[Uml]): Option[Omf#MutableModelTerminologyGraph]
 
   type UMLStereotype2EntityAspectMap = Map[UMLStereotype[Uml], Omf#ModelEntityAspect]
   type UMLStereotype2EntityConceptMap = Map[UMLStereotype[Uml], Omf#ModelEntityConcept]
@@ -683,7 +766,7 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {
         case pair :: pairs =>
           applyMatchingRule( context, pair, rules ) match {
             case -\/( f ) =>
-              step( f.some mappend errors, pairs, results, deferred, outputs )
+              step( errors.map(f append _), pairs, results, deferred, outputs )
             case \/-( None ) =>
               step( errors, pairs, results, pair :: deferred, outputs )
             case \/-( Some( ( rule, moreResults, morePairs, moreOutputs ) ) ) =>

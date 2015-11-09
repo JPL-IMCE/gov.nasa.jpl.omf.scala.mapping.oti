@@ -128,7 +128,7 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
                   targetU.name.getOrElse(targetU.toolSpecific_id)
 
               System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapping1: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}\nsource=$sourceOmf\ntarget=$targetOmf")
-              for {
+              val result = for {
                 depOmfRelation <- context.mapElement2Relationship(
                   rule, tbox, depU, sourceOmf, targetOmf,
                   Iterable(), // @TODO
@@ -154,6 +154,8 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
                   Nil,
                   Nil) // nothing further to do
               }
+              System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mappingR: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}\n$result")
+              result
             }
           }
         }

@@ -44,7 +44,7 @@ import org.omg.oti.uml._
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
-import scala.{Some,StringContext,Tuple3}
+import scala.{Some,StringContext,Tuple3,Unit}
 import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
 import scala.language.postfixOps
@@ -83,11 +83,14 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
     */
   def profileOrPackageMapping( context: OTI2OMFMappingContext[Uml, Omf] ) = {
 
-    val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction =
-      {
+    val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction = {
 
-        case ( rule, TboxUMLElementTuple( Some( tbox ), pfU: UMLProfile[Uml] ), as, cs, rs, unmappedS ) =>
-          context.pf2ont.get(pfU).fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
+      case (rule, TboxUMLElementTuple(Some(tbox), pfU: UMLProfile[Uml]), as, cs, rs, unmappedS) =>
+        context.lookupImmutableModelTerminologyGraphByProfile(pfU)
+          .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
+
+          context.lookupMutableModelTerminologyGraphByProfile(pfU)
+            .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
             java.lang.System.out.println(s"-R1.profile: [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => no OMF Graph")
             NonEmptyList(
               UMLError.illegalElementError[Uml, UMLProfile[Uml]](
@@ -95,57 +98,95 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
                 Iterable(pfU))
             ).left
           }) { pfOnt =>
-            java.lang.System.out.println(s"+R1.profile: [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => ${pfOnt}")
+            java.lang.System.out.println(s"+R1.profile(M): [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => $pfOnt")
             Tuple3(
-              TboxUMLProfile2ImmutableTBoxTuple(pfOnt.some, pfU) :: Nil,
+              TboxUMLProfile2MutableTBoxTuple(pfOnt.some, pfU) :: Nil,
               Nil,
               Nil
             ).right
           }
+        }) { pfOnt =>
+          java.lang.System.out.println(s"+R1.profile(I): [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => $pfOnt")
+          Tuple3(
+            TboxUMLProfile2ImmutableTBoxTuple(pfOnt.some, pfU) :: Nil,
+            Nil,
+            Nil
+          ).right
+        }
 
-        case ( rule, TboxUMLElementTuple( Some( tbox ), pkgU: UMLPackage[Uml] ), as, cs, rs, unmappedS ) =>
-          java.lang.System.out.println(s"@R1.package: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
+      case (rule, TboxUMLElementTuple(Some(tbox), pkgU: UMLPackage[Uml]), as, cs, rs, unmappedS) =>
+        java.lang.System.out.println(s"@R1.package: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
+        context.lookupImmutableModelTerminologyGraphByPackage(pkgU)
+          .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult](
+          context.lookupMutableModelTerminologyGraphByPackage(pkgU)
+            .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
 
-          context.partitionAppliedStereotypesByMapping( pkgU )
-          .flatMap { case (pkMappedS, pkgUnmappedS) =>
-            if (pkgUnmappedS.nonEmpty) {
-              val foreign = pkgUnmappedS.filter(!context.otherStereotypesApplied.contains(_))
-              require(foreign.isEmpty)
-            }
+            context.partitionAppliedStereotypesByMapping(pkgU)
+              .flatMap { case (pkMappedS, pkgUnmappedS) =>
+                if (pkgUnmappedS.nonEmpty) {
+                  val foreign = pkgUnmappedS.filter(!context.otherStereotypesApplied.contains(_))
+                  require(foreign.isEmpty)
+                }
 
-            // @todo packages are now OMF TBoxes.
-            // @todo how do we map the distinction between base:Package, mission:WorkPackage, etc..
-//            val mappedC =
-//              if (mappedS.isEmpty) Set(context.basePackageC)
-//              else mappedS.map(context.stereotype2Concept(_))
+                val mappedC =
+                  if (pkMappedS.isEmpty) Set(context.basePackageC)
+                  else pkMappedS.map(context.stereotype2Concept(_))
 
-            for {
-              pkgTbox <- context.ns2tboxCtor(rule, pkgU, TerminologyKind.isDefinition) leftMap r1Error("ns2tboxCtor", pkgU)
-              _ = context.addDirectlyNestedTerminologyGraph(rule, tbox, pkgTbox) leftMap r1Error("nested graph", pkgU)
+                context.mapElement2Concept(rule, tbox, pkgU, isAbstract = false)
+                  .flatMap { pkgC =>
+                    java.lang.System.out
+                      .println(s"#OTI/OMF R1 pkg2concept: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
 
-              pkgNested = pkgU.nestedPackage.filter({
-                case _: UMLProfile[Uml] => false
-                case _ => true
-              })
+                    val s0: NonEmptyList[java.lang.Throwable] \/ Unit = \/-(())
+                    val sN: NonEmptyList[java.lang.Throwable] \/ Unit = (s0 /: mappedC) { (si, supC) =>
+                      si +++
+                        context
+                          .addEntityConceptSubClassAxiom(rule, tbox, pkgC, supC)
+                          .map(_ => ())
+                    }
+                    sN.flatMap { _ =>
 
-              morePairs = pkgNested.map(TboxUMLElementTuple(pkgTbox.some, _)).toList
+                      val pkgNested: Set[UMLPackage[Uml]] = pkgU.nestedPackage.filter({
+                        case _: UMLProfile[Uml] => false
+                        case _ => true
+                      })
 
-              // owned UML elements to map in the subsequent content phase
-              pkgContents = pkgU.ownedElement.filter({
-                case _: UMLPackage[Uml] => false
-                case _ => true
-              })
+                      val morePairs = pkgNested.map(TboxUMLElementTuple(tbox.some, _)).toList
 
-              moreContents = pkgContents.map(TboxUMLElementTuple(Some(pkgTbox), _)).toList
+                      // owned UML elements to map in the subsequent content phase
+                      val pkgContents: Set[UMLElement[Uml]] = pkgU.ownedElement.filter({
+                        case _: UMLPackage[Uml] => false
+                        case _ => true
+                      })
 
-              pkgPair = TboxUMLElementTuple(Some(pkgTbox), pkgU) :: Nil
+                      val moreContents = pkgContents.map(TboxUMLElementTuple(tbox.some, _)).toList
 
-            } yield Tuple3(
-                pkgPair,
-                morePairs,
-                moreContents)
-          }
-      }
+                      val pkgPair = TboxUMLPackage2ConceptDefinition(tbox.some, pkgC, pkgU) :: Nil
+
+                      Tuple3(
+                        pkgPair,
+                        morePairs,
+                        moreContents).right
+                    }
+                  }
+              }
+          }) { pkgOnt =>
+            java.lang.System.out.println(s"+R1.package(M): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} => $pkgOnt")
+            Tuple3(
+              TboxUMLPackage2MutableTBoxTuple(pkgOnt.some, pkgU) :: Nil,
+              Nil,
+              Nil
+            ).right
+          }) { pkgOnt =>
+          java.lang.System.out.println(s"+R1.package(I): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} => $pkgOnt")
+          Tuple3(
+            TboxUMLPackage2ImmutableTBoxTuple(pkgOnt.some, pkgU) :: Nil,
+            Nil,
+            Nil
+          ).right
+        }
+
+    }
 
     MappingFunction[Uml, Omf]( "profileOrPackageMapping", mapping )
 
