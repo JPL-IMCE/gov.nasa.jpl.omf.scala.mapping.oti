@@ -354,10 +354,11 @@ case class MappingFunction[Uml <: UML, Omf <: OMF]
 ( implicit umlOps: UMLOps[Uml], omfOps: OMFOps[Omf] )
 
 trait Namespace2TBoxCtor[Uml <: UML, Omf <: OMF]
-  extends Function3[
+  extends Function4[
     MappingFunction[Uml, Omf],
     UMLNamespace[Uml],
     TerminologyKind,
+    String,
     NonEmptyList[java.lang.Throwable] \/ Omf#MutableModelTerminologyGraph]
 
 trait AddDirectlyNestedTerminologyGraph[Uml <: UML, Omf <: OMF]
