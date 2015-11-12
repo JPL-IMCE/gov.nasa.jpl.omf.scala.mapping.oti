@@ -62,11 +62,11 @@ import scalaz._, Scalaz._
  * The UML dependency maps to an OMF entity relationship that specializes
  * the OMF entity relationships corresponding to the stereotypes applied.
  */
-case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf]) {
+case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf]) {
 
-  def dependency2RelationshipMapping(context: OTI2OMFMappingContext[Uml, Omf]) = {
+  def dependency2RelationshipMapping(context: OTI2OMFMappingContext[Uml, Omf, Provenance]) = {
 
-    val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction = {
+    val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
       case (rule, TboxUMLElementTuple(Some(tbox), depU: UMLDependency[Uml]), as, cs, rs, unmappedS) =>
         if (rs.isEmpty) {
           val explanation: String = unmappedS.toList.map(_.qualifiedName.get).mkString(s"${unmappedS.size} unmapped stereotypes (",",",")")
@@ -81,7 +81,7 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
             context.getDependencySourceAndTargetMappings(depU)
 
           osourceE
-          .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
+          .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
             System.out.println(
               s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped source "+
               s"(target? ${otargetE.isDefined}): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel} "+
@@ -94,7 +94,7 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
           }) { sourceOmf =>
 
             otargetE
-            .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
+            .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
               System.out.println(
                 s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped target "+
                 s"(source? true): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel} "+
@@ -152,7 +152,7 @@ case class R3[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
         }
     }
 
-    MappingFunction[Uml, Omf]("dependency2RelationshipMapping", mapping)
+    MappingFunction[Uml, Omf, Provenance]("dependency2RelationshipMapping", mapping)
 
   }
 }

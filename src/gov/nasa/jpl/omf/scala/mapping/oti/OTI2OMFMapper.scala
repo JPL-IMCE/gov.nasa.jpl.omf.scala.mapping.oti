@@ -64,22 +64,22 @@ object Namespace2OMFTypeTermKind extends Enumeration {
 trait Namespace2TBoxLookupFunction[Uml <: UML, Omf <: OMF]
   extends Function2[UMLNamespace[Uml], TerminologyKind, Option[Omf#ModelTerminologyGraph]]
 
-trait Element2AspectCTor[Uml <: UML, Omf <: OMF] {
+trait Element2AspectCTor[Uml <: UML, Omf <: OMF, Provenance] {
   def applyMapping
-  ( context: OTI2OMFMappingContext[Uml, Omf],
-    rule: MappingFunction[Uml, Omf],
+  ( context: OTI2OMFMappingContext[Uml, Omf, Provenance],
+    rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLElement[Uml] )
   : NonEmptyList[java.lang.Throwable] \/ Omf#ModelEntityAspect
 }
 
-trait Element2AspectCTorFunction[Uml <: UML, Omf <: OMF]
-  extends Element2AspectCTor[Uml, Omf]
-  with OTI2OMFMappingContext[Uml, Omf]#Element2AspectCTorRuleFunction {
+trait Element2AspectCTorFunction[Uml <: UML, Omf <: OMF, Provenance]
+  extends Element2AspectCTor[Uml, Omf, Provenance]
+  with OTI2OMFMappingContext[Uml, Omf, Provenance]#Element2AspectCTorRuleFunction {
 
   override def applyMapping
-  ( context: OTI2OMFMappingContext[Uml, Omf],
-    rule: MappingFunction[Uml, Omf],
+  ( context: OTI2OMFMappingContext[Uml, Omf, Provenance],
+    rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLElement[Uml] )
   : NonEmptyList[java.lang.Throwable] \/ Omf#ModelEntityAspect =
@@ -93,27 +93,27 @@ trait Element2AspectCTorFunction[Uml <: UML, Omf <: OMF]
 
 }
 
-trait Element2ConceptCTor[Uml <: UML, Omf <: OMF] {
+trait Element2ConceptCTor[Uml <: UML, Omf <: OMF, Provenance] {
   def applyMapping
-  ( context: OTI2OMFMappingContext[Uml, Omf],
-    rule: MappingFunction[Uml, Omf],
+  ( context: OTI2OMFMappingContext[Uml, Omf, Provenance],
+    rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
     isAbstract: Boolean)
-  : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf]#MappedEntityConcept
+  : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityConcept
 }
 
-trait Element2ConceptCTorFunction[Uml <: UML, Omf <: OMF]
-  extends Element2ConceptCTor[Uml, Omf]
-  with OTI2OMFMappingContext[Uml, Omf]#Element2ConceptCTorRuleFunction {
+trait Element2ConceptCTorFunction[Uml <: UML, Omf <: OMF, Provenance]
+  extends Element2ConceptCTor[Uml, Omf, Provenance]
+  with OTI2OMFMappingContext[Uml, Omf, Provenance]#Element2ConceptCTorRuleFunction {
 
   override def applyMapping
-  ( context: OTI2OMFMappingContext[Uml, Omf],
-    rule: MappingFunction[Uml, Omf],
+  ( context: OTI2OMFMappingContext[Uml, Omf, Provenance],
+    rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
     isAbstract: Boolean)
-  : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf]#MappedEntityConcept =
+  : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityConcept =
   for {
     conceptGraph <- apply(rule, tbox, u, isAbstract)
     sizePre = context.mappedElement2Concept.size
@@ -124,10 +124,10 @@ trait Element2ConceptCTorFunction[Uml <: UML, Omf <: OMF]
 
 }
 
-trait Element2RelationshipCTor[Uml <: UML, Omf <: OMF] {
+trait Element2RelationshipCTor[Uml <: UML, Omf <: OMF, Provenance] {
   def applyMapping
-  ( context: OTI2OMFMappingContext[Uml, Omf],
-    rule: MappingFunction[Uml, Omf],
+  ( context: OTI2OMFMappingContext[Uml, Omf, Provenance],
+    rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
     source: Omf#ModelEntityDefinition,
@@ -135,16 +135,16 @@ trait Element2RelationshipCTor[Uml <: UML, Omf <: OMF] {
     characteristics: Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
     isAbstract: Boolean,
     name: Option[String] )
-  : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf]#MappedEntityRelationship
+  : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityRelationship
 }
 
-trait Element2RelationshipCTorFunction[Uml <: UML, Omf <: OMF]
-  extends Element2RelationshipCTor[Uml, Omf]
-  with OTI2OMFMappingContext[Uml, Omf]#Element2RelationshipCTorRuleFunction {
+trait Element2RelationshipCTorFunction[Uml <: UML, Omf <: OMF, Provenance]
+  extends Element2RelationshipCTor[Uml, Omf, Provenance]
+  with OTI2OMFMappingContext[Uml, Omf, Provenance]#Element2RelationshipCTorRuleFunction {
 
   override def applyMapping
-  ( context: OTI2OMFMappingContext[Uml, Omf],
-    rule: MappingFunction[Uml, Omf],
+  ( context: OTI2OMFMappingContext[Uml, Omf, Provenance],
+    rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
     source: Omf#ModelEntityDefinition,
@@ -152,7 +152,7 @@ trait Element2RelationshipCTorFunction[Uml <: UML, Omf <: OMF]
     characteristics: Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
     isAbstract: Boolean,
     name: Option[String] )
-  : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf]#MappedEntityRelationship =
+  : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityRelationship =
   for {
     relationship <- apply(rule, tbox, u, source, target, characteristics, isAbstract, name)
     sizePre = context.mappedElement2Relationship.size
@@ -348,74 +348,74 @@ case class TboxUMLElementTreeTypedFeatureBranchType[Uml <: UML, Omf <: OMF]
       }
 }
 
-case class MappingFunction[Uml <: UML, Omf <: OMF]
+case class MappingFunction[Uml <: UML, Omf <: OMF, Provenance]
 ( name: String,
-  mappingRule: OTI2OMFMappingContext[Uml, Omf]#RuleFunction )
+  mappingRule: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction )
 ( implicit umlOps: UMLOps[Uml], omfOps: OMFOps[Omf] )
 
-trait Namespace2TBoxCtor[Uml <: UML, Omf <: OMF]
+trait Namespace2TBoxCtor[Uml <: UML, Omf <: OMF, Provenance]
   extends Function4[
-    MappingFunction[Uml, Omf],
+    MappingFunction[Uml, Omf, Provenance],
     UMLNamespace[Uml],
     TerminologyKind,
-    String,
+    Provenance,
     NonEmptyList[java.lang.Throwable] \/ Omf#MutableModelTerminologyGraph]
 
-trait AddDirectlyNestedTerminologyGraph[Uml <: UML, Omf <: OMF]
+trait AddDirectlyNestedTerminologyGraph[Uml <: UML, Omf <: OMF, Provenance]
   extends Function3[
-    MappingFunction[Uml, Omf],
+    MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
     Omf#MutableModelTerminologyGraph,
     NonEmptyList[java.lang.Throwable] \/ Unit]
 
-trait AddEntityDefinitionAspectSubClassAxiom[Uml <: UML, Omf <: OMF]
+trait AddEntityDefinitionAspectSubClassAxiom[Uml <: UML, Omf <: OMF, Provenance]
   extends Function4[
-    MappingFunction[Uml, Omf],
+    MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
     Omf#ModelEntityDefinition,
     Omf#ModelEntityAspect,
     NonEmptyList[java.lang.Throwable] \/ Omf#EntityDefinitionAspectSubClassAxiom]
 
-trait AddEntityConceptSubClassAxiom[Uml <: UML, Omf <: OMF]
+trait AddEntityConceptSubClassAxiom[Uml <: UML, Omf <: OMF, Provenance]
   extends Function4[
-    MappingFunction[Uml, Omf],
+    MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
     Omf#ModelEntityConcept,
     Omf#ModelEntityConcept,
     NonEmptyList[java.lang.Throwable] \/ Omf#EntityConceptSubClassAxiom]
 
-trait AddEntityReifiedRelationshipSubClassAxiom[Uml <: UML, Omf <: OMF]
+trait AddEntityReifiedRelationshipSubClassAxiom[Uml <: UML, Omf <: OMF, Provenance]
   extends Function4[
-    MappingFunction[Uml, Omf],
+    MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
     Omf#ModelEntityReifiedRelationship,
     Omf#ModelEntityReifiedRelationship,
     NonEmptyList[java.lang.Throwable] \/ Omf#EntityReifiedRelationshipSubClassAxiom]
 
-trait AddEntityConceptDesignationTerminologyGraphAxiom[Uml <: UML, Omf <: OMF]
+trait AddEntityConceptDesignationTerminologyGraphAxiom[Uml <: UML, Omf <: OMF, Provenance]
   extends Function5[
-    MappingFunction[Uml, Omf],
+    MappingFunction[Uml, Omf, Provenance],
     TreeCompositeStructureType[Uml],
     Omf#MutableModelTerminologyGraph,
     Omf#ModelEntityConcept,
     Omf#MutableModelTerminologyGraph,
     NonEmptyList[java.lang.Throwable] \/ Omf#EntityConceptDesignationTerminologyGraphAxiom]
 
-abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
+abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
 ( val ignoreCrossReferencedElementFilter: Function1[UMLElement[Uml], Boolean],
   val iriPrefix: String,
   val tboxLookup: Namespace2TBoxLookupFunction[Uml, Omf],
-  val ns2tboxCtor: Namespace2TBoxCtor[Uml, Omf],
+  val ns2tboxCtor: Namespace2TBoxCtor[Uml, Omf, Provenance],
 
-  protected val element2aspectCtor: Element2AspectCTor[Uml, Omf],
-  protected val element2conceptCtor: Element2ConceptCTor[Uml, Omf],
-  protected val element2relationshipCtor: Element2RelationshipCTor[Uml, Omf],
+  protected val element2aspectCtor: Element2AspectCTor[Uml, Omf, Provenance],
+  protected val element2conceptCtor: Element2ConceptCTor[Uml, Omf, Provenance],
+  protected val element2relationshipCtor: Element2RelationshipCTor[Uml, Omf, Provenance],
 
-  val addDirectlyNestedTerminologyGraph: AddDirectlyNestedTerminologyGraph[Uml, Omf],
-  val addEntityDefinitionAspectSubClassAxiom: AddEntityDefinitionAspectSubClassAxiom[Uml, Omf],
-  val addEntityConceptSubClassAxiom: AddEntityConceptSubClassAxiom[Uml, Omf],
-  val addEntityRelationshipSubClassAxiom: AddEntityReifiedRelationshipSubClassAxiom[Uml, Omf],
-  val addEntityConceptDesignationTerminologyGraphAxiom: AddEntityConceptDesignationTerminologyGraphAxiom[Uml, Omf],
+  val addDirectlyNestedTerminologyGraph: AddDirectlyNestedTerminologyGraph[Uml, Omf, Provenance],
+  val addEntityDefinitionAspectSubClassAxiom: AddEntityDefinitionAspectSubClassAxiom[Uml, Omf, Provenance],
+  val addEntityConceptSubClassAxiom: AddEntityConceptSubClassAxiom[Uml, Omf, Provenance],
+  val addEntityRelationshipSubClassAxiom: AddEntityReifiedRelationshipSubClassAxiom[Uml, Omf, Provenance],
+  val addEntityConceptDesignationTerminologyGraphAxiom: AddEntityConceptDesignationTerminologyGraphAxiom[Uml, Omf, Provenance],
 
   val stereotype2Aspect: Map[UMLStereotype[Uml], Omf#ModelEntityAspect],
   val stereotype2Concept: Map[UMLStereotype[Uml], Omf#ModelEntityConcept],
@@ -455,32 +455,32 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
   type UMLStereotype2EntityConceptMap = Map[UMLStereotype[Uml], Omf#ModelEntityConcept]
   type UMLStereotype2EntityRelationshipMap = Map[UMLStereotype[Uml], Omf#ModelEntityReifiedRelationship]
   type TboxUMLElementPairs = List[TboxUMLElementPair[Uml, Omf]]
-  
+  type TboxUMLElementTriplePairs = ( TboxUMLElementPairs, TboxUMLElementPairs, TboxUMLElementPairs )
   type RuleFunction =
   PartialFunction[
-    ( MappingFunction[Uml, Omf],
+    ( MappingFunction[Uml, Omf, Provenance],
       TboxUMLElementPair[Uml, Omf],
       UMLStereotype2EntityAspectMap,
       UMLStereotype2EntityConceptMap,
       UMLStereotype2EntityRelationshipMap,
       Set[UMLStereotype[Uml]] ),
-    NonEmptyList[java.lang.Throwable] \/ ( TboxUMLElementPairs, TboxUMLElementPairs, TboxUMLElementPairs)]
+    NonEmptyList[java.lang.Throwable] \/ TboxUMLElementTriplePairs]
 
   type Element2AspectCTorRuleFunction = Function3[
-    MappingFunction[Uml, Omf],
+    MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
     UMLElement[Uml],
     NonEmptyList[java.lang.Throwable] \/ Omf#ModelEntityAspect]
 
   type Element2ConceptCTorRuleFunction = Function4[
-    MappingFunction[Uml, Omf],
+    MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
     UMLNamedElement[Uml],
     Boolean,
     NonEmptyList[java.lang.Throwable] \/ MappedEntityConcept]
 
   type Element2RelationshipCTorRuleFunction = Function8[
-    MappingFunction[Uml, Omf],
+    MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
     UMLNamedElement[Uml],
     Omf#ModelEntityDefinition,
@@ -604,7 +604,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
       .get( e )
 
   def mapElement2Aspect
-  ( rule: MappingFunction[Uml, Omf],
+  ( rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLElement[Uml] )
   : NonEmptyList[java.lang.Throwable] \/ Omf#ModelEntityAspect =
@@ -618,7 +618,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
     mappedElement2Concept.get( e )
 
   def mapElement2Concept
-  ( rule: MappingFunction[Uml, Omf],
+  ( rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
     isAbstract: Boolean)
@@ -633,7 +633,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
     mappedElement2Relationship.get( e )
 
   def mapElement2Relationship
-  ( rule: MappingFunction[Uml, Omf],
+  ( rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
     source: Omf#ModelEntityDefinition,
@@ -690,7 +690,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF]
       Tuple2( Tuple2( sourceTU, sourceE ), Tuple2( targetTU, targetE ) )
 }
 
-case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {
+case class OTI2OMFMapper[Uml <: UML, Omf <: OMF, Provenance]() {
 
   /**
    * A rule result is a 3-tuple:
@@ -700,18 +700,18 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {
    * - a list of Tbox / UML Element pairs to be processed in the next phase (or as errors)
    */
   type RuleResult =
-  ( MappingFunction[Uml, Omf],
-    OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs,
-    OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs,
-    OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs )
+  ( MappingFunction[Uml, Omf, Provenance],
+    OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementPairs,
+    OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementPairs,
+    OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementPairs )
   
   /**
    * Apply the first matching rule
    */
   def applyMatchingRule
-  ( context: OTI2OMFMappingContext[Uml, Omf],
+  ( context: OTI2OMFMappingContext[Uml, Omf, Provenance],
     current: TboxUMLElementPair[Uml, Omf],
-    rules: List[MappingFunction[Uml, Omf]] )
+    rules: List[MappingFunction[Uml, Omf, Provenance]] )
   : NonEmptyList[java.lang.Throwable] \/ Option[RuleResult] =
     context.getAppliedStereotypesMappedToOMF( current.e )
     .flatMap { case ( as, cs, rs, us ) =>
@@ -736,19 +736,19 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF]() {
     }
 
   type RulesResult =
-  ( OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs,
-    OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs,
-    OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs )
+  ( OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementPairs,
+    OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementPairs,
+    OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementPairs )
   
   /**
    * Successively apply all matching rules to each content pair until
    * there are no follow-on namespaces to apply to or none of the rules match.
    */
   def applyAllRules
-  ( context: OTI2OMFMappingContext[Uml, Omf],
+  ( context: OTI2OMFMappingContext[Uml, Omf, Provenance],
     tbox: Option[Omf#MutableModelTerminologyGraph],
     contentPairs: List[TboxUMLElementPair[Uml, Omf]],
-    rules: List[MappingFunction[Uml, Omf]] )
+    rules: List[MappingFunction[Uml, Omf, Provenance]] )
   ( implicit omfOps: OMFOps[Omf] )
   : NonEmptyList[java.lang.Throwable] \&/ RulesResult = {
 

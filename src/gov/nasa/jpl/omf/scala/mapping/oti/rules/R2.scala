@@ -69,14 +69,14 @@ import scalaz._, Scalaz._
  * `namespace2AspectMapping` applies only for (1) -- i.e., some as, no cs, no rs
  * `namedElement2ConceptMapping` applies for (2) -- i.e., some cs, no rs
  */
-case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf]) {
+case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf]) {
 
   /**
    * Map an OTI UMLNamespace as an OMF aspect according to the mapping of the stereotypes applied.
    */
-  def namespace2AspectMapping(context: OTI2OMFMappingContext[Uml, Omf]) = {
+  def namespace2AspectMapping(context: OTI2OMFMappingContext[Uml, Omf, Provenance]) = {
 
-    val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction = {
+    val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
       case (rule, TboxUMLElementTuple(Some(tbox), nsU: UMLNamespace[Uml]), as, cs, rs, unmappedS)
         if as.nonEmpty && cs.isEmpty && rs.isEmpty =>
 
@@ -101,22 +101,22 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
         )
     }
 
-    MappingFunction[Uml, Omf]("namespace2AspectMapping", mapping)
+    MappingFunction[Uml, Omf, Provenance]("namespace2AspectMapping", mapping)
 
   }
 
   /**
    * Map an OTI UMLNamedElement as an OMF concept according to the mapping of the stereotypes applied.
    */
-  def namedElement2ConceptMapping(context: OTI2OMFMappingContext[Uml, Omf]) = {
+  def namedElement2ConceptMapping(context: OTI2OMFMappingContext[Uml, Omf, Provenance]) = {
 
     def class2concept
-    (rule: MappingFunction[Uml, Omf],
+    (rule: MappingFunction[Uml, Omf, Provenance],
      tbox: Omf#MutableModelTerminologyGraph,
      c: UMLClass[Uml],
-     as: OTI2OMFMappingContext[Uml, Omf]#UMLStereotype2EntityAspectMap,
-     cs: OTI2OMFMappingContext[Uml, Omf]#UMLStereotype2EntityConceptMap)
-    : NonEmptyList[java.lang.Throwable] \/ (OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs) =
+     as: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityAspectMap,
+     cs: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityConceptMap)
+    : NonEmptyList[java.lang.Throwable] \/ (OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs) =
       context.mapElement2Concept(rule, tbox, c, c.isAbstract)
       .flatMap { cConcept =>
 //        System.out
@@ -147,7 +147,7 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
 
 //        System.out.println(s"#OTI/OMF R2 class2concept: error? ${rC.isLeft} ok? ${rC.isRight}")
         val result
-        : NonEmptyList[java.lang.Throwable] \/ (OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs)  =
+        : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs  =
           context.treeOps.isRootBlockSpecificType(c)
             .flatMap { isRBST =>
 
@@ -199,12 +199,12 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
       }
 
     def other2concept
-    (rule: MappingFunction[Uml, Omf],
+    (rule: MappingFunction[Uml, Omf, Provenance],
      tbox: Omf#MutableModelTerminologyGraph,
      cls: UMLClassifier[Uml],
-     as: OTI2OMFMappingContext[Uml, Omf]#UMLStereotype2EntityAspectMap,
-     cs: OTI2OMFMappingContext[Uml, Omf]#UMLStereotype2EntityConceptMap)
-    : NonEmptyList[java.lang.Throwable] \/ (OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs, OTI2OMFMappingContext[Uml, Omf]#TboxUMLElementPairs) =
+     as: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityAspectMap,
+     cs: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityConceptMap)
+    : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs =
       context.mapElement2Concept(rule, tbox, cls, cls.isAbstract)
         .flatMap { cConcept =>
 //          System.out
@@ -243,7 +243,7 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
           }
         }
 
-    val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction = {
+    val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
       case (rule, TboxUMLElementTuple(Some(tbox), neU: UMLNamedElement[Uml]), as, cs, rs, unmappedS)
         if cs.nonEmpty && rs.isEmpty =>
 
@@ -272,7 +272,7 @@ case class R2[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
         }
     }
 
-    MappingFunction[Uml, Omf]("namedElement2ConceptMapping", mapping)
+    MappingFunction[Uml, Omf, Provenance]("namedElement2ConceptMapping", mapping)
 
   }
 }

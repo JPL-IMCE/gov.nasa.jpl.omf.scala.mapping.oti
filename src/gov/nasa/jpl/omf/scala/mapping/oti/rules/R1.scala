@@ -62,7 +62,7 @@ import scalaz._, Scalaz._
  *
  * Currently, this rule does not map a UML Package according to the IMCE authorization pattern.
  */
-case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf] ) {
+case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf] ) {
 
   def r1Error
   (message: String, e: UMLElement[Uml])
@@ -81,16 +81,16 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
     *
     * @param context The OTI2OMF Mapping Context
     */
-  def profileOrPackageMapping( context: OTI2OMFMappingContext[Uml, Omf] ) = {
+  def profileOrPackageMapping( context: OTI2OMFMappingContext[Uml, Omf, Provenance] ) = {
 
-    val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction = {
+    val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
 
       case (rule, TboxUMLElementTuple(Some(tbox), pfU: UMLProfile[Uml]), as, cs, rs, unmappedS) =>
         context.lookupImmutableModelTerminologyGraphByProfile(pfU)
-          .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
+          .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
 
           context.lookupMutableModelTerminologyGraphByProfile(pfU)
-            .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
+            .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
             java.lang.System.out.println(s"-R1.profile: [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => no OMF Graph")
             NonEmptyList(
               UMLError.illegalElementError[Uml, UMLProfile[Uml]](
@@ -117,9 +117,9 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
       case (rule, TboxUMLElementTuple(Some(tbox), pkgU: UMLPackage[Uml]), as, cs, rs, unmappedS) =>
         java.lang.System.out.println(s"@R1.package: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
         context.lookupImmutableModelTerminologyGraphByPackage(pkgU)
-          .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult](
+          .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
           context.lookupMutableModelTerminologyGraphByPackage(pkgU)
-            .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf]#RulesResult]({
+            .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
 
             context.partitionAppliedStereotypesByMapping(pkgU)
               .flatMap { case (pkMappedS, pkgUnmappedS) =>
@@ -188,7 +188,7 @@ case class R1[Uml <: UML, Omf <: OMF]()( implicit val umlOps: UMLOps[Uml], omfOp
 
     }
 
-    MappingFunction[Uml, Omf]( "profileOrPackageMapping", mapping )
+    MappingFunction[Uml, Omf, Provenance]( "profileOrPackageMapping", mapping )
 
   }
 }

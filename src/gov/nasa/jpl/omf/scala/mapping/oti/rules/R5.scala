@@ -53,11 +53,11 @@ import scala.collection.immutable._
 import scala.language.postfixOps
 import scalaz._
 
-case class R5[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf]) {
+case class R5[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf]) {
 
-  def treeTypeMapping(context: OTI2OMFMappingContext[Uml, Omf]) = {
+  def treeTypeMapping(context: OTI2OMFMappingContext[Uml, Omf, Provenance]) = {
 
-    val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction = {
+    val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
       case (rule,
       ett @ TboxUMLElementTreeType(Some(tbox), omfConcept, tree: TreeCompositeStructureType[Uml]),
       as, cs, rs, unmappedS) =>
@@ -73,7 +73,7 @@ case class R5[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
 
     }
 
-    MappingFunction[Uml, Omf]("treeTypeMapping", mapping)
+    MappingFunction[Uml, Omf, Provenance]("treeTypeMapping", mapping)
 
   }
 }

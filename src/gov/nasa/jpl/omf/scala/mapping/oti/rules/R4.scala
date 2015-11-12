@@ -61,11 +61,11 @@ import scala.language.postfixOps
  * then the mapping is equivalent to the mapping of the same UML association with
  * the IMCE-generated 'base:contains' stereotype applied.
  */
-case class R4[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf]) {
+case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf]) {
 
-  def binaryCompositeAssociation2RelationshipMapping(context: OTI2OMFMappingContext[Uml, Omf]) = {
+  def binaryCompositeAssociation2RelationshipMapping(context: OTI2OMFMappingContext[Uml, Omf, Provenance]) = {
 
-    val mapping: OTI2OMFMappingContext[Uml, Omf]#RuleFunction = {
+    val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
       case (
         rule,
         TboxUMLElementTuple(Some(tbox), bcaU: UMLAssociation[Uml]),
@@ -105,7 +105,7 @@ case class R4[Uml <: UML, Omf <: OMF]()(implicit val umlOps: UMLOps[Uml], omfOps
           Nil)
     }
 
-    MappingFunction[Uml, Omf]("binaryCompositeAssociation2RelationshipMapping", mapping)
+    MappingFunction[Uml, Omf, Provenance]("binaryCompositeAssociation2RelationshipMapping", mapping)
 
   }
 }
