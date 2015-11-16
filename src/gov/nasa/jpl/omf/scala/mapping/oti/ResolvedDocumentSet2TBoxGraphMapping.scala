@@ -41,6 +41,7 @@ package gov.nasa.jpl.omf.scala.mapping.oti
 import java.lang.System
 
 import gov.nasa.jpl.omf.scala.core._
+import org.omg.oti.uml.OTIPrimitiveTypes._
 import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
@@ -95,7 +96,7 @@ object ResolvedDocumentSet2TBoxGraphMapping {
     val mN: NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap =
       (m0 /: sortedDocuments ) {
         (mi, document) =>
-          \/.fromTryCatchNonFatal[java.net.URI](new java.net.URI(document.info.packageURI))
+          \/.fromTryCatchNonFatal[java.net.URI](new java.net.URI(OTI_URI.unwrap(document.info.packageURI)))
             .fold[NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap](
             l = (t: java.lang.Throwable) =>
               -\/(

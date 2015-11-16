@@ -11,6 +11,9 @@ lazy val core = Project("omf-mapping-oti", file("."))
   .settings(
     MBEEKeys.mbeeLicenseYearOrRange := "2014-2015",
     MBEEKeys.mbeeOrganizationInfo := MBEEPlugin.MBEEOrganizations.imce,
+    MBEEKeys.mbeeNexusJavadocRepositoryRestAPIURL := "https://oss.sonatype.org/service/local",
+    MBEEKeys.mbeeNexusJavadocRepositoryName := "releases",
+    MBEEKeys.mbeePOMRepositoryPathRegex := """\<repositoryPath\>\s*([^\"]*)\s*\<\/repositoryPath\>""".r,
     MBEEKeys.targetJDK := MBEEKeys.jdk17.value,
     // include all test artifacts
     publishArtifact in Test := true,
