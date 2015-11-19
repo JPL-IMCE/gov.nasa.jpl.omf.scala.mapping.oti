@@ -238,6 +238,7 @@ case class TboxUMLElement2ReifiedRelationshipDefinition[Uml <: UML, Omf <: OMF]
     }
 }
 
+// @todo Is this case possible at all?
 case class TboxUMLPackage2MutableTBoxTuple[Uml <: UML, Omf <: OMF]
 ( override val tbox: Option[Omf#MutableModelTerminologyGraph],
   override val e: UMLPackage[Uml] )
@@ -250,6 +251,25 @@ case class TboxUMLPackage2MutableTBoxTuple[Uml <: UML, Omf <: OMF]
       s"TboxUMLPackage2MutableTBoxTuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
     ){ g =>
       s"TboxUMLPackage2MutableTBoxTuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    }
+}
+
+case class TboxUMLPackage2MutableTBoxConversion[Uml <: UML, Omf <: OMF, Provenance]
+( override val tbox: Option[Omf#MutableModelTerminologyGraph],
+  override val e: UMLPackage[Uml],
+  val pkgOTIDocument: Document[Uml],
+  val pkgDocumentTbox: Omf#ModelTerminologyGraph,
+  val pkgConcept: OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityConcept,
+  val superConcepts: Set[Omf#ModelEntityConcept])
+( implicit omfOps: OMFOps[Omf] )
+  extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
+
+  override def toString: String =
+    tbox
+      .fold[String](
+      s"TboxUMLPackage2MutableTBoxConversion[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    ){ g =>
+      s"TboxUMLPackage2MutableTBoxConversion[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}]"
     }
 }
 
@@ -361,6 +381,13 @@ trait Namespace2TBoxCtor[Uml <: UML, Omf <: OMF, Provenance]
     Provenance,
     NonEmptyList[java.lang.Throwable] \/ Omf#MutableModelTerminologyGraph]
 
+trait AddDirectlyExtendedTerminologyGraph[Uml <: UML, Omf <: OMF, Provenance]
+  extends Function3[
+    MappingFunction[Uml, Omf, Provenance],
+    Omf#MutableModelTerminologyGraph,
+    Omf#ModelTerminologyGraph,
+    NonEmptyList[java.lang.Throwable] \/ Unit]
+
 trait AddDirectlyNestedTerminologyGraph[Uml <: UML, Omf <: OMF, Provenance]
   extends Function3[
     MappingFunction[Uml, Omf, Provenance],
@@ -411,6 +438,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   protected val element2conceptCtor: Element2ConceptCTor[Uml, Omf, Provenance],
   protected val element2relationshipCtor: Element2RelationshipCTor[Uml, Omf, Provenance],
 
+  val addDirectlyExtendedTerminologyGraph: AddDirectlyExtendedTerminologyGraph[Uml, Omf, Provenance],
   val addDirectlyNestedTerminologyGraph: AddDirectlyNestedTerminologyGraph[Uml, Omf, Provenance],
   val addEntityDefinitionAspectSubClassAxiom: AddEntityDefinitionAspectSubClassAxiom[Uml, Omf, Provenance],
   val addEntityConceptSubClassAxiom: AddEntityConceptSubClassAxiom[Uml, Omf, Provenance],
@@ -437,6 +465,43 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
 
   val package2BuiltInDocument: Map[UMLPackage[Uml], BuiltInDocument[Uml]] =
     rds.ds.builtInDocuments.map { d => d.scope -> d }.toMap
+
+  def lookupDocumentPackageScopeAndTerminologyGraph
+  (e: UMLElement[Uml])
+  : NonEmptyList[java.lang.Throwable] \/ Option[(Document[Uml], Omf#ModelTerminologyGraph)] =
+  rds.element2mappedDocument(e)
+  .fold[NonEmptyList[java.lang.Throwable] \/ Option[(Document[Uml], Omf#ModelTerminologyGraph)]](
+    Option.empty[(Document[Uml], Omf#ModelTerminologyGraph)].right
+  ){ d =>
+    d.scope match {
+      case pf: UMLProfile[Uml] =>
+        lookupImmutableModelTerminologyGraphByProfile(pf)
+        .orElse(lookupMutableModelTerminologyGraphByProfile(pf))
+        .fold[NonEmptyList[java.lang.Throwable] \/ Option[(Document[Uml], Omf#ModelTerminologyGraph)]](
+         NonEmptyList(
+          UMLError.illegalElementError[Uml, UMLElement[Uml]](
+            s"lookupDocumentPackageScopeAndTerminologyGraph: missing graph for element's profile: ${pf.qualifiedName.get}",
+            Iterable(e, pf)
+          )
+         ).left
+        ){ g =>
+          (d, g).some.right
+        }
+      case pkg: UMLPackage[Uml] =>
+        lookupImmutableModelTerminologyGraphByPackage(pkg)
+          .orElse(lookupMutableModelTerminologyGraphByPackage(pkg))
+          .fold[NonEmptyList[java.lang.Throwable] \/ Option[(Document[Uml], Omf#ModelTerminologyGraph)]](
+          NonEmptyList(
+            UMLError.illegalElementError[Uml, UMLElement[Uml]](
+              s"lookupDocumentPackageScopeAndTerminologyGraph: missing graph for element's package: ${pkg.qualifiedName.get}",
+              Iterable(e, pkg)
+            )
+          ).left
+        ){ g =>
+          (d, g).some.right
+        }
+    }
+  }
 
   def lookupDocumentByPackageScope(pkg: UMLPackage[Uml]): Option[Document[Uml]] =
     package2SerializableDocument.get(pkg).orElse(package2BuiltInDocument.get(pkg))
