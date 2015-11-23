@@ -137,8 +137,6 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
                 -\/(nels)
               },
               (pkgTbox: Omf#MutableModelTerminologyGraph) => {
-                java.lang.System.out.println(s"+@R1.package(New): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
-
                 context.lookupDocumentPackageScopeAndTerminologyGraph(pkgU)
                   .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
                   l = (nels) =>
@@ -174,7 +172,8 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
 
                             // The contents of pkgU need to be mapped to pkgOnt (mutable)
                             val pairs = TboxUMLPackage2MutableTBoxConversion(pkgTbox.some, pkgU, pkgD, pkgG, pkgC, superConcepts) :: Nil
-                            java.lang.System.out.println(s"+@R1.package(New): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
+                            java.lang.System.out.println(s"+@R1.package(New)U [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
+                            java.lang.System.out.println(s"+@R1.package(New)O ${context.ops.getTerminologyGraphIRI(pkgTbox)}")
                             Tuple3(
                               pairs,
                               pairs,
@@ -254,45 +253,35 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
               .addEntityConceptSubClassAxiom(rule, pkgTbox, pkgC, supC)
               .map(_ => ())
         }
-        java.lang.System.out
-          .println(s"#OTI/OMF R1 pkg2concept: $sN")
-
         sN.flatMap { _ =>
           java.lang.System.out
             .println(s"#OTI/OMF R1 pkg2concept: lookup...")
 
-            val pkgNested: Set[UMLPackage[Uml]] = pkgU.nestedPackage.filter({
+            // owned UML elements to map in the subsequent content phase
+            val pkgContents: Set[UMLElement[Uml]] = pkgOTIDocument.extent.filter({
               case _: UMLProfile[Uml] =>
                 false
-              case p =>
-                pkgOTIDocument.extent.contains(p)
-            })
-
-            val morePairs = pkgNested.map(TboxUMLElementTuple(pkgTbox.some, _)).toList
-
-            // owned UML elements to map in the subsequent content phase
-            val pkgContents: Set[UMLElement[Uml]] = pkgU.ownedElement.filter({
               case _: UMLPackage[Uml] =>
-                false
+                true
               case _: UMLPackageImport[Uml] =>
                 false
               case _: UMLElementImport[Uml] =>
                 false
               case _: UMLPackageMerge[Uml] =>
                 false
-              case e =>
-                pkgOTIDocument.extent.contains(e)
+              case _ =>
+                true
             })
 
             java.lang.System.out
-              .println(s"#OTI/OMF R1 pkg2concept: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} => ${morePairs.size} sub-packages, ${pkgContents.size} contents")
+              .println(s"#OTI/OMF R1 pkg2concept: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} => ${pkgContents.size} contents")
             val moreContents = pkgContents.map(TboxUMLElementTuple(pkgTbox.some, _)).toList
 
             val pkgPair = TboxUMLPackage2ConceptDefinition(pkgTbox.some, pkgC, pkgU) :: Nil
 
             Tuple3(
               pkgPair,
-              morePairs,
+              Nil,
               moreContents).right
         }
 
