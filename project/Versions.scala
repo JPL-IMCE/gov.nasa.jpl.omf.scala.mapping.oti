@@ -16,6 +16,6 @@ object Versions {
   // OTI Canonical XMI version
 
   val oti_canonical_xmi_prefix = version_prefix
-  val oti_canonical_xmi_suffix = "445205"
+  val oti_canonical_xmi_suffix = "445208"
 
 }
