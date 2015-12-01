@@ -100,14 +100,28 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
                 Iterable(pfU))
             ).left
           }) { pfOnt =>
-            // The contents of pfU need to be mapped to pfOnt (mutable)
-            java.lang.System.out.println(s"+R1.profile(M): [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get}")
-            val pairs = TboxUMLProfile2MutableTBoxTuple(pfOnt.some, pfU) :: Nil
-            Tuple3(
-              pairs,
-              pairs,
-              Nil
-            ).right
+            context.lookupDocumentPackageScopeAndTerminologyGraph(pfU)
+              .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
+              l = (nels) =>
+                nels.left,
+              r = _.fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
+                NonEmptyList(
+                  UMLError.illegalElementError[Uml, UMLPackage[Uml]](
+                    s"Failed to lookup the document for profile: ${pfU.qualifiedName.get}",
+                    Iterable(pfU)
+                  )
+                ).left
+              ) { case (pfD, pfG) =>
+
+                // The contents of pfU need to be mapped to pfOnt (mutable)
+                java.lang.System.out.println(s"+R1.profile(M): [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get}")
+                val pairs = TboxUMLProfile2MutableTBoxConversion(pfOnt.some, pfU, pfD, pfG) :: Nil
+                Tuple3(
+                  pairs,
+                  pairs,
+                  Nil
+                ).right
+              })
           }
         }) { pfOnt =>
           // The contents of pfU are, by definition, already in pfOnt (immutable)
@@ -202,9 +216,6 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
         }
 
       case (rule, TboxUMLPackage2MutableTBoxConversion(Some(pkgTbox), pkgU, pkgOTIDocument, pkgDocumentTBox, pkgC, superConcepts), as, cs, rs, unmappedS) =>
-
-        // NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult
-
         java.lang.System.out
           .println(s"#OTI/OMF R1 pkgConversion: ${pkgU.qualifiedName.get} (${superConcepts.size} package concept classifications)")
 
@@ -274,7 +285,7 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
             })
 
             java.lang.System.out
-              .println(s"#OTI/OMF R1 pkg2concept: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} => ${pkgContents.size} contents")
+              .println(s"#OTI/OMF R1 pkgConversion: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} => ${pkgContents.size} contents")
             val moreContents = pkgContents.map(TboxUMLElementTuple(pkgTbox.some, _)).toList
 
             val pkgPair = TboxUMLPackage2ConceptDefinition(pkgTbox.some, pkgC, pkgU) :: Nil
@@ -283,6 +294,76 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
               pkgPair,
               Nil,
               moreContents).right
+        }
+
+      case (rule, TboxUMLProfile2MutableTBoxConversion(Some(pfTbox), pfU, pfOTIDocument, pfDocumentTBox), as, cs, rs, unmappedS) =>
+        java.lang.System.out
+          .println(s"#OTI/OMF R1 pfConversion: ${pfU.qualifiedName.get}")
+
+        val step0: NonEmptyList[java.lang.Throwable] \/ Unit = \/-(())
+        val step1: NonEmptyList[java.lang.Throwable] \/ Unit = ( step0 /: pfU.profileApplication ) {
+          ( acc, pfApplication ) =>
+            acc.flatMap { _ =>
+              val apfU = pfApplication.appliedProfile.get // @todo check for no applied profile
+              context.lookupDocumentPackageScopeAndTerminologyGraph(apfU)
+                .fold[NonEmptyList[java.lang.Throwable] \/ Unit](
+                l = (nels) => nels.left,
+                r = _.fold[NonEmptyList[java.lang.Throwable] \/ Unit](
+                  NonEmptyList(
+                    UMLError.illegalElementError[Uml, UMLProfile[Uml]](
+                      s"document/graph missing for applied profile: ${apfU.qualifiedName.get}",
+                      Iterable(apfU)
+                    )
+                  ).left
+                ) { case (apfDocument, apfTbox) =>
+                  context.addDirectlyExtendedTerminologyGraph(rule, pfTbox, apfTbox).map(_ => ())
+                })
+            }
+        }
+
+        val step2: NonEmptyList[java.lang.Throwable] \/ Unit = ( step1 /: pfU.packageImport ) {
+          ( acc, pkgImport ) =>
+            acc.flatMap { _ =>
+              val ipkgU = pkgImport.importedPackage.get // @todo check for no imported package
+              context.lookupDocumentPackageScopeAndTerminologyGraph(ipkgU)
+                .fold[NonEmptyList[java.lang.Throwable] \/ Unit](
+                l = (nels) => nels.left,
+                r = _.fold[NonEmptyList[java.lang.Throwable] \/ Unit]({
+                  java.lang.System.out
+                    .println(s"#OTI/OMF R1 pfConversion: ${pfU.qualifiedName.get} imported package not mapped to a document: ${ipkgU.qualifiedName.get}")
+                  \/-(())
+                }) { case (ipkgDocument, ipkgTbox) =>
+                  context.addDirectlyExtendedTerminologyGraph(rule, pfTbox, ipkgTbox).map(_ => ())
+                })
+            }
+        }
+
+        step2.flatMap { _ =>
+
+          // owned UML elements to map in the subsequent content phase
+          val pkgContents: Set[UMLElement[Uml]] = pfOTIDocument.extent.filter({
+            case _: UMLProfile[Uml] =>
+              false
+            case _: UMLPackage[Uml] =>
+              true
+            case _: UMLPackageImport[Uml] =>
+              false
+            case _: UMLElementImport[Uml] =>
+              false
+            case _: UMLPackageMerge[Uml] =>
+              false
+            case _ =>
+              true
+          })
+
+          java.lang.System.out
+            .println(s"#OTI/OMF R1 pfConversion: [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => ${pkgContents.size} contents")
+          val moreContents = pkgContents.map(TboxUMLElementTuple(pfTbox.some, _)).toList
+
+          Tuple3(
+            Nil,
+            Nil,
+            moreContents).right
         }
 
     }

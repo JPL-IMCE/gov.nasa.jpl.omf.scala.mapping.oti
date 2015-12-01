@@ -186,7 +186,7 @@ case class TboxUMLElement2AspectDefinition[Uml <: UML, Omf <: OMF]
       .fold[String](
       s"${e.xmiElementLabel} / OMF EntityAspect Tuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
     ){ g =>
-      s"${e.xmiElementLabel} / OMF EntityAspect Tuple [tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}] entity: $omfEntity"
+      s"${e.xmiElementLabel} / OMF EntityAspect Tuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}] entity: $omfEntity"
     }
 }
 
@@ -202,7 +202,7 @@ case class TboxUMLPackage2ConceptDefinition[Uml <: UML, Omf <: OMF]
       .fold[String](
       s"${e.xmiElementLabel} / OMF PackageConcept Tuple[tbox=<none>, ${e.xmiType.head}: ${e.qualifiedName.get}]"
     ){ g =>
-      s"${e.xmiElementLabel} / OMF PackageConcept Tuple [tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.qualifiedName.get}] entity: $omfEntity"
+      s"${e.xmiElementLabel} / OMF PackageConcept Tuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.qualifiedName.get}] entity: $omfEntity"
     }
 }
 
@@ -218,7 +218,7 @@ case class TboxUMLElement2ConceptDefinition[Uml <: UML, Omf <: OMF]
       .fold[String](
       s"${e.xmiElementLabel} / OMF EntityConcept Tuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
     ){ g =>
-      s"${e.xmiElementLabel} / OMF EntityConcept Tuple [tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}] entity: $omfEntity"
+      s"${e.xmiElementLabel} / OMF EntityConcept Tuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}] entity: $omfEntity"
     }
 }
 
@@ -234,7 +234,7 @@ case class TboxUMLElement2ReifiedRelationshipDefinition[Uml <: UML, Omf <: OMF]
       .fold[String](
       s"${e.xmiElementLabel} / OMF EntityReifiedRelationship Tuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
     ){ g =>
-      s"${e.xmiElementLabel} / OMF EntityReifiedRelationship Tuple [tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}] entity: $omfEntity"
+      s"${e.xmiElementLabel} / OMF EntityReifiedRelationship Tuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}] entity: $omfEntity"
     }
 }
 
@@ -257,10 +257,10 @@ case class TboxUMLPackage2MutableTBoxTuple[Uml <: UML, Omf <: OMF]
 case class TboxUMLPackage2MutableTBoxConversion[Uml <: UML, Omf <: OMF, Provenance]
 ( override val tbox: Option[Omf#MutableModelTerminologyGraph],
   override val e: UMLPackage[Uml],
-  val pkgOTIDocument: Document[Uml],
-  val pkgDocumentTbox: Omf#ModelTerminologyGraph,
-  val pkgConcept: OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityConcept,
-  val superConcepts: Set[Omf#ModelEntityConcept])
+  pkgOTIDocument: Document[Uml],
+  pkgDocumentTbox: Omf#ModelTerminologyGraph,
+  pkgConcept: OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityConcept,
+  superConcepts: Set[Omf#ModelEntityConcept])
 ( implicit omfOps: OMFOps[Omf] )
   extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
 
@@ -300,6 +300,23 @@ case class TboxUMLProfile2MutableTBoxTuple[Uml <: UML, Omf <: OMF]
       s"TboxUMLProfile2MutableTBoxTuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
     ){ g =>
       s"TboxUMLProfile2MutableTBoxTuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    }
+}
+
+case class TboxUMLProfile2MutableTBoxConversion[Uml <: UML, Omf <: OMF, Provenance]
+( override val tbox: Option[Omf#MutableModelTerminologyGraph],
+  override val e: UMLProfile[Uml],
+  pfOTIDocument: Document[Uml],
+  pfDocumentTbox: Omf#ModelTerminologyGraph)
+( implicit omfOps: OMFOps[Omf] )
+  extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
+
+  override def toString: String =
+    tbox
+      .fold[String](
+      s"TboxUMLProfile2MutableTBoxConversion[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+    ){ g =>
+      s"TboxUMLProfile2MutableTBoxConversion[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}]"
     }
 }
 
