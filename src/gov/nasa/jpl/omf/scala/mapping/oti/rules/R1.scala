@@ -2,7 +2,7 @@
  *
  * License Terms
  *
- * Copyright (c) 2014-2015, California Institute of Technology ("Caltech").
+ * Copyright (c) 2014-2016, California Institute of Technology ("Caltech").
  * U.S. Government sponsorship acknowledged.
  *
  * All rights reserved.
@@ -282,7 +282,7 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
                 false
               case _ =>
                 true
-            })
+            }).to[Set]
 
             java.lang.System.out
               .println(s"#OTI/OMF R1 pkgConversion: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} => ${pkgContents.size} contents")
@@ -354,7 +354,7 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
               false
             case _ =>
               true
-          })
+          }).to[Set]
 
           java.lang.System.out
             .println(s"#OTI/OMF R1 pfConversion: [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => ${pkgContents.size} contents")

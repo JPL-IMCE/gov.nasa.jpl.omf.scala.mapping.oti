@@ -2,7 +2,7 @@
  *
  * License Terms
  *
- * Copyright (c) 2014-2015, California Institute of Technology ("Caltech").
+ * Copyright (c) 2014-2016, California Institute of Technology ("Caltech").
  * U.S. Government sponsorship acknowledged.
  *
  * All rights reserved.
@@ -477,11 +477,11 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   import umlOps._
   import ops._
 
-  val package2SerializableDocument: Map[UMLPackage[Uml], SerializableDocument[Uml]] =
-    rds.ds.serializableDocuments.map { d => d.scope -> d }.toMap
+  val package2SerializableDocument: Map[UMLPackage[Uml], Document[Uml] with SerializableDocument] =
+    rds.ds.allSerializableDocuments.map { d => d.scope -> d }.toMap
 
-  val package2BuiltInDocument: Map[UMLPackage[Uml], BuiltInDocument[Uml]] =
-    rds.ds.builtInDocuments.map { d => d.scope -> d }.toMap
+  val package2BuiltInDocument: Map[UMLPackage[Uml], Document[Uml] with BuiltInDocument] =
+    rds.ds.allBuiltInDocuments.map { d => d.scope -> d }.toMap
 
   def lookupDocumentPackageScopeAndTerminologyGraph
   (e: UMLElement[Uml])
