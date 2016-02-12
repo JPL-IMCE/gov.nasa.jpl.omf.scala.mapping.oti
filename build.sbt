@@ -16,15 +16,6 @@ developers := List(
     email="nicolas.f.rouquette@jpl.nasa.gov",
     url=url("https://gateway.jpl.nasa.gov/personal/rouquett/default.aspx")))
 
-lazy val buildUTCDate = SettingKey[String]("build-utc-date", "The UDC Date of the build")
-
-buildUTCDate in Global := {
-  import java.util.{ Date, TimeZone }
-  val formatter = new java.text.SimpleDateFormat("yyyy-MM-dd-HH:mm")
-  formatter.setTimeZone(TimeZone.getTimeZone("UTC"))
-  formatter.format(new Date)
-}
-
 lazy val core = 
   Project("omf-scala-mapping-oti", file("."))
   .enablePlugins(IMCEGitPlugin)
@@ -55,6 +46,8 @@ lazy val core =
       "https://oss.sonatype.org/service/local" -> "releases",
       "https://cae-nexuspro.jpl.nasa.gov/nexus/service/local" -> "JPL"),
     IMCEKeys.pomRepositoryPathRegex := """\<repositoryPath\>\s*([^\"]*)\s*\<\/repositoryPath\>""".r,
+
+    extractArchives := {},
 
     libraryDependencies ++= Seq(
 
