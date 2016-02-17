@@ -102,17 +102,12 @@ def dynamicScriptsResourceSettings(dynamicScriptsProjectName: Option[String] = N
       packageSrc in Test,
       packageDoc in Test) map {
       (base, bin, src, doc, binT, srcT, docT) =>
-        val dir = base / "svn" / "org.omg.oti"
-        (dir ** "*.dynamicScripts").pair(relativeTo(dir)) ++
-          ((dir ** "*.md") --- (dir / "sbt.staging" ***)).pair(relativeTo(dir)) ++
-          (dir / "models" ** "*.mdzip").pair(relativeTo(dir)) ++
-          com.typesafe.sbt.packager.MappingsHelper.directory(dir / "resources") ++
-          addIfExists(bin, "lib/" + bin.name) ++
-          addIfExists(binT, "lib/" + binT.name) ++
-          addIfExists(src, "lib.sources/" + src.name) ++
-          addIfExists(srcT, "lib.sources/" + srcT.name) ++
-          addIfExists(doc, "lib.javadoc/" + doc.name) ++
-          addIfExists(docT, "lib.javadoc/" + docT.name)
+        addIfExists(bin, "lib/" + bin.name) ++
+        addIfExists(binT, "lib/" + binT.name) ++
+        addIfExists(src, "lib.sources/" + src.name) ++
+        addIfExists(srcT, "lib.sources/" + srcT.name) ++
+        addIfExists(doc, "lib.javadoc/" + doc.name) ++
+        addIfExists(docT, "lib.javadoc/" + docT.name)
     },
 
     artifacts <+= (name in Universal) { n => Artifact(n, "zip", "zip", Some("resource"), Seq(), None, Map()) },
