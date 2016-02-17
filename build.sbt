@@ -23,6 +23,7 @@ lazy val core =
   .settings(dynamicScriptsResourceSettings(Some("gov.nasa.jpl.omf.scala.mapping.oti")))
   .settings(IMCEPlugin.strictScalacFatalWarningsSettings)
   .settings(IMCEPlugin.scalaDocSettings(diagrams=true))
+  .settings(IMCEReleasePlugin.packageReleaseProcessSettings)
   .settings(
     IMCEKeys.licenseYearOrRange := "2014-2016",
     IMCEKeys.organizationInfo := IMCEPlugin.Organizations.omf,
@@ -32,7 +33,9 @@ lazy val core =
 
     projectID := {
       val previous = projectID.value
-      previous.extra("build.date.utc" -> buildUTCDate.value)
+      previous.extra(
+        "build.date.utc" -> buildUTCDate.value,
+        "artifact.kind" -> "generic.library")
     },
 
     IMCEKeys.targetJDK := IMCEKeys.jdk18.value,
@@ -64,7 +67,6 @@ lazy val core =
 
     )
   )
-  .settings(IMCEReleasePlugin.packageReleaseProcessSettings)
 
 def dynamicScriptsResourceSettings(dynamicScriptsProjectName: Option[String] = None): Seq[Setting[_]] = {
 
@@ -83,7 +85,7 @@ def dynamicScriptsResourceSettings(dynamicScriptsProjectName: Option[String] = N
       require(
         QUALIFIED_NAME.pattern.matcher(projectName).matches,
         s"The project name, '$projectName` is not a valid Java qualified name")
-      Some("dynamicScripts/" + projectName)
+      Some(projectName)
     },
 
     // name the '*-resource.zip' in the same way as other artifacts
