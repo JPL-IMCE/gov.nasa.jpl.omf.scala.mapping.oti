@@ -186,7 +186,8 @@ case class TboxUMLElement2AspectDefinition[Uml <: UML, Omf <: OMF]
       .fold[String](
       s"${e.xmiElementLabel} / OMF EntityAspect Tuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
     ){ g =>
-      s"${e.xmiElementLabel} / OMF EntityAspect Tuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}] entity: $omfEntity"
+      s"${e.xmiElementLabel} / OMF EntityAspect Tuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: "+
+      s"${e.toolSpecific_id}] entity: $omfEntity"
     }
 }
 

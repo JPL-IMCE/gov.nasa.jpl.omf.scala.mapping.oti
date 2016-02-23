@@ -224,7 +224,8 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
           ( acc, pfApplication ) =>
             acc.flatMap { _ =>
               val apfU = pfApplication.appliedProfile.get // @todo check for no applied profile
-              context.lookupDocumentPackageScopeAndTerminologyGraph(apfU)
+              context
+                .lookupDocumentPackageScopeAndTerminologyGraph(apfU)
                 .fold[NonEmptyList[java.lang.Throwable] \/ Unit](
                 l = (nels) => nels.left,
                 r = _.fold[NonEmptyList[java.lang.Throwable] \/ Unit](
@@ -292,8 +293,8 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
 
             Tuple3(
               pkgPair,
-              Nil,
-              moreContents).right
+              moreContents,
+              Nil).right
         }
 
       case (rule, TboxUMLProfile2MutableTBoxConversion(Some(pfTbox), pfU, pfOTIDocument, pfDocumentTBox), as, cs, rs, unmappedS) =>
@@ -362,8 +363,8 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
 
           Tuple3(
             Nil,
-            Nil,
-            moreContents).right
+            moreContents,
+            Nil).right
         }
 
     }
