@@ -981,7 +981,10 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF, Provenance]() {
     : Set[java.lang.Throwable] \&/ RulesResult =
       queue match {
         case Nil =>
-          \&/.That( ( results, deferred, outputs ) )
+          if (errors.isEmpty)
+            \&/.That( ( results, deferred, outputs ) )
+          else
+            \&/.Both(errors, ( results, deferred, outputs ) )
         case pair :: pairs =>
           val ruleResult
           : Set[java.lang.Throwable] \/ Option[RuleResult]

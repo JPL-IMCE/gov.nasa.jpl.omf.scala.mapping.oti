@@ -214,47 +214,91 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
 
         result
 
-      case (rule, TboxUMLPackage2MutableTBoxConversion(Some(pkgTbox), pkgU, pkgOTIDocument, pkgDocumentTBox, pkgC, superConcepts), as, cs, rs, unmappedS) =>
+      case (rule,
+      TboxUMLPackage2MutableTBoxConversion(Some(pkgTbox), pkgU, pkgOTIDocument, pkgDocumentTBox, pkgC, superConcepts),
+      as, cs, rs, unmappedS) =>
         java.lang.System.out
-          .println(s"#OTI/OMF R1 pkgConversion: ${pkgU.qualifiedName.get} (${superConcepts.size} package concept classifications)")
+          .println(
+            s"#OTI/OMF R1 pkgConversion: ${pkgU.qualifiedName.get} (${superConcepts.size} pkg concept classifications)")
+
 
         val step0: Set[java.lang.Throwable] \/ Unit = \/-(())
-        val step1: Set[java.lang.Throwable] \/ Unit = ( step0 /: pkgU.profileApplication ) {
-          ( acc, pfApplication ) =>
-            acc.flatMap { _ =>
-              val apfU = pfApplication.appliedProfile.get // @todo check for no applied profile
-              context
-                .lookupDocumentPackageScopeAndTerminologyGraph(apfU)
-                .fold[Set[java.lang.Throwable] \/ Unit](
-                l = (nels) => nels.left,
-                r = _.fold[Set[java.lang.Throwable] \/ Unit](
-                  Set(
-                    UMLError.illegalElementError[Uml, UMLProfile[Uml]](
-                      s"document/graph missing for applied profile: ${apfU.qualifiedName.get}",
-                      Iterable(apfU)
-                    )
-                  ).left
-                ) { case (apfDocument, apfTbox) =>
-                  context.addDirectlyExtendedTerminologyGraph(rule, pkgTbox, apfTbox).map(_ => ())
-                })
+
+        val step1: Set[java.lang.Throwable] \/ Unit = {
+          val pfApplications = pkgU.profileApplication
+          if (pfApplications.isEmpty) {
+            val step1a
+            : Set[java.lang.Throwable] \/ Unit
+            = (step0 /: context.pf2ont) { case (acc, (pU, pO)) =>
+              acc.flatMap { _ =>
+                System.out.println(
+                  s"#OTI/OMF R1 pkgConversion: ${pkgU.qualifiedName.get} (implicitly applying ${pU.qualifiedName.get}")
+                context.addDirectlyExtendedTerminologyGraph(rule, pkgTbox, pO).map(_ => ())
+              }
             }
+            step1a
+          } else {
+            val step1b
+            : Set[java.lang.Throwable] \/ Unit
+            = (step0 /: pfApplications) {
+              (acc, pfApplication) =>
+                acc.flatMap { _ =>
+                  val apfU = pfApplication.appliedProfile.get // @todo check for no applied profile
+                  context
+                    .lookupDocumentPackageScopeAndTerminologyGraph(apfU)
+                    .fold[Set[java.lang.Throwable] \/ Unit](
+                    l = (nels) => nels.left,
+                    r = _.fold[Set[java.lang.Throwable] \/ Unit](
+                      Set(
+                        UMLError.illegalElementError[Uml, UMLProfile[Uml]](
+                          s"document/graph missing for applied profile: ${apfU.qualifiedName.get}",
+                          Iterable(apfU)
+                        )
+                      ).left
+                    ) { case (apfDocument, apfTbox) =>
+                      context.addDirectlyExtendedTerminologyGraph(rule, pkgTbox, apfTbox).map(_ => ())
+                    })
+                }
+            }
+            step1b
+          }
         }
 
-        val step2: Set[java.lang.Throwable] \/ Unit = ( step1 /: pkgU.packageImport ) {
-          ( acc, pkgImport ) =>
-            acc.flatMap { _ =>
-              val ipkgU = pkgImport.importedPackage.get // @todo check for no imported package
-              context.lookupDocumentPackageScopeAndTerminologyGraph(ipkgU)
-                .fold[Set[java.lang.Throwable] \/ Unit](
-                l = (nels) => nels.left,
-                r = _.fold[Set[java.lang.Throwable] \/ Unit]({
-                  java.lang.System.out
-                    .println(s"#OTI/OMF R1 pkgConversion: ${pkgU.qualifiedName.get} imported package not mapped to a document: ${ipkgU.qualifiedName.get}")
-                  \/-(())
-                }) { case (ipkgDocument, ipkgTbox) =>
-                  context.addDirectlyExtendedTerminologyGraph(rule, pkgTbox, ipkgTbox).map(_ => ())
-                })
+        val step2: Set[java.lang.Throwable] \/ Unit = {
+          val pkgImports = pkgU.packageImport
+          if (pkgImports.isEmpty) {
+            val step2a
+            : Set[java.lang.Throwable] \/ Unit
+            = (step0 /: context.pkg2ont) { case (acc, (pU, pO)) =>
+              acc.flatMap { _ =>
+                System.out.println(
+                  s"#OTI/OMF R1 pkgConversion: ${pkgU.qualifiedName.get} (implicitly importing ${pU.qualifiedName.get}")
+                context.addDirectlyExtendedTerminologyGraph(rule, pkgTbox, pO).map(_ => ())
+              }
             }
+            step2a
+          } else {
+            val step2b
+            : Set[java.lang.Throwable] \/ Unit
+            = (step1 /: pkgImports) { (acc, pkgImport) =>
+                acc.flatMap { _ =>
+                  val ipkgU = pkgImport.importedPackage.get // @todo check for no imported package
+                  context.lookupDocumentPackageScopeAndTerminologyGraph(ipkgU)
+                    .fold[Set[java.lang.Throwable] \/ Unit](
+                    l = (nels) => nels.left,
+                    r = _.fold[Set[java.lang.Throwable] \/ Unit]({
+                      java.lang.System.out
+                        .println(
+                          s"#OTI/OMF R1 pkgConversion: ${pkgU.qualifiedName.get} "+
+                          s"imported package not mapped to a document: ${ipkgU.qualifiedName.get}")
+                      \/-(())
+                    }) { case (ipkgDocument, ipkgTbox) =>
+                      context.addDirectlyExtendedTerminologyGraph(rule, pkgTbox, ipkgTbox).map(_ => ())
+                    })
+                }
+            }
+            step2b
+          }
         }
 
         val s0: Set[java.lang.Throwable] \/ Unit = step2
@@ -284,8 +328,9 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
                 true
             }).to[Set]
 
-            java.lang.System.out
-              .println(s"#OTI/OMF R1 pkgConversion: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} => ${pkgContents.size} contents")
+            java.lang.System.out.println(
+              s"#OTI/OMF R1 pkgConversion: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} "+
+              s"=> ${pkgContents.size} contents")
             val moreContents = pkgContents.map(TboxUMLElementTuple(pkgTbox.some, _)).toList
 
             val pkgPair = TboxUMLPackage2ConceptDefinition(pkgTbox.some, pkgC, pkgU) :: Nil
@@ -297,46 +342,88 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
         }
         sResult
 
-      case (rule, TboxUMLProfile2MutableTBoxConversion(Some(pfTbox), pfU, pfOTIDocument, pfDocumentTBox), as, cs, rs, unmappedS) =>
-        java.lang.System.out
-          .println(s"#OTI/OMF R1 pfConversion: ${pfU.qualifiedName.get}")
+      case (rule,
+      TboxUMLProfile2MutableTBoxConversion(Some(pfTbox), pfU, pfOTIDocument, pfDocumentTBox),
+      as, cs, rs, unmappedS) =>
+        java.lang.System.out.println(
+          s"#OTI/OMF R1 pfConversion: ${pfU.qualifiedName.get}")
 
         val step0: Set[java.lang.Throwable] \/ Unit = \/-(())
-        val step1: Set[java.lang.Throwable] \/ Unit = ( step0 /: pfU.profileApplication ) {
-          ( acc, pfApplication ) =>
-            acc.flatMap { _ =>
-              val apfU = pfApplication.appliedProfile.get // @todo check for no applied profile
-              context.lookupDocumentPackageScopeAndTerminologyGraph(apfU)
-                .fold[Set[java.lang.Throwable] \/ Unit](
-                l = (nels) => nels.left,
-                r = _.fold[Set[java.lang.Throwable] \/ Unit](
-                  Set(
-                    UMLError.illegalElementError[Uml, UMLProfile[Uml]](
-                      s"document/graph missing for applied profile: ${apfU.qualifiedName.get}",
-                      Iterable(apfU)
-                    )
-                  ).left
-                ) { case (apfDocument, apfTbox) =>
-                  context.addDirectlyExtendedTerminologyGraph(rule, pfTbox, apfTbox).map(_ => ())
-                })
+
+        val step1: Set[java.lang.Throwable] \/ Unit = {
+          val pfApplications = pfU.profileApplication
+          if (pfApplications.isEmpty) {
+            val step1a
+            : Set[java.lang.Throwable] \/ Unit
+            = (step0 /: context.pf2ont) { case (acc, (pU, pO)) =>
+              acc.flatMap { _ =>
+                System.out.println(
+                  s"#OTI/OMF R1 pfConversion: ${pfU.qualifiedName.get} (implicitly applying ${pU.qualifiedName.get}")
+                context.addDirectlyExtendedTerminologyGraph(rule, pfTbox, pO).map(_ => ())
+              }
             }
+            step1a
+          } else {
+            val step1b
+            : Set[java.lang.Throwable] \/ Unit
+            = (step0 /: pfApplications) {
+              (acc, pfApplication) =>
+                acc.flatMap { _ =>
+                  val apfU = pfApplication.appliedProfile.get // @todo check for no applied profile
+                  context.lookupDocumentPackageScopeAndTerminologyGraph(apfU)
+                    .fold[Set[java.lang.Throwable] \/ Unit](
+                    l = (nels) => nels.left,
+                    r = _.fold[Set[java.lang.Throwable] \/ Unit](
+                      Set(
+                        UMLError.illegalElementError[Uml, UMLProfile[Uml]](
+                          s"document/graph missing for applied profile: ${apfU.qualifiedName.get}",
+                          Iterable(apfU)
+                        )
+                      ).left
+                    ) { case (apfDocument, apfTbox) =>
+                      context.addDirectlyExtendedTerminologyGraph(rule, pfTbox, apfTbox).map(_ => ())
+                    })
+                }
+            }
+            step1b
+          }
         }
 
-        val step2: Set[java.lang.Throwable] \/ Unit = ( step1 /: pfU.packageImport ) {
-          ( acc, pkgImport ) =>
-            acc.flatMap { _ =>
-              val ipkgU = pkgImport.importedPackage.get // @todo check for no imported package
-              context.lookupDocumentPackageScopeAndTerminologyGraph(ipkgU)
-                .fold[Set[java.lang.Throwable] \/ Unit](
-                l = (nels) => nels.left,
-                r = _.fold[Set[java.lang.Throwable] \/ Unit]({
-                  java.lang.System.out
-                    .println(s"#OTI/OMF R1 pfConversion: ${pfU.qualifiedName.get} imported package not mapped to a document: ${ipkgU.qualifiedName.get}")
-                  \/-(())
-                }) { case (ipkgDocument, ipkgTbox) =>
-                  context.addDirectlyExtendedTerminologyGraph(rule, pfTbox, ipkgTbox).map(_ => ())
-                })
+        val step2: Set[java.lang.Throwable] \/ Unit = {
+          val pfImports = pfU.packageImport
+          if (pfImports.isEmpty) {
+            val step2a
+            : Set[java.lang.Throwable] \/ Unit
+            = (step0 /: context.pkg2ont) { case (acc, (pU, pO)) =>
+              acc.flatMap { _ =>
+                System.out.println(
+                  s"#OTI/OMF R1 pfConversion: ${pfU.qualifiedName.get} (implicitly importing ${pU.qualifiedName.get}")
+                context.addDirectlyExtendedTerminologyGraph(rule, pfTbox, pO).map(_ => ())
+              }
             }
+            step2a
+          } else {
+            val step2b
+            : Set[java.lang.Throwable] \/ Unit
+            = (step1 /: pfImports) { (acc, pkgImport) =>
+              acc.flatMap { _ =>
+                val ipkgU = pkgImport.importedPackage.get // @todo check for no imported package
+                context.lookupDocumentPackageScopeAndTerminologyGraph(ipkgU)
+                  .fold[Set[java.lang.Throwable] \/ Unit](
+                  l = (nels) => nels.left,
+                  r = _.fold[Set[java.lang.Throwable] \/ Unit]({
+                    java.lang.System.out
+                      .println(
+                        s"#OTI/OMF R1 pfConversion: ${pfU.qualifiedName.get} "+
+                        s"imported package not mapped to a document: ${ipkgU.qualifiedName.get}")
+                    \/-(())
+                  }) { case (ipkgDocument, ipkgTbox) =>
+                    context.addDirectlyExtendedTerminologyGraph(rule, pfTbox, ipkgTbox).map(_ => ())
+                  })
+              }
+            }
+            step2b
+          }
         }
 
         val result
@@ -360,7 +447,9 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
           }).to[Set]
 
           java.lang.System.out
-            .println(s"#OTI/OMF R1 pfConversion: [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => ${pkgContents.size} contents")
+            .println(
+              s"#OTI/OMF R1 pfConversion: [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} "+
+              s"=> ${pkgContents.size} contents")
           val moreContents = pkgContents.map(TboxUMLElementTuple(pfTbox.some, _)).toList
 
           Tuple3(
