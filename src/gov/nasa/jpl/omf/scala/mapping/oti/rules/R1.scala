@@ -231,7 +231,7 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
             : Set[java.lang.Throwable] \/ Unit
             = (step0 /: context.pf2ont) { case (acc, (pU, pO)) =>
               acc.flatMap { _ =>
-                System.out.println(
+                java.lang.System.out.println(
                   s"#OTI/OMF R1 pkgConversion: ${pkgU.qualifiedName.get} (implicitly applying ${pU.qualifiedName.get}")
                 context.addDirectlyExtendedTerminologyGraph(rule, pkgTbox, pO).map(_ => ())
               }
@@ -271,7 +271,7 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
             : Set[java.lang.Throwable] \/ Unit
             = (step0 /: context.pkg2ont) { case (acc, (pU, pO)) =>
               acc.flatMap { _ =>
-                System.out.println(
+                java.lang.System.out.println(
                   s"#OTI/OMF R1 pkgConversion: ${pkgU.qualifiedName.get} (implicitly importing ${pU.qualifiedName.get}")
                 context.addDirectlyExtendedTerminologyGraph(rule, pkgTbox, pO).map(_ => ())
               }
@@ -357,7 +357,7 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
             : Set[java.lang.Throwable] \/ Unit
             = (step0 /: context.pf2ont) { case (acc, (pU, pO)) =>
               acc.flatMap { _ =>
-                System.out.println(
+                java.lang.System.out.println(
                   s"#OTI/OMF R1 pfConversion: ${pfU.qualifiedName.get} (implicitly applying ${pU.qualifiedName.get}")
                 context.addDirectlyExtendedTerminologyGraph(rule, pfTbox, pO).map(_ => ())
               }
@@ -396,7 +396,7 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
             : Set[java.lang.Throwable] \/ Unit
             = (step0 /: context.pkg2ont) { case (acc, (pU, pO)) =>
               acc.flatMap { _ =>
-                System.out.println(
+                java.lang.System.out.println(
                   s"#OTI/OMF R1 pfConversion: ${pfU.qualifiedName.get} (implicitly importing ${pU.qualifiedName.get}")
                 context.addDirectlyExtendedTerminologyGraph(rule, pfTbox, pO).map(_ => ())
               }
