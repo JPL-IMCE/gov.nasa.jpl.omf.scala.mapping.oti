@@ -70,7 +70,7 @@ trait Element2AspectCTor[Uml <: UML, Omf <: OMF, Provenance] {
     rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLElement[Uml] )
-  : NonEmptyList[java.lang.Throwable] \/ Omf#ModelEntityAspect
+  : Set[java.lang.Throwable] \/ Omf#ModelEntityAspect
 }
 
 trait Element2AspectCTorFunction[Uml <: UML, Omf <: OMF, Provenance]
@@ -82,7 +82,7 @@ trait Element2AspectCTorFunction[Uml <: UML, Omf <: OMF, Provenance]
     rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLElement[Uml] )
-  : NonEmptyList[java.lang.Throwable] \/ Omf#ModelEntityAspect =
+  : Set[java.lang.Throwable] \/ Omf#ModelEntityAspect =
   for {
     aspect <- apply(rule, tbox, u)
     sizePre = context.mappedElement2Aspect.size
@@ -100,7 +100,7 @@ trait Element2ConceptCTor[Uml <: UML, Omf <: OMF, Provenance] {
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
     isAbstract: Boolean)
-  : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityConcept
+  : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityConcept
 }
 
 trait Element2ConceptCTorFunction[Uml <: UML, Omf <: OMF, Provenance]
@@ -113,7 +113,7 @@ trait Element2ConceptCTorFunction[Uml <: UML, Omf <: OMF, Provenance]
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
     isAbstract: Boolean)
-  : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityConcept =
+  : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityConcept =
   for {
     conceptGraph <- apply(rule, tbox, u, isAbstract)
     sizePre = context.mappedElement2Concept.size
@@ -135,7 +135,7 @@ trait Element2RelationshipCTor[Uml <: UML, Omf <: OMF, Provenance] {
     characteristics: Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
     isAbstract: Boolean,
     name: Option[String] )
-  : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityRelationship
+  : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityRelationship
 }
 
 trait Element2RelationshipCTorFunction[Uml <: UML, Omf <: OMF, Provenance]
@@ -152,7 +152,7 @@ trait Element2RelationshipCTorFunction[Uml <: UML, Omf <: OMF, Provenance]
     characteristics: Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
     isAbstract: Boolean,
     name: Option[String] )
-  : NonEmptyList[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityRelationship =
+  : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityRelationship =
   for {
     relationship <- apply(rule, tbox, u, source, target, characteristics, isAbstract, name)
     sizePre = context.mappedElement2Relationship.size
@@ -397,21 +397,21 @@ trait Namespace2TBoxCtor[Uml <: UML, Omf <: OMF, Provenance]
     UMLNamespace[Uml],
     TerminologyKind,
     Provenance,
-    NonEmptyList[java.lang.Throwable] \/ Omf#MutableModelTerminologyGraph]
+    Set[java.lang.Throwable] \/ Omf#MutableModelTerminologyGraph]
 
 trait AddDirectlyExtendedTerminologyGraph[Uml <: UML, Omf <: OMF, Provenance]
   extends Function3[
     MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
     Omf#ModelTerminologyGraph,
-    NonEmptyList[java.lang.Throwable] \/ Unit]
+    Set[java.lang.Throwable] \/ Unit]
 
 trait AddDirectlyNestedTerminologyGraph[Uml <: UML, Omf <: OMF, Provenance]
   extends Function3[
     MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
     Omf#MutableModelTerminologyGraph,
-    NonEmptyList[java.lang.Throwable] \/ Unit]
+    Set[java.lang.Throwable] \/ Unit]
 
 trait AddEntityDefinitionAspectSubClassAxiom[Uml <: UML, Omf <: OMF, Provenance]
   extends Function4[
@@ -419,7 +419,7 @@ trait AddEntityDefinitionAspectSubClassAxiom[Uml <: UML, Omf <: OMF, Provenance]
     Omf#MutableModelTerminologyGraph,
     Omf#ModelEntityDefinition,
     Omf#ModelEntityAspect,
-    NonEmptyList[java.lang.Throwable] \/ Omf#EntityDefinitionAspectSubClassAxiom]
+    Set[java.lang.Throwable] \/ Omf#EntityDefinitionAspectSubClassAxiom]
 
 trait AddEntityConceptSubClassAxiom[Uml <: UML, Omf <: OMF, Provenance]
   extends Function4[
@@ -427,7 +427,7 @@ trait AddEntityConceptSubClassAxiom[Uml <: UML, Omf <: OMF, Provenance]
     Omf#MutableModelTerminologyGraph,
     Omf#ModelEntityConcept,
     Omf#ModelEntityConcept,
-    NonEmptyList[java.lang.Throwable] \/ Omf#EntityConceptSubClassAxiom]
+    Set[java.lang.Throwable] \/ Omf#EntityConceptSubClassAxiom]
 
 trait AddEntityReifiedRelationshipSubClassAxiom[Uml <: UML, Omf <: OMF, Provenance]
   extends Function4[
@@ -435,7 +435,7 @@ trait AddEntityReifiedRelationshipSubClassAxiom[Uml <: UML, Omf <: OMF, Provenan
     Omf#MutableModelTerminologyGraph,
     Omf#ModelEntityReifiedRelationship,
     Omf#ModelEntityReifiedRelationship,
-    NonEmptyList[java.lang.Throwable] \/ Omf#EntityReifiedRelationshipSubClassAxiom]
+    Set[java.lang.Throwable] \/ Omf#EntityReifiedRelationshipSubClassAxiom]
 
 trait AddEntityConceptDesignationTerminologyGraphAxiom[Uml <: UML, Omf <: OMF, Provenance]
   extends Function5[
@@ -444,7 +444,7 @@ trait AddEntityConceptDesignationTerminologyGraphAxiom[Uml <: UML, Omf <: OMF, P
     Omf#MutableModelTerminologyGraph,
     Omf#ModelEntityConcept,
     Omf#MutableModelTerminologyGraph,
-    NonEmptyList[java.lang.Throwable] \/ Omf#EntityConceptDesignationTerminologyGraphAxiom]
+    Set[java.lang.Throwable] \/ Omf#EntityConceptDesignationTerminologyGraphAxiom]
 
 abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
 ( val ignoreCrossReferencedElementFilter: Function1[UMLElement[Uml], Boolean],
@@ -485,52 +485,83 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     rds.ds.allBuiltInDocuments.map { d => d.scope -> d }.toMap
 
   def lookupDocumentPackageScopeAndTerminologyGraph
-  (e: UMLElement[Uml])
-  : NonEmptyList[java.lang.Throwable] \/ Option[(Document[Uml], Omf#ModelTerminologyGraph)] =
-  rds.element2mappedDocument(e)
-  .fold[NonEmptyList[java.lang.Throwable] \/ Option[(Document[Uml], Omf#ModelTerminologyGraph)]](
-    Option.empty[(Document[Uml], Omf#ModelTerminologyGraph)].right
-  ){ d =>
-    d.scope match {
-      case pf: UMLProfile[Uml] =>
-        lookupImmutableModelTerminologyGraphByProfile(pf)
-        .orElse(lookupMutableModelTerminologyGraphByProfile(pf))
-        .fold[NonEmptyList[java.lang.Throwable] \/ Option[(Document[Uml], Omf#ModelTerminologyGraph)]](
-         NonEmptyList(
-          UMLError.illegalElementError[Uml, UMLElement[Uml]](
-            s"lookupDocumentPackageScopeAndTerminologyGraph: missing graph for element's profile: ${pf.qualifiedName.get}",
-            Iterable(e, pf)
-          )
-         ).left
-        ){ g =>
-          (d, g).some.right
-        }
-      case pkg: UMLPackage[Uml] =>
-        lookupImmutableModelTerminologyGraphByPackage(pkg)
-          .orElse(lookupMutableModelTerminologyGraphByPackage(pkg))
-          .fold[NonEmptyList[java.lang.Throwable] \/ Option[(Document[Uml], Omf#ModelTerminologyGraph)]](
-          NonEmptyList(
-            UMLError.illegalElementError[Uml, UMLElement[Uml]](
-              s"lookupDocumentPackageScopeAndTerminologyGraph: missing graph for element's package: ${pkg.qualifiedName.get}",
-              Iterable(e, pkg)
-            )
-          ).left
-        ){ g =>
-          (d, g).some.right
-        }
+  (p: UMLPackage[Uml])
+  : Set[java.lang.Throwable] \/ Option[(Document[Uml], Omf#ModelTerminologyGraph)] = {
+    val od
+    : Option[Document[Uml]]
+    = lookupDocumentByPackageScope(p)
+
+    val result
+    : Set[java.lang.Throwable] \/ Option[(Document[Uml], Omf#ModelTerminologyGraph)]
+    = od
+      .fold[Set[java.lang.Throwable] \/ Option[(Document[Uml], Omf#ModelTerminologyGraph)]]({
+      Option.empty[(Document[Uml], Omf#ModelTerminologyGraph)].right
+    }) { d =>
+      d.scope match {
+        case pf: UMLProfile[Uml] =>
+          lookupImmutableModelTerminologyGraphByProfile(pf)
+            .orElse(lookupMutableModelTerminologyGraphByProfile(pf))
+            .fold[Set[java.lang.Throwable] \/ Option[(Document[Uml], Omf#ModelTerminologyGraph)]](
+            Set(
+              UMLError.illegalElementError[Uml, UMLProfile[Uml]](
+                s"lookupDocumentPackageScopeAndTerminologyGraph: missing graph for element's profile: ${pf.qualifiedName.get}",
+                Iterable(pf)
+              )
+            ).left
+          ) { g =>
+            (d, g).some.right
+          }
+        case pkg: UMLPackage[Uml] =>
+          lookupImmutableModelTerminologyGraphByPackage(pkg)
+            .orElse(lookupMutableModelTerminologyGraphByPackage(pkg))
+            .fold[Set[java.lang.Throwable] \/ Option[(Document[Uml], Omf#ModelTerminologyGraph)]](
+            Set(
+              UMLError.illegalElementError[Uml, UMLPackage[Uml]](
+                s"lookupDocumentPackageScopeAndTerminologyGraph: missing graph for element's package: ${pkg.qualifiedName.get}",
+                Iterable(pkg)
+              )
+            ).left
+          ) { g =>
+            (d, g).some.right
+          }
+      }
     }
+
+    result
   }
 
-  def lookupDocumentByPackageScope(pkg: UMLPackage[Uml]): Option[Document[Uml]] =
-    package2SerializableDocument.get(pkg).orElse(package2BuiltInDocument.get(pkg))
+  def lookupDocumentByPackageScope(pkg: UMLPackage[Uml]): Option[Document[Uml]] = {
+    val result
+    : Option[Document[Uml]]
+    = package2SerializableDocument.get(pkg).orElse(package2BuiltInDocument.get(pkg))
 
-  def lookupImmutableModelTerminologyGraphByPackage(pkg: UMLPackage[Uml]): Option[Omf#ImmutableModelTerminologyGraph] =
-    pkg2ont.get(pkg)
+    result
+  }
 
-  def lookupMutableModelTerminologyGraphByPackage(pkg: UMLPackage[Uml]): Option[Omf#MutableModelTerminologyGraph]
+  def lookupImmutableModelTerminologyGraphByPackage
+  (pkg: UMLPackage[Uml])
+  : Option[Omf#ImmutableModelTerminologyGraph] = {
+    val result
+    : Option[Omf#ImmutableModelTerminologyGraph]
+    = pkg2ont.get(pkg)
 
-  def lookupImmutableModelTerminologyGraphByProfile(pf: UMLProfile[Uml]): Option[Omf#ImmutableModelTerminologyGraph] =
-    pf2ont.get(pf)
+    result
+  }
+
+  def lookupMutableModelTerminologyGraphByPackage
+  (pkg: UMLPackage[Uml])
+  : Option[Omf#MutableModelTerminologyGraph]
+
+  def lookupImmutableModelTerminologyGraphByProfile
+  (pf: UMLProfile[Uml])
+  : Option[Omf#ImmutableModelTerminologyGraph] = {
+
+    val result
+    : Option[Omf#ImmutableModelTerminologyGraph]
+    = pf2ont.get(pf)
+
+    result
+  }
 
   def lookupMutableModelTerminologyGraphByProfile(pf: UMLProfile[Uml]): Option[Omf#MutableModelTerminologyGraph]
 
@@ -547,20 +578,20 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
       UMLStereotype2EntityConceptMap,
       UMLStereotype2EntityRelationshipMap,
       Set[UMLStereotype[Uml]] ),
-    NonEmptyList[java.lang.Throwable] \/ TboxUMLElementTriplePairs]
+    Set[java.lang.Throwable] \/ TboxUMLElementTriplePairs]
 
   type Element2AspectCTorRuleFunction = Function3[
     MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
     UMLElement[Uml],
-    NonEmptyList[java.lang.Throwable] \/ Omf#ModelEntityAspect]
+    Set[java.lang.Throwable] \/ Omf#ModelEntityAspect]
 
   type Element2ConceptCTorRuleFunction = Function4[
     MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
     UMLNamedElement[Uml],
     Boolean,
-    NonEmptyList[java.lang.Throwable] \/ MappedEntityConcept]
+    Set[java.lang.Throwable] \/ MappedEntityConcept]
 
   type Element2RelationshipCTorRuleFunction = Function8[
     MappingFunction[Uml, Omf, Provenance],
@@ -571,7 +602,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
     Boolean,
     Option[String],
-    NonEmptyList[java.lang.Throwable] \/ MappedEntityRelationship]
+    Set[java.lang.Throwable] \/ MappedEntityRelationship]
   
   type MappedEntityConcept = Omf#ModelEntityConcept
   type MappedEntityRelationship = Omf#ModelEntityReifiedRelationship
@@ -592,128 +623,210 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
 
   val allMappedStereotypes = stereotype2Aspect.keySet ++ stereotype2Concept.keySet ++ stereotype2Relationship.keySet
 
-  def isStereotypeMapped( s: UMLStereotype[Uml] ): Boolean = allMappedStereotypes.contains( s )
+  def isStereotypeMapped( s: UMLStereotype[Uml] ): Boolean = {
+    val result: Boolean = allMappedStereotypes.contains( s )
+
+    result
+  }
 
   def isStereotypedElementMapped( e: UMLElement[Uml] )
-  : NonEmptyList[java.lang.Throwable] \/ Boolean =
-    e
-    .getAppliedStereotypes
-    .map{ m2p =>
-      m2p
-      .keys
-      .exists( isStereotypeMapped )
-    }
+  : Set[java.lang.Throwable] \/ Boolean = {
+    val isMapped
+    : Set[java.lang.Throwable] \/ Boolean
+    = e
+      .getAppliedStereotypes
+      .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
+      .map { m2p =>
+        m2p
+          .keys
+          .exists(isStereotypeMapped)
+      }
+
+    isMapped
+  }
 
   def getAppliedStereotypesMappedToOMF
   ( e: UMLElement[Uml] )
-  : NonEmptyList[java.lang.Throwable] \/
+  : Set[java.lang.Throwable] \/
     ( UMLStereotype2EntityAspectMap,
       UMLStereotype2EntityConceptMap,
       UMLStereotype2EntityRelationshipMap,
       Set[UMLStereotype[Uml]] ) = {
-    e
-    .getAppliedStereotypes
-    .map { m2p =>
 
-      val appliedStereotypes =
-        m2p
-        .keySet
-        .filter { s =>
-          !ignoreCrossReferencedElementFilter(s)
-        }
+    val result
+    : Set[java.lang.Throwable] \/
+      (UMLStereotype2EntityAspectMap,
+        UMLStereotype2EntityConceptMap,
+        UMLStereotype2EntityRelationshipMap,
+        Set[UMLStereotype[Uml]])
+    = e
+      .getAppliedStereotypes
+      .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
+      .map { m2p =>
 
-      (
-        stereotype2Aspect.filterKeys(appliedStereotypes.contains),
-        stereotype2Concept.filterKeys(appliedStereotypes.contains),
-        stereotype2Relationship.filterKeys(appliedStereotypes.contains),
-        appliedStereotypes -- allMappedStereotypes)
-    }
+        val appliedStereotypes =
+          m2p
+            .keySet
+            .filter { s =>
+              !ignoreCrossReferencedElementFilter(s)
+            }
+
+        ( stereotype2Aspect.filterKeys(appliedStereotypes.contains),
+          stereotype2Concept.filterKeys(appliedStereotypes.contains),
+          stereotype2Relationship.filterKeys(appliedStereotypes.contains),
+          appliedStereotypes -- allMappedStereotypes )
+      }
+
+    result
   }
 
   def getSortedAppliedStereotypesMappedToOMF
   ( e: UMLElement[Uml] )
-  : NonEmptyList[java.lang.Throwable] \/
-    ( List[UMLStereotype[Uml]], List[UMLStereotype[Uml]], List[UMLStereotype[Uml]], List[UMLStereotype[Uml]] ) =
-    getAppliedStereotypesMappedToOMF( e )
-    .map { case (as, cs, rs, us) =>
-      ( as.keys.toList.sortBy(_.qualifiedName.get),
-        cs.keys.toList.sortBy(_.qualifiedName.get),
-        rs.keys.toList.sortBy(_.qualifiedName.get),
-        us.toList.sortBy(_.qualifiedName.get))
-    }
+  : Set[java.lang.Throwable] \/
+    ( List[UMLStereotype[Uml]], List[UMLStereotype[Uml]], List[UMLStereotype[Uml]], List[UMLStereotype[Uml]] ) = {
+
+    val result
+    : Set[java.lang.Throwable] \/
+      ( List[UMLStereotype[Uml]], List[UMLStereotype[Uml]], List[UMLStereotype[Uml]], List[UMLStereotype[Uml]] )
+    = getAppliedStereotypesMappedToOMF(e)
+      .map { case (as, cs, rs, us) =>
+        (as.keys.toList.sortBy(_.qualifiedName.get),
+          cs.keys.toList.sortBy(_.qualifiedName.get),
+          rs.keys.toList.sortBy(_.qualifiedName.get),
+          us.toList.sortBy(_.qualifiedName.get))
+      }
+
+    result
+  }
 
   def doesStereotypedElementMap2Aspect( e: UMLElement[Uml] )
-  : NonEmptyList[java.lang.Throwable] \/ Boolean =
-    getAppliedStereotypesMappedToOMF( e )
-    .map { case ( as, cs, _, _ ) =>
-      as.nonEmpty && cs.isEmpty
-    }
+  : Set[java.lang.Throwable] \/ Boolean = {
+
+    val result
+    : Set[java.lang.Throwable] \/ Boolean
+    = getAppliedStereotypesMappedToOMF(e)
+      .map { case (as, cs, _, _) =>
+        as.nonEmpty && cs.isEmpty
+      }
+
+    result
+  }
 
   def doesStereotypedElementMap2Concept( e: UMLElement[Uml] )
-  : NonEmptyList[java.lang.Throwable] \/ Boolean =
-    getAppliedStereotypesMappedToOMF( e )
-    .map(_._2.nonEmpty)
+  : Set[java.lang.Throwable] \/ Boolean = {
+
+    val result
+    : Set[java.lang.Throwable] \/ Boolean
+    = getAppliedStereotypesMappedToOMF(e)
+      .map(_._2.nonEmpty)
+
+    result
+  }
 
   def doesStereotypedElementMap2AspectOrConcept( e: UMLElement[Uml] )
-  : NonEmptyList[java.lang.Throwable] \/ Boolean =
-  getAppliedStereotypesMappedToOMF( e )
-  .map { case ( as, cs, _, _ ) =>
-    as.nonEmpty || cs.nonEmpty
+  : Set[java.lang.Throwable] \/ Boolean = {
+
+    val result
+    : Set[java.lang.Throwable] \/ Boolean
+    = getAppliedStereotypesMappedToOMF(e)
+      .map { case (as, cs, _, _) =>
+        as.nonEmpty || cs.nonEmpty
+      }
+
+    result
   }
 
   def doesStereotypedElementMap2Relationship( e: UMLElement[Uml] )
-  : NonEmptyList[java.lang.Throwable] \/ Boolean =
-    getAppliedStereotypesMappedToOMF( e )
-    .map(_._3.nonEmpty)
+  : Set[java.lang.Throwable] \/ Boolean = {
+
+    val result
+    : Set[java.lang.Throwable] \/ Boolean
+    = getAppliedStereotypesMappedToOMF(e)
+      .map(_._3.nonEmpty)
+
+    result
+  }
 
   def partitionAppliedStereotypesByMapping
   ( e: UMLElement[Uml] )
-  : NonEmptyList[java.lang.Throwable] \/ ( Set[UMLStereotype[Uml]], Set[UMLStereotype[Uml]] ) =
-    e
-    .getAppliedStereotypes
-    .map { m2p =>
-      m2p
-      .keySet
-      .filter (s => ! ignoreCrossReferencedElementFilter (s) )
-      .partition (isStereotypeMapped)
-    }
+  : Set[java.lang.Throwable] \/ ( Set[UMLStereotype[Uml]], Set[UMLStereotype[Uml]] ) = {
+
+    val result
+    : Set[java.lang.Throwable] \/ (Set[UMLStereotype[Uml]], Set[UMLStereotype[Uml]])
+    = e
+      .getAppliedStereotypes
+      .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
+      .map { m2p =>
+        m2p
+          .keySet
+          .filter(s => !ignoreCrossReferencedElementFilter(s))
+          .partition(isStereotypeMapped)
+      }
+
+    result
+  }
 
   lazy val basePackageC = abbrevName2Concept( "base:Package" )
   lazy val baseContainsR = abbrevName2Relationship( "base:Contains" )
 
   val mappedElement2Aspect = scala.collection.mutable.HashMap[UMLElement[Uml], Omf#ModelEntityAspect]()
-  def lookupElementAspectMapping( e: UMLElement[Uml] ): Option[Omf#ModelEntityAspect] =
-    mappedElement2Aspect
-      .get( e )
+  def lookupElementAspectMapping( e: UMLElement[Uml] ): Option[Omf#ModelEntityAspect] = {
+
+    val result
+    : Option[Omf#ModelEntityAspect]
+    = mappedElement2Aspect.get(e)
+
+    result
+  }
 
   def mapElement2Aspect
   ( rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLElement[Uml] )
-  : NonEmptyList[java.lang.Throwable] \/ Omf#ModelEntityAspect =
-    element2aspectCtor.applyMapping( this, rule, tbox, u )
+  : Set[java.lang.Throwable] \/ Omf#ModelEntityAspect = {
+
+    val result
+    : Set[java.lang.Throwable] \/ Omf#ModelEntityAspect
+    = element2aspectCtor.applyMapping(this, rule, tbox, u)
+
+    result
+  }
 
   val mappedElement2Concept = scala.collection.mutable.HashMap[UMLElement[Uml], MappedEntityConcept]()
 
   def lookupElementConceptMapping
   ( e: UMLElement[Uml] )
-  : Option[Omf#ModelEntityConcept] =
-    mappedElement2Concept.get( e )
+  : Option[Omf#ModelEntityConcept] = {
+    val result: Option[Omf#ModelEntityConcept] = mappedElement2Concept.get(e)
+
+    result
+  }
 
   def mapElement2Concept
   ( rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableModelTerminologyGraph,
     u: UMLNamedElement[Uml],
     isAbstract: Boolean)
-  : NonEmptyList[java.lang.Throwable] \/ MappedEntityConcept =
-    element2conceptCtor.applyMapping( this, rule, tbox, u, isAbstract )
+  : Set[java.lang.Throwable] \/ MappedEntityConcept = {
+    val result
+    : Set[java.lang.Throwable] \/ MappedEntityConcept
+    = element2conceptCtor.applyMapping(this, rule, tbox, u, isAbstract)
+
+    result
+  }
 
   val mappedElement2Relationship = scala.collection.mutable.HashMap[UMLElement[Uml], MappedEntityRelationship]()
 
   def lookupElementRelationshipMapping
   ( e: UMLElement[Uml] )
-  : Option[Omf#ModelEntityReifiedRelationship] =
-    mappedElement2Relationship.get( e )
+  : Option[Omf#ModelEntityReifiedRelationship] = {
+
+    val result
+    : Option[Omf#ModelEntityReifiedRelationship]
+    = mappedElement2Relationship.get(e)
+
+    result
+  }
 
   def mapElement2Relationship
   ( rule: MappingFunction[Uml, Omf, Provenance],
@@ -724,16 +837,26 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     characteristics: Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
     isAbstract: Boolean,
     hasName: Option[String] )
-  : NonEmptyList[java.lang.Throwable] \/ MappedEntityRelationship =
-    element2relationshipCtor.applyMapping(
-      this, rule, tbox, u, source, target, characteristics, isAbstract, hasName )
+  : Set[java.lang.Throwable] \/ MappedEntityRelationship = {
+    val result
+    : Set[java.lang.Throwable] \/ MappedEntityRelationship
+    = element2relationshipCtor.applyMapping(
+      this, rule, tbox, u, source, target, characteristics, isAbstract, hasName)
+
+    result
+  }
 
   def lookupElementMapping
   ( e: UMLElement[Uml] )
-  : Option[Omf#ModelEntityDefinition] =
-    lookupElementAspectMapping( e ) orElse
-      lookupElementConceptMapping( e ) orElse
-      lookupElementRelationshipMapping( e )
+  : Option[Omf#ModelEntityDefinition] = {
+    val result
+    : Option[Omf#ModelEntityDefinition]
+    = lookupElementAspectMapping(e) orElse
+      lookupElementConceptMapping(e) orElse
+      lookupElementRelationshipMapping(e)
+
+    result
+  }
 
   def getDependencySourceAndTargetMappings
   ( d: UMLDependency[Uml] )
@@ -757,8 +880,13 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   ( a: UMLAssociation[Uml] )
   : Option[
     ( ( UMLClassifier[Uml], Omf#ModelEntityDefinition ),
-      ( UMLClassifier[Uml], Omf#ModelEntityDefinition ) )] =
-    for {
+      ( UMLClassifier[Uml], Omf#ModelEntityDefinition ) )] = {
+
+    val result
+    : Option[
+      ( ( UMLClassifier[Uml], Omf#ModelEntityDefinition ),
+        ( UMLClassifier[Uml], Omf#ModelEntityDefinition ) )]
+    = for {
 
       directedEnds <- a.getDirectedAssociationEnd
       (sourcePU, targetPU) = directedEnds
@@ -770,7 +898,10 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
       targetE <- lookupElementMapping(targetTU)
 
     } yield
-      Tuple2( Tuple2( sourceTU, sourceE ), Tuple2( targetTU, targetE ) )
+      Tuple2(Tuple2(sourceTU, sourceE), Tuple2(targetTU, targetE))
+
+    result
+  }
 }
 
 case class OTI2OMFMapper[Uml <: UML, Omf <: OMF, Provenance]() {
@@ -795,28 +926,34 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF, Provenance]() {
   ( context: OTI2OMFMappingContext[Uml, Omf, Provenance],
     current: TboxUMLElementPair[Uml, Omf],
     rules: List[MappingFunction[Uml, Omf, Provenance]] )
-  : NonEmptyList[java.lang.Throwable] \/ Option[RuleResult] =
-    context.getAppliedStereotypesMappedToOMF( current.e )
-    .flatMap { case ( as, cs, rs, us ) =>
-      val remaining =
-        rules.dropWhile { r =>
-          val isApplicable = r.mappingRule.isDefinedAt(Tuple6(r, current, as, cs, rs, us))
-          !isApplicable
-        }
+  : Set[java.lang.Throwable] \/ Option[RuleResult] = {
 
-      remaining match {
-        case Nil =>
-          Option.empty[RuleResult]
-            .right
-        case r :: _ =>
-          r
-          .mappingRule(Tuple6(r, current, as, cs, rs, us))
-          .map { case (pairs1, pairs2, pairs3) =>
-            val result: RuleResult = (r, pairs1, pairs2, pairs3)
-            result.some
+    val result
+    : Set[java.lang.Throwable] \/ Option[RuleResult]
+    = context.getAppliedStereotypesMappedToOMF(current.e)
+      .flatMap { case (as, cs, rs, us) =>
+        val remaining =
+          rules.dropWhile { r =>
+            val isApplicable = r.mappingRule.isDefinedAt(Tuple6(r, current, as, cs, rs, us))
+            !isApplicable
           }
+
+        remaining match {
+          case Nil =>
+            Option.empty[RuleResult]
+              .right
+          case r :: _ =>
+            r
+              .mappingRule(Tuple6(r, current, as, cs, rs, us))
+              .map { case (pairs1, pairs2, pairs3) =>
+                val result: RuleResult = (r, pairs1, pairs2, pairs3)
+                result.some
+              }
+        }
       }
-    }
+
+    result
+  }
 
   type RulesResult =
   ( OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementPairs,
@@ -833,22 +970,25 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF, Provenance]() {
     contentPairs: List[TboxUMLElementPair[Uml, Omf]],
     rules: List[MappingFunction[Uml, Omf, Provenance]] )
   ( implicit omfOps: OMFOps[Omf] )
-  : NonEmptyList[java.lang.Throwable] \&/ RulesResult = {
+  : Set[java.lang.Throwable] \&/ RulesResult = {
 
     @annotation.tailrec def step
-    ( errors: Option[NonEmptyList[java.lang.Throwable]],
+    ( errors: Set[java.lang.Throwable],
       queue: List[TboxUMLElementPair[Uml, Omf]],
       results: List[TboxUMLElementPair[Uml, Omf]],
       deferred: List[TboxUMLElementPair[Uml, Omf]],
       outputs: List[TboxUMLElementPair[Uml, Omf]] )
-    : NonEmptyList[java.lang.Throwable] \&/ RulesResult =
+    : Set[java.lang.Throwable] \&/ RulesResult =
       queue match {
         case Nil =>
           \&/.That( ( results, deferred, outputs ) )
         case pair :: pairs =>
-          applyMatchingRule( context, pair, rules ) match {
+          val ruleResult
+          : Set[java.lang.Throwable] \/ Option[RuleResult]
+          = applyMatchingRule( context, pair, rules )
+          ruleResult match {
             case -\/( f ) =>
-              step( errors.map(f append _), pairs, results, deferred, outputs )
+              step( errors ++ f, pairs, results, deferred, outputs )
             case \/-( None ) =>
               step( errors, pairs, results, pair :: deferred, outputs )
             case \/-( Some( ( rule, moreResults, morePairs, moreOutputs ) ) ) =>
@@ -856,7 +996,11 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF, Provenance]() {
           }
       }
 
-    step( Option.empty[NonEmptyList[java.lang.Throwable]], contentPairs, Nil, Nil, Nil )
+    val result
+    : Set[java.lang.Throwable] \&/ RulesResult
+    = step( Set[java.lang.Throwable](), contentPairs, Nil, Nil, Nil )
+
+    result
   }
 
 }

@@ -16,13 +16,91 @@ developers := List(
     email="nicolas.f.rouquette@jpl.nasa.gov",
     url=url("https://gateway.jpl.nasa.gov/personal/rouquett/default.aspx")))
 
+resolvers := {
+  val previous = resolvers.value
+  if (git.gitUncommittedChanges.value)
+    Seq[Resolver](Resolver.mavenLocal) ++ previous
+  else
+    previous
+}
+
+import scala.io.Source
+import scala.util.control.Exception._
+
+def docSettings(diagrams:Boolean): Seq[Setting[_]] =
+  Seq(
+    sources in (Compile,doc) <<= (git.gitUncommittedChanges, sources in (Compile,compile)) map {
+      (uncommitted, compileSources) =>
+        if (uncommitted)
+          Seq.empty
+        else
+          compileSources
+    },
+
+    sources in (Test,doc) <<= (git.gitUncommittedChanges, sources in (Test,compile)) map {
+      (uncommitted, testSources) =>
+        if (uncommitted)
+          Seq.empty
+        else
+          testSources
+    },
+
+    scalacOptions in (Compile,doc) ++=
+      (if (diagrams)
+        Seq("-diagrams")
+      else
+        Seq()
+        ) ++
+        Seq(
+          "-doc-title", name.value,
+          "-doc-root-content", baseDirectory.value + "/rootdoc.txt"
+        ),
+    autoAPIMappings := ! git.gitUncommittedChanges.value,
+    apiMappings <++=
+      ( git.gitUncommittedChanges,
+        dependencyClasspath in Compile in doc,
+        IMCEKeys.nexusJavadocRepositoryRestAPIURL2RepositoryName,
+        IMCEKeys.pomRepositoryPathRegex,
+        streams ) map { (uncommitted, deps, repoURL2Name, repoPathRegex, s) =>
+        if (uncommitted)
+          Map[File, URL]()
+        else
+          (for {
+            jar <- deps
+            url <- jar.metadata.get(AttributeKey[ModuleID]("moduleId")).flatMap { moduleID =>
+              val urls = for {
+                (repoURL, repoName) <- repoURL2Name
+                (query, match2publishF) = IMCEPlugin.nexusJavadocPOMResolveQueryURLAndPublishURL(
+                  repoURL, repoName, moduleID)
+                url <- nonFatalCatch[Option[URL]]
+                  .withApply { (_: java.lang.Throwable) => None }
+                  .apply({
+                    val conn = query.openConnection.asInstanceOf[java.net.HttpURLConnection]
+                    conn.setRequestMethod("GET")
+                    conn.setDoOutput(true)
+                    repoPathRegex
+                      .findFirstMatchIn(Source.fromInputStream(conn.getInputStream).getLines.mkString)
+                      .map { m =>
+                        val javadocURL = match2publishF(m)
+                        s.log.info(s"Javadoc for: $moduleID")
+                        s.log.info(s"= mapped to: $javadocURL")
+                        javadocURL
+                      }
+                  })
+              } yield url
+              urls.headOption
+            }
+          } yield jar.data -> url).toMap
+      }
+  )
+
 lazy val core = 
   Project("omf-scala-mapping-oti", file("."))
   .enablePlugins(IMCEGitPlugin)
   .enablePlugins(IMCEReleasePlugin)
   .settings(dynamicScriptsResourceSettings(Some("gov.nasa.jpl.omf.scala.mapping.oti")))
   .settings(IMCEPlugin.strictScalacFatalWarningsSettings)
-  .settings(IMCEPlugin.scalaDocSettings(diagrams=true))
+  .settings(docSettings(diagrams=true))
   .settings(IMCEReleasePlugin.packageReleaseProcessSettings)
   .settings(
     IMCEKeys.licenseYearOrRange := "2014-2016",

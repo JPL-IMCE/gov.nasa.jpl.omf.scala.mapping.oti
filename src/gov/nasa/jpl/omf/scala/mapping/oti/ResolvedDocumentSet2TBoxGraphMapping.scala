@@ -77,7 +77,7 @@ object ResolvedDocumentSet2TBoxGraphMapping {
     omfOps: OMFOps[Omf],
     omfStore: Omf#Store,
     catalogIRIMapper: CatalogURIMapper )
-  : NonEmptyList[java.lang.Throwable] \/ Document2TBoxGraphCorrespondences[Uml, Omf] = {
+  : Set[java.lang.Throwable] \/ Document2TBoxGraphCorrespondences[Uml, Omf] = {
 
     val sortedDocuments =
       resolved
@@ -91,24 +91,26 @@ object ResolvedDocumentSet2TBoxGraphMapping {
     import omfOps._
 
     type DocumentGraphMap = ( Map[Document[Uml], Omf#ImmutableModelTerminologyGraph], Set[Document[Uml]] )
-    val m0: NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap =
+    val m0: Set[java.lang.Throwable] \/ DocumentGraphMap =
       (Map[Document[Uml], Omf#ImmutableModelTerminologyGraph](), Set[Document[Uml]]()).right
-    val mN: NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap =
+    val mN: Set[java.lang.Throwable] \/ DocumentGraphMap =
       (m0 /: sortedDocuments ) {
         (mi, document) =>
           \/.fromTryCatchNonFatal[java.net.URI](new java.net.URI(OTI_URI.unwrap(document.info.packageURI)))
-            .fold[NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap](
+            .fold[Set[java.lang.Throwable] \/ DocumentGraphMap](
             l = (t: java.lang.Throwable) =>
               -\/(
-                NonEmptyList(
+                Set(
                   UMLError.illegalElementException[Uml, UMLPackage[Uml]](
                     s"Cannnot create a valid URI for the package's document URL: ${document.info}",
                     Iterable(document.scope),
                     t))),
             r = (duri: java.net.URI) => {
-              catalogIRIMapper.resolveURI(duri, catalogIRIMapper.loadResolutionStrategy(".owl".some))
+              catalogIRIMapper
+                .resolveURI(duri, catalogIRIMapper.loadResolutionStrategy(".owl".some))
+                .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
                 .flatMap {
-                  _.fold[NonEmptyList[java.lang.Throwable] \/ DocumentGraphMap](
+                  _.fold[Set[java.lang.Throwable] \/ DocumentGraphMap](
                     mi.map { case (document2tboxMap, d2map) =>
                       System.out.println(s"document2map: $duri")
                       (document2tboxMap, d2map + document)
@@ -118,8 +120,10 @@ object ResolvedDocumentSet2TBoxGraphMapping {
                     mi.flatMap { case (document2tboxMap, d2map) =>
                       // @todo it seems this should use the resolved uri instead of document.uri
                       makeIRI(uri.toString)
+                        .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
                         .flatMap { iri =>
                           loadTerminologyGraph(iri)
+                            .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
                             .flatMap { case (iTbox, _) =>
                               System.out.println(s"==> document: $duri")
                               (document2tboxMap + (document -> iTbox), d2map).right
@@ -140,10 +144,10 @@ object ResolvedDocumentSet2TBoxGraphMapping {
 
   def mapDocument2TBoxGraphCorrespondences[Uml <: UML, Omf <: OMF](
     correspondences: Document2TBoxGraphCorrespondences[Uml, Omf],
-    document2BuiltInTBoxGraph: Function1[Document[Uml], NonEmptyList[java.lang.Throwable] \/ Option[Omf#ImmutableModelTerminologyGraph]] )(
+    document2BuiltInTBoxGraph: Function1[Document[Uml], Set[java.lang.Throwable] \/ Option[Omf#ImmutableModelTerminologyGraph]] )(
       implicit umlOps: UMLOps[Uml],
       omfOps: OMFOps[Omf],
       omfStore: Omf#Store,
-      catalogIRIMapper: CatalogURIMapper ): NonEmptyList[java.lang.Throwable] \/ ResolvedDocumentSet2TBoxGraphMapping[Uml, Omf] = ???
+      catalogIRIMapper: CatalogURIMapper ): Set[java.lang.Throwable] \/ ResolvedDocumentSet2TBoxGraphMapping[Uml, Omf] = ???
 
 }

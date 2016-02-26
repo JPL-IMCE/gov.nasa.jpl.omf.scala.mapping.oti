@@ -59,10 +59,12 @@ case class R5[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
     val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
       case (rule,
-      ett @ TboxUMLElementTreeType(Some(tbox), omfConcept, tree: TreeCompositeStructureType[Uml]),
+      ett@TboxUMLElementTreeType(Some(tbox), omfConcept, tree: TreeCompositeStructureType[Uml]),
       as, cs, rs, unmappedS) =>
 
-        if (TreeType.getIllFormedTreeBranchPairs(tree).nonEmpty) {
+        val result
+        : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs
+        = if (TreeType.getIllFormedTreeBranchPairs(tree).nonEmpty) {
           System.out.println(s"*** Skip BST: $tree")
           \/-((Nil, Nil, ett :: Nil))
         }
@@ -71,6 +73,7 @@ case class R5[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
           \/-((Nil, Nil, Nil))
         }
 
+        result
     }
 
     MappingFunction[Uml, Omf, Provenance]("treeTypeMapping", mapping)

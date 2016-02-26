@@ -71,7 +71,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         if (rs.isEmpty) {
           val explanation: String = unmappedS.toList.map(_.qualifiedName.get).mkString(s"${unmappedS.size} unmapped stereotypes (",",",")")
           System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => error: ${depU.xmiElementLabel}: ${depU.toolSpecific_id} $explanation")
-          NonEmptyList(
+          Set(
             UMLError.illegalElementError[Uml, UMLDependency[Uml]](
               s"R3 is not applicable to: $depU because $explanation",
               Iterable(depU))
@@ -81,7 +81,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
             context.getDependencySourceAndTargetMappings(depU)
 
           osourceE
-          .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
+          .fold[Set[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
             System.out.println(
               s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped source "+
               s"(target? ${otargetE.isDefined}): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel} "+
@@ -94,7 +94,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
           }) { sourceOmf =>
 
             otargetE
-            .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
+            .fold[Set[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
               System.out.println(
                 s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped target "+
                 s"(source? true): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel} "+

@@ -45,7 +45,6 @@ import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
 import scala.{Some,StringContext,Tuple3,Unit}
-import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
 import scala.language.postfixOps
 import scalaz._, Scalaz._
@@ -64,14 +63,6 @@ import scalaz._, Scalaz._
  */
 case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf] ) {
 
-  def r1Error
-  (message: String, e: UMLElement[Uml])
-  (nels: NonEmptyList[java.lang.Throwable])
-  : NonEmptyList[java.lang.Throwable] =
-    NonEmptyList(
-      UMLError.illegalElementException[Uml, UMLElement[Uml]](message, Iterable(e), nels)
-    )
-
   /**
     * Mapping of an OTI profile PF to OMF:
     * - Verify that there is already an immutable OMF Tbox corresponding to PF
@@ -88,24 +79,26 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
     val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
 
       case (rule, TboxUMLElementTuple(Some(tbox), pfU: UMLProfile[Uml]), as, cs, rs, unmappedS) =>
-        context.lookupImmutableModelTerminologyGraphByProfile(pfU)
-          .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
+        val result
+        : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs
+        = context.lookupImmutableModelTerminologyGraphByProfile(pfU)
+          .fold[Set[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
 
           context.lookupMutableModelTerminologyGraphByProfile(pfU)
-            .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
+            .fold[Set[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
             java.lang.System.out.println(s"-R1.profile: [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => no OMF Graph")
-            NonEmptyList(
+            Set(
               UMLError.illegalElementError[Uml, UMLProfile[Uml]](
                 s"profile ${pfU.qualifiedName.get} should have been mapped to an immutable OMF graph",
                 Iterable(pfU))
             ).left
           }) { pfOnt =>
             context.lookupDocumentPackageScopeAndTerminologyGraph(pfU)
-              .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
+              .fold[Set[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
               l = (nels) =>
                 nels.left,
-              r = _.fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
-                NonEmptyList(
+              r = _.fold[Set[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
+                Set(
                   UMLError.illegalElementError[Uml, UMLPackage[Uml]](
                     s"Failed to lookup the document for profile: ${pfU.qualifiedName.get}",
                     Iterable(pfU)
@@ -133,30 +126,34 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
           ).right
         }
 
+        result
+
       case (rule, TboxUMLElementTuple(Some(tbox), pkgU: UMLPackage[Uml]), as, cs, rs, unmappedS) =>
         java.lang.System.out.println(s"@R1.package: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
-        context.lookupImmutableModelTerminologyGraphByPackage(pkgU)
-          .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
+        val result
+        : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs
+        = context.lookupImmutableModelTerminologyGraphByPackage(pkgU)
+          .fold[Set[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
           context.lookupMutableModelTerminologyGraphByPackage(pkgU)
-            .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
+            .fold[Set[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
 
             val errors_or_pkgTbox =
               context
                 .ns2tboxCtor(rule, pkgU, TerminologyKind.isToplevelDefinition, pkg2provenance(pkgU))
 
             errors_or_pkgTbox
-              .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
-              (nels: NonEmptyList[java.lang.Throwable]) => {
+              .fold[Set[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
+              (nels: Set[java.lang.Throwable]) => {
                 java.lang.System.out.println(s"-@R1.package(New): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} - ${nels.head}")
                 -\/(nels)
               },
               (pkgTbox: Omf#MutableModelTerminologyGraph) => {
                 context.lookupDocumentPackageScopeAndTerminologyGraph(pkgU)
-                  .fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
+                  .fold[Set[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
                   l = (nels) =>
                     nels.left,
-                  r = _.fold[NonEmptyList[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
-                    NonEmptyList(
+                  r = _.fold[Set[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult](
+                    Set(
                       UMLError.illegalElementError[Uml, UMLPackage[Uml]](
                         s"Failed to lookup the document for package: ${pkgU.qualifiedName.get}",
                         Iterable(pkgU)
@@ -215,21 +212,23 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
           ).right
         }
 
+        result
+
       case (rule, TboxUMLPackage2MutableTBoxConversion(Some(pkgTbox), pkgU, pkgOTIDocument, pkgDocumentTBox, pkgC, superConcepts), as, cs, rs, unmappedS) =>
         java.lang.System.out
           .println(s"#OTI/OMF R1 pkgConversion: ${pkgU.qualifiedName.get} (${superConcepts.size} package concept classifications)")
 
-        val step0: NonEmptyList[java.lang.Throwable] \/ Unit = \/-(())
-        val step1: NonEmptyList[java.lang.Throwable] \/ Unit = ( step0 /: pkgU.profileApplication ) {
+        val step0: Set[java.lang.Throwable] \/ Unit = \/-(())
+        val step1: Set[java.lang.Throwable] \/ Unit = ( step0 /: pkgU.profileApplication ) {
           ( acc, pfApplication ) =>
             acc.flatMap { _ =>
               val apfU = pfApplication.appliedProfile.get // @todo check for no applied profile
               context
                 .lookupDocumentPackageScopeAndTerminologyGraph(apfU)
-                .fold[NonEmptyList[java.lang.Throwable] \/ Unit](
+                .fold[Set[java.lang.Throwable] \/ Unit](
                 l = (nels) => nels.left,
-                r = _.fold[NonEmptyList[java.lang.Throwable] \/ Unit](
-                  NonEmptyList(
+                r = _.fold[Set[java.lang.Throwable] \/ Unit](
+                  Set(
                     UMLError.illegalElementError[Uml, UMLProfile[Uml]](
                       s"document/graph missing for applied profile: ${apfU.qualifiedName.get}",
                       Iterable(apfU)
@@ -241,14 +240,14 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
             }
         }
 
-        val step2: NonEmptyList[java.lang.Throwable] \/ Unit = ( step1 /: pkgU.packageImport ) {
+        val step2: Set[java.lang.Throwable] \/ Unit = ( step1 /: pkgU.packageImport ) {
           ( acc, pkgImport ) =>
             acc.flatMap { _ =>
               val ipkgU = pkgImport.importedPackage.get // @todo check for no imported package
               context.lookupDocumentPackageScopeAndTerminologyGraph(ipkgU)
-                .fold[NonEmptyList[java.lang.Throwable] \/ Unit](
+                .fold[Set[java.lang.Throwable] \/ Unit](
                 l = (nels) => nels.left,
-                r = _.fold[NonEmptyList[java.lang.Throwable] \/ Unit]({
+                r = _.fold[Set[java.lang.Throwable] \/ Unit]({
                   java.lang.System.out
                     .println(s"#OTI/OMF R1 pkgConversion: ${pkgU.qualifiedName.get} imported package not mapped to a document: ${ipkgU.qualifiedName.get}")
                   \/-(())
@@ -258,14 +257,14 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
             }
         }
 
-        val s0: NonEmptyList[java.lang.Throwable] \/ Unit = step2
-        val sN: NonEmptyList[java.lang.Throwable] \/ Unit = (s0 /: superConcepts) { (si, supC) =>
+        val s0: Set[java.lang.Throwable] \/ Unit = step2
+        val sN: Set[java.lang.Throwable] \/ Unit = (s0 /: superConcepts) { (si, supC) =>
           si +++
             context
               .addEntityConceptSubClassAxiom(rule, pkgTbox, pkgC, supC)
               .map(_ => ())
         }
-        sN.flatMap { _ =>
+        val sResult = sN.flatMap { _ =>
           java.lang.System.out
             .println(s"#OTI/OMF R1 pkg2concept: lookup...")
 
@@ -296,21 +295,22 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
               moreContents,
               Nil).right
         }
+        sResult
 
       case (rule, TboxUMLProfile2MutableTBoxConversion(Some(pfTbox), pfU, pfOTIDocument, pfDocumentTBox), as, cs, rs, unmappedS) =>
         java.lang.System.out
           .println(s"#OTI/OMF R1 pfConversion: ${pfU.qualifiedName.get}")
 
-        val step0: NonEmptyList[java.lang.Throwable] \/ Unit = \/-(())
-        val step1: NonEmptyList[java.lang.Throwable] \/ Unit = ( step0 /: pfU.profileApplication ) {
+        val step0: Set[java.lang.Throwable] \/ Unit = \/-(())
+        val step1: Set[java.lang.Throwable] \/ Unit = ( step0 /: pfU.profileApplication ) {
           ( acc, pfApplication ) =>
             acc.flatMap { _ =>
               val apfU = pfApplication.appliedProfile.get // @todo check for no applied profile
               context.lookupDocumentPackageScopeAndTerminologyGraph(apfU)
-                .fold[NonEmptyList[java.lang.Throwable] \/ Unit](
+                .fold[Set[java.lang.Throwable] \/ Unit](
                 l = (nels) => nels.left,
-                r = _.fold[NonEmptyList[java.lang.Throwable] \/ Unit](
-                  NonEmptyList(
+                r = _.fold[Set[java.lang.Throwable] \/ Unit](
+                  Set(
                     UMLError.illegalElementError[Uml, UMLProfile[Uml]](
                       s"document/graph missing for applied profile: ${apfU.qualifiedName.get}",
                       Iterable(apfU)
@@ -322,14 +322,14 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
             }
         }
 
-        val step2: NonEmptyList[java.lang.Throwable] \/ Unit = ( step1 /: pfU.packageImport ) {
+        val step2: Set[java.lang.Throwable] \/ Unit = ( step1 /: pfU.packageImport ) {
           ( acc, pkgImport ) =>
             acc.flatMap { _ =>
               val ipkgU = pkgImport.importedPackage.get // @todo check for no imported package
               context.lookupDocumentPackageScopeAndTerminologyGraph(ipkgU)
-                .fold[NonEmptyList[java.lang.Throwable] \/ Unit](
+                .fold[Set[java.lang.Throwable] \/ Unit](
                 l = (nels) => nels.left,
-                r = _.fold[NonEmptyList[java.lang.Throwable] \/ Unit]({
+                r = _.fold[Set[java.lang.Throwable] \/ Unit]({
                   java.lang.System.out
                     .println(s"#OTI/OMF R1 pfConversion: ${pfU.qualifiedName.get} imported package not mapped to a document: ${ipkgU.qualifiedName.get}")
                   \/-(())
@@ -339,7 +339,9 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
             }
         }
 
-        step2.flatMap { _ =>
+        val result
+        : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs
+        = step2.flatMap { _ =>
 
           // owned UML elements to map in the subsequent content phase
           val pkgContents: Set[UMLElement[Uml]] = pfOTIDocument.extent.filter({
@@ -367,6 +369,7 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
             Nil).right
         }
 
+        result
     }
 
     MappingFunction[Uml, Omf, Provenance]( "profileOrPackageMapping", mapping )

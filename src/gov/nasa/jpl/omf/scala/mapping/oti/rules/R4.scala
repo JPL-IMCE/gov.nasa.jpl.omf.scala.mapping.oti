@@ -40,15 +40,15 @@ package gov.nasa.jpl.omf.scala.mapping.oti.rules
 
 import gov.nasa.jpl.omf.scala.core._
 import gov.nasa.jpl.omf.scala.mapping.oti._
-
 import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
-import scala.{Option,Some,StringContext,Tuple3,Unit}
-import scala.Predef.{Set => _, Map => _, _}
+import scala.{Option, Some, StringContext, Tuple3, Unit}
+import scala.Predef.{Map => _, Set => _, _}
 import scala.collection.immutable._
 import scala.language.postfixOps
+import scalaz.\/
 
 /**
  * Mapping for a kind of binary, directed, composite UML Association to
@@ -73,36 +73,42 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         if cs.isEmpty && bcaU.memberEnd.exists(_.aggregation == UMLAggregationKind.composite) &&
           context.getDirectedBinaryAssociationSourceAndTargetMappings(bcaU).isDefined =>
 
-        if (unmappedS.nonEmpty) {
-          val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
-          require(foreign.isEmpty)
-        }
-
-        val ((sourceTU, sourceOmf), (targetTU, targetOmf)) =
-          context.getDirectedBinaryAssociationSourceAndTargetMappings(bcaU).get
-
-        val hasName = bcaU.name
-
-        for {
-          bcaOmfRelation <- context.mapElement2Relationship(
-            rule, tbox, bcaU, sourceOmf, targetOmf,
-            Iterable(), // @TODO
-            isAbstract = bcaU.isAbstract,
-            hasName)
-
-          omfRelationshipParents =
-          if (rs.isEmpty) Set(context.baseContainsR)
-          else rs.values
-
-          _ = omfRelationshipParents.foreach { rel =>
-            context.addEntityRelationshipSubClassAxiom(rule, tbox, bcaOmfRelation, rel)
+        val result
+        : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs
+        = {
+          if (unmappedS.nonEmpty) {
+            val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
+            require(foreign.isEmpty)
           }
 
-          reifiedRelationPair = TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), bcaOmfRelation, bcaU) :: Nil
-        } yield Tuple3(
-          reifiedRelationPair,
-          Nil,
-          Nil)
+          val ((sourceTU, sourceOmf), (targetTU, targetOmf)) =
+            context.getDirectedBinaryAssociationSourceAndTargetMappings(bcaU).get
+
+          val hasName = bcaU.name
+
+          for {
+            bcaOmfRelation <- context.mapElement2Relationship(
+              rule, tbox, bcaU, sourceOmf, targetOmf,
+              Iterable(), // @TODO
+              isAbstract = bcaU.isAbstract,
+              hasName)
+
+            omfRelationshipParents =
+            if (rs.isEmpty) Set(context.baseContainsR)
+            else rs.values
+
+            _ = omfRelationshipParents.foreach { rel =>
+              context.addEntityRelationshipSubClassAxiom(rule, tbox, bcaOmfRelation, rel)
+            }
+
+            reifiedRelationPair = TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), bcaOmfRelation, bcaU) :: Nil
+          } yield Tuple3(
+            reifiedRelationPair,
+            Nil,
+            Nil)
+        }
+
+        result
     }
 
     MappingFunction[Uml, Omf, Provenance]("binaryCompositeAssociation2RelationshipMapping", mapping)
