@@ -3,8 +3,7 @@
 .ensime*
 .idea
 .project
-bin
+links.json
 project/project
 project/target
-sbt.staging
 target

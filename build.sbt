@@ -4,6 +4,7 @@ import sbt._
 import scala.language.postfixOps
 
 import gov.nasa.jpl.imce.sbt._
+import gov.nasa.jpl.imce.sbt.ProjectHelper._
 
 import java.io.File
 
@@ -120,29 +121,38 @@ lazy val core =
     git.baseVersion := Versions.version,
 
     scalaSource in Compile := baseDirectory.value / "src",
-    classDirectory in Compile := baseDirectory.value / "bin",
-    cleanFiles += (classDirectory in Compile).value,
 
     IMCEKeys.nexusJavadocRepositoryRestAPIURL2RepositoryName := Map(
       "https://oss.sonatype.org/service/local" -> "releases",
       "https://cae-nexuspro.jpl.nasa.gov/nexus/service/local" -> "JPL"),
     IMCEKeys.pomRepositoryPathRegex := """\<repositoryPath\>\s*([^\"]*)\s*\<\/repositoryPath\>""".r,
 
-    extractArchives := {},
-
-    libraryDependencies ++= Seq(
-
+    extractArchives := {}
+  )
+  .dependsOnSourceProjectOrLibraryArtifacts(
+    "oti-uml-composite_structure_tree_analysis",
+    "org.omg.oti.uml.composite_structure_tree_analysis",
+    Seq(
       "org.omg.tiwg" %% "oti-uml-composite_structure_tree_analysis"
         % Versions_oti_uml_composite_structure_tree_analysis.version % "compile" withSources() withJavadoc() artifacts
-        Artifact("oti-uml-composite_structure_tree_analysis", "zip", "zip", Some("resource"), Seq(), None, Map()),
-
+        Artifact("oti-uml-composite_structure_tree_analysis", "zip", "zip", Some("resource"), Seq(), None, Map())
+    )
+  )
+  .dependsOnSourceProjectOrLibraryArtifacts(
+    "oti-uml-canonical_xmi-serialization",
+    "org.omg.oti.uml.canonical_xmi.serialization",
+    Seq(
       "org.omg.tiwg" %% "oti-uml-canonical_xmi-serialization"
-        % Versions_oti_uml_canonical_xmi_serialization.version % "compile" withSources() withJavadoc() artifacts
-        Artifact("oti-uml-canonical_xmi-serialization", "zip", "zip", Some("resource"), Seq(), None, Map()),
-
-      "gov.nasa.jpl.imce.omf" %% "omf-scala-core" 
-        % Versions_omf_scala_core.version % "compile" withSources() withJavadoc()
-
+      % Versions_oti_uml_canonical_xmi_serialization.version % "compile" withSources() withJavadoc() artifacts
+      Artifact("oti-uml-canonical_xmi-serialization", "zip", "zip", Some("resource"), Seq(), None, Map())
+    )
+  )
+  .dependsOnSourceProjectOrLibraryArtifacts(
+    "omf-scala-core",
+    "gov.nasa.jpl.omf.scala.core",
+    Seq(
+      "gov.nasa.jpl.imce.omf" %% "omf-scala-core"
+      % Versions_omf_scala_core.version % "compile" withSources() withJavadoc()
     )
   )
 
