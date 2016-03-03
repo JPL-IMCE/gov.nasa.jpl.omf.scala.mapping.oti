@@ -596,6 +596,55 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     result
   }
 
+  def packageOrAuthority2TBox
+  (rule: MappingFunction[Uml, Omf, Provenance],
+   pair: TBoxOTIDocumentPackagePair[Uml, Omf],
+   pkg2provenance: UMLPackage[Uml] => Provenance)
+  : Set[java.lang.Throwable] \/ TBoxOTIDocumentPackageConversion[Uml, Omf]
+  = {
+    val pkgU = pair.e
+
+    val result
+    : Set[java.lang.Throwable] \/ TBoxOTIDocumentPackageConversion[Uml, Omf]
+    = for {
+      pkgTbox <- ns2tboxCtor(rule, pkgU, TerminologyKind.isToplevelDefinition, pkg2provenance(pkgU))
+      _ <- {
+        val nestingResult
+        : Set[java.lang.Throwable] \/ Unit
+        = pair
+          .nestingPkgTbox
+          .fold[Set[java.lang.Throwable] \/ Unit](\/-(())) { nestingTbox =>
+          addDirectlyNestedTerminologyGraph(rule, nestingTbox, pkgTbox)
+        }
+        nestingResult
+      }
+      pkgConv <- {
+        val convPair = pair.toConversion(pkgTbox)
+        val convResult
+        : Set[java.lang.Throwable] \/ TBoxOTIDocumentPackageConversion[Uml, Omf]
+        = if (pair.authorities.isEmpty)
+          \/-(convPair)
+        else
+          mapElement2Concept(rule, pkgTbox, pkgU, isAbstract = false)
+            .flatMap { pkgC =>
+              val s0: Set[java.lang.Throwable] \/ Unit = \/-(())
+              val sN: Set[java.lang.Throwable] \/ Unit = (s0 /: pair.authorities) { (si, authS) =>
+                require(stereotype2Concept.contains(authS))
+                val authC = stereotype2Concept(authS)
+                si +++
+                  addEntityConceptSubClassAxiom(rule, pkgTbox, pkgC, authC)
+                    .map(_ => ())
+              }
+              sN
+            }
+          .map { _ => convPair }
+        convResult
+      }
+    } yield pkgConv
+
+    result
+  }
+
   lazy val baseContainsR = abbrevName2Relationship( "base:Contains" )
 
   val mappedElement2Aspect = scala.collection.mutable.HashMap[UMLElement[Uml], Omf#ModelEntityAspect]()
