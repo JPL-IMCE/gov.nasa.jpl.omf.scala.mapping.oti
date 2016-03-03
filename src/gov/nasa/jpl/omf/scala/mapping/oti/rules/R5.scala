@@ -57,20 +57,31 @@ case class R5[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
   def treeTypeMapping(context: OTI2OMFMappingContext[Uml, Omf, Provenance]) = {
 
+    import gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples._
     val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
       case (rule,
       ett@TboxUMLElementTreeType(Some(tbox), omfConcept, tree: TreeCompositeStructureType[Uml]),
       as, cs, rs, unmappedS) =>
 
         val result
-        : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs
+        : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]
         = if (TreeType.getIllFormedTreeBranchPairs(tree).nonEmpty) {
           System.out.println(s"*** Skip BST: $tree")
-          \/-((Nil, Nil, ett :: Nil))
+          \/-(
+            RuleResult[Uml, Omf, Provenance](
+              rule,
+              finalResults=Nil,
+              internalResults=Nil,
+              externalResults=Nil))
         }
         else {
           System.out.println(s"*** Convert BST: $tree")
-          \/-((Nil, Nil, Nil))
+          \/-(
+            RuleResult[Uml, Omf, Provenance](
+              rule,
+              finalResults=Nil,
+              internalResults=Nil,
+              externalResults=Nil))
         }
 
         result

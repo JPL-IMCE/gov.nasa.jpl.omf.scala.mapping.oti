@@ -66,6 +66,8 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
   def dependency2RelationshipMapping(context: OTI2OMFMappingContext[Uml, Omf, Provenance]) = {
 
+    import gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples._
+
     val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
       case (rule, TboxUMLElementTuple(Some(tbox), depU: UMLDependency[Uml]), as, cs, rs, unmappedS) =>
         if (rs.isEmpty) {
@@ -81,28 +83,30 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
             context.getDependencySourceAndTargetMappings(depU)
 
           osourceE
-          .fold[Set[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
+          .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]]({
             System.out.println(
               s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped source "+
               s"(target? ${otargetE.isDefined}): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel} "+
               s"- source: ${sourceU.toolSpecific_id.get} ${sourceU.xmiElementLabel} ${sourceU.qualifiedName.get}")
-            Tuple3(
-              Nil,
-              Nil,
-              TboxUMLElementTuple(Some(tbox), depU) :: Nil // try again at next phase
+            RuleResult[Uml, Omf, Provenance](
+              rule,
+              finalResults=Nil,
+              internalResults=Nil,
+              externalResults=TboxUMLElementTuple(Some(tbox), depU) :: Nil // try again at next phase
             ).right
           }) { sourceOmf =>
 
             otargetE
-            .fold[Set[java.lang.Throwable] \/ OTI2OMFMapper[Uml, Omf, Provenance]#RulesResult]({
+            .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]]({
               System.out.println(
                 s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped target "+
                 s"(source? true): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel} "+
                 s"- target: ${targetU.toolSpecific_id.get} ${targetU.xmiElementLabel} ${targetU.qualifiedName.get}")
-              Tuple3(
-                Nil,
-                Nil,
-                TboxUMLElementTuple(Some(tbox), depU) :: Nil // try again at next phase
+              RuleResult[Uml, Omf, Provenance](
+                rule,
+                finalResults=Nil,
+                internalResults=Nil,
+                externalResults=TboxUMLElementTuple(Some(tbox), depU) :: Nil // try again at next phase
               ).right
             }) { targetOmf =>
 
@@ -141,10 +145,11 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                 refiedRelationPair = TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), depOmfRelation, depU) :: Nil
               } yield {
                 System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapped: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
-                Tuple3(
-                  refiedRelationPair,
-                  Nil,
-                  Nil) // nothing further to do
+                RuleResult[Uml, Omf, Provenance](
+                  rule,
+                  finalResults=refiedRelationPair,
+                  internalResults=Nil,
+                  externalResults=Nil) // nothing further to do
               }
               result
             }

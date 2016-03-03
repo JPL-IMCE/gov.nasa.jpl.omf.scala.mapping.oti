@@ -76,12 +76,14 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
    */
   def namespace2AspectMapping(context: OTI2OMFMappingContext[Uml, Omf, Provenance]) = {
 
+    import gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples._
+
     val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
       case (rule, TboxUMLElementTuple(Some(tbox), nsU: UMLNamespace[Uml]), as, cs, rs, unmappedS)
         if as.nonEmpty && cs.isEmpty && rs.isEmpty =>
 
         val result
-        : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs
+        : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]
         = {
           if (unmappedS.nonEmpty) {
             val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
@@ -97,11 +99,13 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
             }
 
             aspectPair = TboxUMLElement2AspectDefinition(Some(tbox), clsOmfAspect, nsU) :: Nil
-          } yield Tuple3(
-            aspectPair,
-            Nil,
-            Nil // @todo enable when there are data property mapping rules aspectPair
-          )
+          } yield
+            RuleResult[Uml, Omf, Provenance](
+              rule,
+              finalResults=aspectPair,
+              internalResults=Nil,
+              externalResults=Nil // @todo enable when there are data property mapping rules aspectPair
+            )
         }
 
         result
@@ -116,13 +120,15 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
    */
   def namedElement2ConceptMapping(context: OTI2OMFMappingContext[Uml, Omf, Provenance]) = {
 
+    import gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples._
+
     def class2concept
     (rule: MappingFunction[Uml, Omf, Provenance],
      tbox: Omf#MutableModelTerminologyGraph,
      c: UMLClass[Uml],
      as: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityAspectMap,
      cs: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityConceptMap)
-    : Set[java.lang.Throwable] \/ (OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs) =
+    : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance] =
       context.mapElement2Concept(rule, tbox, c, c.isAbstract)
       .flatMap { cConcept =>
 //        System.out
@@ -153,7 +159,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
 //        System.out.println(s"#OTI/OMF R2 class2concept: error? ${rC.isLeft} ok? ${rC.isRight}")
         val result
-        : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs  =
+        : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]  =
           context.treeOps.isRootBlockSpecificType(c)
             .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
             .flatMap { isRBST =>
@@ -167,10 +173,11 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                       if (problems.isEmpty) {
                         System.out.println(s"#OTI/OMF R2 class2concept => RBST OK")
                         val conceptPair = TboxUMLElementTreeType(Some(tbox), cConcept, bst) :: Nil
-                        Tuple3(
-                          conceptPair, // this is a result
-                          Nil,
-                          conceptPair // it needs to be further expanded in the next phase
+                        RuleResult[Uml, Omf, Provenance](
+                          rule,
+                          finalResults=conceptPair, // this is a result
+                          internalResults=Nil,
+                          externalResults=conceptPair // it needs to be further expanded in the next phase
                         ).right
                       } else {
                         System.out.println(s"#OTI/OMF R2 class2concept => RBST ${problems.size} problems")
@@ -193,10 +200,11 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
               else {
                 System.out.println(s"#OTI/OMF R2 class2concept => not RBST")
                 val conceptPair = TboxUMLElement2ConceptDefinition(Some(tbox), cConcept, c) :: Nil
-                Tuple3(
-                  conceptPair, // this is a result
-                  Nil,
-                  Nil // @todo enable when there are data property mapping rules conceptPair
+                RuleResult[Uml, Omf, Provenance](
+                  rule,
+                  finalResults=conceptPair, // this is a result
+                  internalResults=Nil,
+                  externalResults=Nil // @todo enable when there are data property mapping rules conceptPair
                 ).right
               }
             }
@@ -212,7 +220,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
      cls: UMLClassifier[Uml],
      as: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityAspectMap,
      cs: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityConceptMap)
-    : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs =
+    : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance] =
       context.mapElement2Concept(rule, tbox, cls, cls.isAbstract)
         .flatMap { cConcept =>
 //          System.out
@@ -243,10 +251,11 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
           rC.flatMap{ _ =>
             val conceptPair = TboxUMLElement2ConceptDefinition(Some(tbox), cConcept, cls) :: Nil
-            Tuple3(
-              conceptPair, // this is a result
-              Nil,
-              Nil // @todo enable when there are data property mapping rules conceptPair
+            RuleResult[Uml, Omf, Provenance](
+              rule,
+              finalResults=conceptPair, // this is a result
+              internalResults=Nil,
+              externalResults=Nil // @todo enable when there are data property mapping rules conceptPair
             ).right
           }
         }
@@ -256,7 +265,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         if cs.nonEmpty && rs.isEmpty =>
 
         val result
-        : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs
+        : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]
         = {
           if (unmappedS.nonEmpty) {
             val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))

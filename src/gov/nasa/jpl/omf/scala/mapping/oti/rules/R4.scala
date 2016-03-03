@@ -65,6 +65,7 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
   def binaryCompositeAssociation2RelationshipMapping(context: OTI2OMFMappingContext[Uml, Omf, Provenance]) = {
 
+    import gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples._
     val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
       case (
         rule,
@@ -74,7 +75,7 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
           context.getDirectedBinaryAssociationSourceAndTargetMappings(bcaU).isDefined =>
 
         val result
-        : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#TboxUMLElementTriplePairs
+        : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]
         = {
           if (unmappedS.nonEmpty) {
             val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
@@ -102,10 +103,12 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
             }
 
             reifiedRelationPair = TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), bcaOmfRelation, bcaU) :: Nil
-          } yield Tuple3(
-            reifiedRelationPair,
-            Nil,
-            Nil)
+          } yield
+            RuleResult[Uml, Omf, Provenance](
+              rule,
+              finalResults=reifiedRelationPair,
+              internalResults=Nil,
+              externalResults=Nil)
         }
 
         result
