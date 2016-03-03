@@ -645,6 +645,25 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     result
   }
 
+  def nestedPackageOrAuthority2TBox
+  (rule: MappingFunction[Uml, Omf, Provenance],
+   pair: TBoxOTIDocumentPackageConversion[Uml, Omf],
+   pkg2provenance: UMLPackage[Uml] => Provenance,
+   nestedPkgAuthorities: Set[UMLStereotype[Uml]],
+   nestedPkgU: UMLPackage[Uml])
+  : Set[java.lang.Throwable] \/ TBoxOTIDocumentPackageConversion[Uml, Omf]
+  = {
+    val result
+    : Set[java.lang.Throwable] \/ TBoxOTIDocumentPackageConversion[Uml, Omf]
+    = for {
+      nestedPkgTbox <- ns2tboxCtor(rule, nestedPkgU, TerminologyKind.isDefinition, pkg2provenance(nestedPkgU))
+      _ <- addDirectlyNestedTerminologyGraph(rule, pair.pkgDocumentTbox, nestedPkgTbox)
+      nestedPkgConv = pair.toNestedConversion(nestedPkgAuthorities, nestedPkgU, nestedPkgTbox)
+    } yield nestedPkgConv
+
+    result
+  }
+
   lazy val baseContainsR = abbrevName2Relationship( "base:Contains" )
 
   val mappedElement2Aspect = scala.collection.mutable.HashMap[UMLElement[Uml], Omf#ModelEntityAspect]()
