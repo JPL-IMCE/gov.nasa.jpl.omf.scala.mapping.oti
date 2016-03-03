@@ -259,6 +259,8 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   val stereotype2Aspect: Map[UMLStereotype[Uml], Omf#ModelEntityAspect],
   val stereotype2Concept: Map[UMLStereotype[Uml], Omf#ModelEntityConcept],
   val stereotype2Relationship: Map[UMLStereotype[Uml], Omf#ModelEntityReifiedRelationship],
+
+  val specializingProfiles: Set[UMLProfile[Uml]],
   val otherStereotypesApplied: Set[UMLStereotype[Uml]],
   val pkg2ont: Map[UMLPackage[Uml], Omf#ImmutableModelTerminologyGraph],
   val pf2ont: Map[UMLProfile[Uml], Omf#ImmutableModelTerminologyGraph],
@@ -272,11 +274,14 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   import ops._
   import TBoxMappingTuples._
 
-  val package2SerializableDocument: Map[UMLPackage[Uml], Document[Uml] with SerializableDocument] =
-    rds.ds.allSerializableDocuments.map { d => d.scope -> d }.toMap
+  val package2Document: Map[UMLPackage[Uml], Document[Uml]]
+  = rds.ds.allDocuments.map { d => d.scope -> d }.toMap
 
-  val package2BuiltInDocument: Map[UMLPackage[Uml], Document[Uml] with BuiltInDocument] =
-    rds.ds.allBuiltInDocuments.map { d => d.scope -> d }.toMap
+  val package2SerializableDocument: Map[UMLPackage[Uml], Document[Uml] with SerializableDocument]
+  = rds.ds.allSerializableDocuments.map { d => d.scope -> d }.toMap
+
+  val package2BuiltInDocument: Map[UMLPackage[Uml], Document[Uml] with BuiltInDocument]
+  = rds.ds.allBuiltInDocuments.map { d => d.scope -> d }.toMap
 
   def lookupDocumentPackageScopeAndTerminologyGraph
   (p: UMLPackage[Uml])
@@ -327,7 +332,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   def lookupDocumentByPackageScope(pkg: UMLPackage[Uml]): Option[Document[Uml]] = {
     val result
     : Option[Document[Uml]]
-    = package2SerializableDocument.get(pkg).orElse(package2BuiltInDocument.get(pkg))
+    = package2Document.get(pkg)
 
     result
   }
@@ -569,10 +574,27 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     pa.get
   }
 
-  val projectAuthorityOrSpecific =
+  val projectAuthorityOrSpecific: Set[UMLStereotype[Uml]] =
     closure[UMLStereotype[Uml], UMLStereotype[Uml]](
       projectAuthorityS,
       _.general_classifier.selectByKindOf { case s: UMLStereotype[Uml] => s })
+
+  def lookupProjectAuthorityOrSpecificAppliedStereotype
+  (pkg: UMLPackage[Uml])
+  : Set[java.lang.Throwable] \/ Set[UMLStereotype[Uml]]
+  = {
+    val result
+    : Set[java.lang.Throwable] \/ Set[UMLStereotype[Uml]]
+    = pkg
+      .getAppliedStereotypes
+      .leftMap[Set[java.lang.Throwable]](_.list.to[Set])
+      .map { sp =>
+        val pas = sp.keySet & projectAuthorityOrSpecific
+        pas
+      }
+
+    result
+  }
 
   lazy val baseContainsR = abbrevName2Relationship( "base:Contains" )
 

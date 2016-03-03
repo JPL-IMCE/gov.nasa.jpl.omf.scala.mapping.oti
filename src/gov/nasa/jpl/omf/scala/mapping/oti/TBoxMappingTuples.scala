@@ -58,19 +58,112 @@ object TBoxMappingTuples {
     val e: UMLElement[Uml] )
   ( implicit omfOps: OMFOps[Omf] )
 
+  sealed abstract class TBoxOTIDocumentProfileTuple[Uml <: UML, Omf <: OMF]
+  ( override val tbox: Some[Omf#MutableModelTerminologyGraph],
+    override val e: UMLProfile[Uml],
+    val pfOTIDocument: Document[Uml] )
+  ( implicit omfOps: OMFOps[Omf] )
+  extends TboxUMLElementPair[Uml, Omf]( tbox, e )
+
   case class TBoxOTIDocumentProfilePair[Uml <: UML, Omf <: OMF]
   ( override val tbox: Some[Omf#MutableModelTerminologyGraph],
     override val e: UMLProfile[Uml],
-    d: Document[Uml])
+    override val pfOTIDocument: Document[Uml])
+  ( implicit omfOps: OMFOps[Omf] )
+    extends TBoxOTIDocumentProfileTuple[Uml, Omf]( tbox, e, pfOTIDocument) {
+
+    def toConversion
+    (pfDocumentTbox: Omf#MutableModelTerminologyGraph)
+    : TBoxOTIDocumentProfileConversion[Uml, Omf]
+    = TBoxOTIDocumentProfileConversion[Uml, Omf](tbox, e, pfOTIDocument, pfDocumentTbox)
+
+    def toConverted
+    (pfDocumentTbox: Omf#ImmutableModelTerminologyGraph)
+    : TBoxOTIDocumentProfileConverted[Uml, Omf]
+    = TBoxOTIDocumentProfileConverted[Uml, Omf](tbox, e, pfOTIDocument, pfDocumentTbox)
+
+  }
+
+  case class TBoxOTIDocumentProfileConversion[Uml <: UML, Omf <: OMF]
+  ( override val tbox: Some[Omf#MutableModelTerminologyGraph],
+    override val e: UMLProfile[Uml],
+    override val pfOTIDocument: Document[Uml],
+    pfDocumentTbox: Omf#MutableModelTerminologyGraph)
+  ( implicit omfOps: OMFOps[Omf] )
+    extends TBoxOTIDocumentProfileTuple[Uml, Omf]( tbox, e, pfOTIDocument ) {
+
+    override def toString: String =
+      s"TBoxOTIDocumentProfileConversion[tbox=${omfOps.getTerminologyGraphIRI( pfDocumentTbox )}, "+
+      s"${e.xmiType.head}: ${e.toolSpecific_id}]"
+  }
+
+  case class TBoxOTIDocumentProfileConverted[Uml <: UML, Omf <: OMF]
+  ( override val tbox: Some[Omf#MutableModelTerminologyGraph],
+    override val e: UMLProfile[Uml],
+    override val pfOTIDocument: Document[Uml],
+    pfDocumentTbox: Omf#ImmutableModelTerminologyGraph)
+  ( implicit omfOps: OMFOps[Omf] )
+    extends TBoxOTIDocumentProfileTuple[Uml, Omf]( tbox, e, pfOTIDocument ) {
+
+    override def toString: String =
+      s"TBoxOTIDocumentProfileConverted[tbox=${omfOps.getTerminologyGraphIRI( pfDocumentTbox )}, "+
+      s"${e.xmiType.head}: ${e.toolSpecific_id}]"
+
+  }
+
+  sealed abstract class TBoxOTIDocumentPackageTuple[Uml <: UML, Omf <: OMF]
+  ( override val tbox: Some[Omf#MutableModelTerminologyGraph],
+    override val e: UMLPackage[Uml],
+    val pkgOTIDocument: Document[Uml] )
   ( implicit omfOps: OMFOps[Omf] )
     extends TboxUMLElementPair[Uml, Omf]( tbox, e )
 
   case class TBoxOTIDocumentPackagePair[Uml <: UML, Omf <: OMF]
   ( override val tbox: Some[Omf#MutableModelTerminologyGraph],
     override val e: UMLPackage[Uml],
-    d: Document[Uml])
+    override val pkgOTIDocument: Document[Uml])
   ( implicit omfOps: OMFOps[Omf] )
-    extends TboxUMLElementPair[Uml, Omf]( tbox, e )
+    extends TBoxOTIDocumentPackageTuple[Uml, Omf]( tbox, e, pkgOTIDocument ) {
+
+    def toConversion
+    (pkgDocumentTbox: Omf#MutableModelTerminologyGraph)
+    : TBoxOTIDocumentPackageConversion[Uml, Omf]
+    = TBoxOTIDocumentPackageConversion[Uml, Omf](tbox, e, pkgOTIDocument, pkgDocumentTbox)
+
+    def toConverted
+    (pkgDocumentTbox: Omf#ImmutableModelTerminologyGraph)
+    : TBoxOTIDocumentPackageConverted[Uml, Omf]
+    = TBoxOTIDocumentPackageConverted[Uml, Omf](tbox, e, pkgOTIDocument, pkgDocumentTbox)
+
+  }
+
+  case class TBoxOTIDocumentPackageConversion[Uml <: UML, Omf <: OMF]
+  ( override val tbox: Some[Omf#MutableModelTerminologyGraph],
+    override val e: UMLPackage[Uml],
+    override val pkgOTIDocument: Document[Uml],
+    pkgDocumentTbox: Omf#MutableModelTerminologyGraph)
+  ( implicit omfOps: OMFOps[Omf] )
+    extends TBoxOTIDocumentPackageTuple[Uml, Omf]( tbox, e, pkgOTIDocument ) {
+
+    override def toString: String =
+      s"TBoxOTIDocumentPackageConversion[tbox=${omfOps.getTerminologyGraphIRI( pkgDocumentTbox )}, "+
+      s"${e.xmiType.head}: ${e.toolSpecific_id}]"
+
+  }
+
+  case class TBoxOTIDocumentPackageConverted[Uml <: UML, Omf <: OMF]
+  ( override val tbox: Some[Omf#MutableModelTerminologyGraph],
+    override val e: UMLPackage[Uml],
+    override val pkgOTIDocument: Document[Uml],
+    pkgDocumentTbox: Omf#ImmutableModelTerminologyGraph)
+  ( implicit omfOps: OMFOps[Omf] )
+    extends TBoxOTIDocumentPackageTuple[Uml, Omf]( tbox, e, pkgOTIDocument ) {
+
+    override def toString: String =
+      s"TBoxOTIDocumentPackageConverted[tbox=${omfOps.getTerminologyGraphIRI( pkgDocumentTbox )}, "+
+      s"${e.xmiType.head}: ${e.toolSpecific_id}]"
+
+  }
 
   sealed abstract class TboxUMLElement2EntityDefinition[Uml <: UML, Omf <: OMF]
   ( override val tbox: Option[Omf#MutableModelTerminologyGraph],
