@@ -73,41 +73,41 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         if (rs.isEmpty) {
           val explanation: String = unmappedS.toList.map(_.qualifiedName.get).mkString(s"${unmappedS.size} unmapped stereotypes (",",",")")
           System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => error: ${depU.xmiElementLabel}: ${depU.toolSpecific_id} $explanation")
-          Set(
+          \&/.This(Set(
             UMLError.illegalElementError[Uml, UMLDependency[Uml]](
               s"R3 is not applicable to: $depU because $explanation",
               Iterable(depU))
-          ).left
+          ))
         } else {
           val ( ( sourceU, osourceE ), ( targetU, otargetE )) =
             context.getDependencySourceAndTargetMappings(depU)
 
           osourceE
-          .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]]({
+          .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]]({
             System.out.println(
               s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped source "+
               s"(target? ${otargetE.isDefined}): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel} "+
               s"- source: ${sourceU.toolSpecific_id.get} ${sourceU.xmiElementLabel} ${sourceU.qualifiedName.get}")
-            RuleResult[Uml, Omf, Provenance](
+            \&/.That(RuleResult[Uml, Omf, Provenance](
               rule,
-              finalResults=Nil,
-              internalResults=Nil,
-              externalResults=TboxUMLElementTuple(Some(tbox), depU) :: Nil // try again at next phase
-            ).right
+              finalResults=Vector(),
+              internalResults=Vector(),
+              externalResults=Vector(TboxUMLElementTuple(Some(tbox), depU)) // try again at next phase
+            ))
           }) { sourceOmf =>
 
             otargetE
-            .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]]({
+            .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]]({
               System.out.println(
                 s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped target "+
                 s"(source? true): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel} "+
                 s"- target: ${targetU.toolSpecific_id.get} ${targetU.xmiElementLabel} ${targetU.qualifiedName.get}")
-              RuleResult[Uml, Omf, Provenance](
+              \&/.That(RuleResult[Uml, Omf, Provenance](
                 rule,
-                finalResults=Nil,
-                internalResults=Nil,
-                externalResults=TboxUMLElementTuple(Some(tbox), depU) :: Nil // try again at next phase
-              ).right
+                finalResults=Vector(),
+                internalResults=Vector(),
+                externalResults=Vector(TboxUMLElementTuple(Some(tbox), depU)) // try again at next phase
+              ))
             }) { targetOmf =>
 
               if (unmappedS.nonEmpty) {
@@ -142,16 +142,19 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                   case (relUml, relOmf) =>
                     context.addEntityRelationshipSubClassAxiom(rule, tbox, depOmfRelation, relOmf)
                 }
-                refiedRelationPair = TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), depOmfRelation, depU) :: Nil
+                refiedRelationPair =
+                Vector(TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), depOmfRelation, depU))
               } yield {
-                System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => mapped: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
+                System.out.println(
+                  s"#OTI/OMF R3 dependency2RelationshipMapping => "+
+                  s"mapped: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
                 RuleResult[Uml, Omf, Provenance](
                   rule,
                   finalResults=refiedRelationPair,
-                  internalResults=Nil,
-                  externalResults=Nil) // nothing further to do
+                  internalResults=Vector(),
+                  externalResults=Vector()) // nothing further to do
               }
-              result
+              result.toThese
             }
           }
         }

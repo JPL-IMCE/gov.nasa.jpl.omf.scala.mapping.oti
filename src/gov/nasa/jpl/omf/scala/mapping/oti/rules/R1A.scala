@@ -51,7 +51,7 @@ import scala.{Some,StringContext,Tuple3,Unit}
 import scala.Predef.require
 import scala.collection.immutable._
 import scala.language.postfixOps
-import scalaz._, Scalaz._
+import scalaz._
 
 /**
   * Toplevel mapping of a kind of UML Package with an OTI Document.
@@ -110,9 +110,9 @@ object R1A {
    cs: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityConceptMap,
    rs: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityRelationshipMap,
    unmappedS: Set[UMLStereotype[Uml]])
-  : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]
+  : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
   = if (pair.authorities.nonEmpty)
-      -\/(Set[java.lang.Throwable](
+      \&/.This(Set[java.lang.Throwable](
 
         UMLError.illegalElementError[Uml, UMLProfile[Uml]](
           s"${pair.authorities.size} project:Authority-based stereotypes " +
@@ -124,36 +124,36 @@ object R1A {
     else {
       val pfU: UMLProfile[Uml] = pair.e
       val result
-      : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]
+      : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
       = context.lookupImmutableModelTerminologyGraphByProfile(pfU)
-        .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]] {
+        .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]] {
 
         context.lookupMutableModelTerminologyGraphByProfile(pfU)
-          .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]] {
+          .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]] {
 
           require(!context.specializingProfiles.contains(pfU))
 
           java.lang.System.out.println(
             s"-R1A.profile: [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => " +
               s"cannot be mapped as an extension of an OMF-mapped profile")
-          Set(
+          \&/.This(Set(
             UMLError.illegalElementError[Uml, UMLProfile[Uml]](
               s"R1A: profile ${pfU.qualifiedName.get} cannot be mapped as an extension of an OMF-mapped profile",
               Iterable(pfU))
-          ).left
+          ))
         } { pfOnt =>
 
           // The contents of pfU has been already mapped to pfOnt (mutable)
           // by the stereotype specialization analysis; nothing else to do.
           java.lang.System.out.println(
             s"+R1A.profile(M): [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get}")
-          val pairs = pair.toConversion(pfOnt) :: Nil
-          RuleResult[Uml, Omf, Provenance](
+          val pairs = Vector(pair.toConversion(pfOnt))
+          \&/.That(RuleResult[Uml, Omf, Provenance](
             rule,
             finalResults = pairs,
-            internalResults = Nil,
-            externalResults = Nil
-          ).right
+            internalResults = Vector(),
+            externalResults = Vector()
+          ))
 
         }
       } { pfOnt =>
@@ -161,12 +161,12 @@ object R1A {
         // nothing else to do.
         java.lang.System.out.println(
           s"+R1A.profile(I): [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get}")
-        RuleResult[Uml, Omf, Provenance](
+        \&/.That(RuleResult[Uml, Omf, Provenance](
           rule,
-          finalResults = pair.toConverted(pfOnt) :: Nil,
-          internalResults = Nil,
-          externalResults = Nil
-        ).right
+          finalResults = Vector(pair.toConverted(pfOnt)),
+          internalResults = Vector(),
+          externalResults = Vector()
+        ))
       }
 
       result
@@ -201,19 +201,19 @@ object R1A {
    cs:  OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityConceptMap,
    rs:  OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityRelationshipMap,
    unmappedS: Set[UMLStereotype[Uml]])
-  : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]
+  : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
   = {
 
     val pkgU: UMLPackage[Uml] = pair.e
 
     java.lang.System.out.println(s"@R1A.package: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
     val result
-    : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]
+    : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
     = context.lookupImmutableModelTerminologyGraphByPackage(pkgU)
-      .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]]{
+      .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]]{
 
       context.lookupMutableModelTerminologyGraphByPackage(pkgU)
-        .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]] {
+        .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]] {
 
         pair.pkgOTIDocument match {
 
@@ -222,12 +222,12 @@ object R1A {
             java.lang.System.out.println(
               s"-@R1A.package(BuiltIn): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} - " +
                 s" ${pair.pkgOTIDocument.info.packageURI}")
-            RuleResult[Uml, Omf, Provenance](
+            \&/.That(RuleResult[Uml, Omf, Provenance](
               rule,
-              finalResults = Nil,
-              internalResults = Nil,
-              externalResults = Nil
-            ).right
+              finalResults = Vector(),
+              internalResults = Vector(),
+              externalResults = Vector()
+            ))
 
           case _ =>
 
@@ -236,41 +236,41 @@ object R1A {
 
             context
               .packageOrAuthority2TBox(rule, pair, pkg2provenance)
-              .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]](
+              .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
               (nels: Set[java.lang.Throwable]) => {
                 java.lang.System.out.println(
                   s"-@R1A.package(New): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} - ${nels.head}")
-                -\/(nels)
+                \&/.This(nels)
               },
               (convertedPair: TBoxOTIDocumentPackageConversion[Uml, Omf]) =>
-                RuleResult[Uml, Omf, Provenance](
+                \&/.That(RuleResult[Uml, Omf, Provenance](
                   rule,
-                  finalResults = Nil,
-                  internalResults = Nil,
-                  externalResults = convertedPair :: Nil
-                ).right
+                  finalResults = Vector(),
+                  internalResults = Vector(),
+                  externalResults = Vector(convertedPair)
+                ))
             )
         }
       } { pkgTbox =>
 
-        Set(
+        \&/.This(Set(
           UMLError.illegalElementError[Uml, UMLPackage[Uml]](
             s"R1A: package ${pkgU.qualifiedName.get} should have not yet been mapped"+
             s"to a mutable OMF TBox: ${context.ops.getTerminologyGraphIRI(pkgTbox)}",
             Iterable(pkgU))
-        ).left
+        ))
 
       }
     } { pkgTbox =>
       // The contents of pkgU are, by definition, already in pkgOnt (immutable)
       java.lang.System.out.println(
         s"+R1A.package(I): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
-      RuleResult[Uml, Omf, Provenance](
+      \&/.That(RuleResult[Uml, Omf, Provenance](
         rule,
-        finalResults = pair.toConverted(pkgTbox) :: Nil,
-        internalResults = Nil,
-        externalResults = Nil
-      ).right
+        finalResults = Vector(pair.toConverted(pkgTbox)),
+        internalResults = Vector(),
+        externalResults = Vector()
+      ))
     }
 
     result

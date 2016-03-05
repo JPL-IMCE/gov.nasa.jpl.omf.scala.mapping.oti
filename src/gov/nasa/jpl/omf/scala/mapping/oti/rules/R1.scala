@@ -82,50 +82,50 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
 
       case (rule, TboxUMLElementTuple(Some(tbox), pfU: UMLProfile[Uml]), as, cs, rs, unmappedS) =>
         val result
-        : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]
+        : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
         = context.lookupImmutableModelTerminologyGraphByProfile(pfU)
-          .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]]({
+          .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]]({
 
           context.lookupMutableModelTerminologyGraphByProfile(pfU)
-            .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]]({
+            .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]]({
             java.lang.System.out.println(s"-R1.profile: [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => no OMF Graph")
-            Set(
+            \&/.This(Set(
               UMLError.illegalElementError[Uml, UMLProfile[Uml]](
                 s"profile ${pfU.qualifiedName.get} should have been mapped to an immutable OMF graph",
                 Iterable(pfU))
-            ).left
+            ))
           }) { pfOnt =>
             context.lookupDocumentPackageScopeAndTerminologyGraph(pfU)
-              .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]](
+              .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
               l = (nels) =>
-                nels.left,
-              r = _.fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]](
-                Set(
+                \&/.This(nels),
+              r = _.fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
+                \&/.This(Set(
                   UMLError.illegalElementError[Uml, UMLPackage[Uml]](
                     s"Failed to lookup the document for profile: ${pfU.qualifiedName.get}",
                     Iterable(pfU)
                   )
-                ).left
+                ))
               ) { case (pfD, pfG) =>
 
                 // The contents of pfU need to be mapped to pfOnt (mutable)
                 java.lang.System.out.println(s"+R1.profile(M): [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get}")
-                val pairs = TboxUMLProfile2MutableTBoxConversion(pfOnt.some, pfU, pfD, pfG) :: Nil
-                RuleResult[Uml, Omf, Provenance](
+                val pairs = Vector(TboxUMLProfile2MutableTBoxConversion(pfOnt.some, pfU, pfD, pfG))
+                \&/.That(RuleResult[Uml, Omf, Provenance](
                   rule,
                   finalResults = pairs,
                   internalResults = pairs,
-                  externalResults = Nil).right
+                  externalResults = Vector()))
               })
           }
         }) { pfOnt =>
           // The contents of pfU are, by definition, already in pfOnt (immutable)
           java.lang.System.out.println(s"+R1.profile(I): [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get}")
-          RuleResult[Uml, Omf, Provenance](
+          \&/.That(RuleResult[Uml, Omf, Provenance](
             rule,
-            finalResults = TboxUMLProfile2ImmutableTBoxTuple(pfOnt.some, pfU) :: Nil,
-            internalResults = Nil,
-            externalResults = Nil).right
+            finalResults = Vector(TboxUMLProfile2ImmutableTBoxTuple(pfOnt.some, pfU)),
+            internalResults = Vector(),
+            externalResults = Vector()))
         }
 
         result
@@ -133,34 +133,34 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
       case (rule, TboxUMLElementTuple(Some(tbox), pkgU: UMLPackage[Uml]), as, cs, rs, unmappedS) =>
         java.lang.System.out.println(s"@R1.package: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
         val result
-        : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]
+        : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
         = context.lookupImmutableModelTerminologyGraphByPackage(pkgU)
-          .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]](
+          .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
           context.lookupMutableModelTerminologyGraphByPackage(pkgU)
-            .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]]({
+            .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]]({
 
             val errors_or_pkgTbox =
               context
                 .ns2tboxCtor(rule, pkgU, TerminologyKind.isToplevelDefinition, pkg2provenance(pkgU))
 
             errors_or_pkgTbox
-              .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]](
+              .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
               (nels: Set[java.lang.Throwable]) => {
                 java.lang.System.out.println(s"-@R1.package(New): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} - ${nels.head}")
-                -\/(nels)
+                \&/.This(nels)
               },
               (pkgTbox: Omf#MutableModelTerminologyGraph) => {
                 context.lookupDocumentPackageScopeAndTerminologyGraph(pkgU)
-                  .fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]](
+                  .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
                   l = (nels) =>
-                    nels.left,
-                  r = _.fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]](
-                    Set(
+                    \&/.This(nels),
+                  r = _.fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
+                    \&/.This(Set(
                       UMLError.illegalElementError[Uml, UMLPackage[Uml]](
                         s"Failed to lookup the document for package: ${pkgU.qualifiedName.get}",
                         Iterable(pkgU)
                       )
-                    ).left
+                    ))
                   ) { case (pkgD, pkgG) =>
 
                     context.partitionAppliedStereotypesByMapping(pkgU)
@@ -185,36 +185,36 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
 
                             // The contents of pkgU need to be mapped to pkgOnt (mutable)
                             val pairs =
-                              TboxUMLPackage2MutableTBoxConversion(pkgTbox.some, pkgU, pkgD, pkgG, pkgC, superConcepts) :: Nil
+                              Vector(TboxUMLPackage2MutableTBoxConversion(pkgTbox.some, pkgU, pkgD, pkgG, pkgC, superConcepts))
                             java.lang.System.out.println(s"+@R1.package(New)O ${context.ops.getTerminologyGraphIRI(pkgTbox)}")
                             RuleResult[Uml, Omf, Provenance](
                               rule,
                               finalResults = pairs,
                               internalResults = pairs,
-                              externalResults = Nil
+                              externalResults = Vector()
                             ).right
                           }
-                      }
+                      }.toThese
                   })
               })
           }) { pkgOnt =>
             // @todo Is this case possible at all?
             java.lang.System.out.println(s"+R1.package(M): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
-            RuleResult[Uml, Omf, Provenance](
+            \&/.That(RuleResult[Uml, Omf, Provenance](
               rule,
-              finalResults = TboxUMLPackage2MutableTBoxTuple(pkgOnt.some, pkgU) :: Nil,
-              internalResults = Nil,
-              externalResults = Nil
-            ).right
+              finalResults = Vector(TboxUMLPackage2MutableTBoxTuple(pkgOnt.some, pkgU)),
+              internalResults = Vector(),
+              externalResults = Vector()
+            ))
           }) { pkgOnt =>
           // The contents of pkgU are, by definition, already in pkgOnt (immutable)
           java.lang.System.out.println(s"+R1.package(I): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get}")
-          RuleResult[Uml, Omf, Provenance](
+          \&/.That(RuleResult[Uml, Omf, Provenance](
             rule,
-            finalResults = TboxUMLPackage2ImmutableTBoxTuple(pkgOnt.some, pkgU) :: Nil,
-            internalResults = Nil,
-            externalResults = Nil
-          ).right
+            finalResults = Vector(TboxUMLPackage2ImmutableTBoxTuple(pkgOnt.some, pkgU)),
+            internalResults = Vector(),
+            externalResults = Vector()
+          ))
         }
 
         result
@@ -338,16 +338,16 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
             java.lang.System.out.println(
               s"#OTI/OMF R1 pkgConversion: [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} "+
               s"=> ${pkgContents.size} contents")
-            val moreContents = pkgContents.map(TboxUMLElementTuple(pkgTbox.some, _)).toList
+            val moreContents = pkgContents.map(TboxUMLElementTuple(pkgTbox.some, _)).toVector
 
-            val pkgPair = TboxUMLPackage2ConceptDefinition(pkgTbox.some, pkgC, pkgU) :: Nil
+            val pkgPair = Vector(TboxUMLPackage2ConceptDefinition(pkgTbox.some, pkgC, pkgU))
           RuleResult[Uml, Omf, Provenance](
             rule,
             finalResults = pkgPair,
             internalResults = moreContents,
-            externalResults = Nil).right
+            externalResults = Vector()).right
         }
-        sResult
+        sResult.toThese
 
       case (rule,
       TboxUMLProfile2MutableTBoxConversion(Some(pfTbox), pfU, pfOTIDocument, pfDocumentTBox),
@@ -457,16 +457,16 @@ case class R1[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps
             .println(
               s"#OTI/OMF R1 pfConversion: [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} "+
               s"=> ${pkgContents.size} contents")
-          val moreContents = pkgContents.map(TboxUMLElementTuple(pfTbox.some, _)).toList
+          val moreContents = pkgContents.map(TboxUMLElementTuple(pfTbox.some, _)).toVector
 
           RuleResult[Uml, Omf, Provenance](
             rule,
-            finalResults=Nil,
+            finalResults=Vector(),
             internalResults=moreContents,
-            externalResults=Nil).right
+            externalResults=Vector()).right
         }
 
-        result
+        result.toThese
     }
 
     MappingFunction[Uml, Omf, Provenance]( "profileOrPackageMapping", mapping )

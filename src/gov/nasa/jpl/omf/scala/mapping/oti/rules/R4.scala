@@ -102,16 +102,17 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
               context.addEntityRelationshipSubClassAxiom(rule, tbox, bcaOmfRelation, rel)
             }
 
-            reifiedRelationPair = TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), bcaOmfRelation, bcaU) :: Nil
+            reifiedRelationPair =
+            Vector(TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), bcaOmfRelation, bcaU))
           } yield
             RuleResult[Uml, Omf, Provenance](
               rule,
               finalResults=reifiedRelationPair,
-              internalResults=Nil,
-              externalResults=Nil)
+              internalResults=Vector(),
+              externalResults=Vector())
         }
 
-        result
+        result.toThese
     }
 
     MappingFunction[Uml, Omf, Provenance]("binaryCompositeAssociation2RelationshipMapping", mapping)

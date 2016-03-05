@@ -227,16 +227,16 @@ import TBoxMappingTuples._
 /**
   * Result from applying a rule to a set of pairs.
   *
-  * @param rule
+  * @param rule the rule to apply
   * @param finalResults pairs to be added as the result of this phase
   * @param internalResults pairs to be processed within this phase
   * @param externalResults pairs to be processed in the next phase (or as errors if this is the last phase rule)
   */
 case class RuleResult[Uml <: UML, Omf <: OMF, Provenance]
 ( rule: MappingFunction[Uml, Omf, Provenance],
-  finalResults: List[TboxUMLElementPair[Uml, Omf]],
-  internalResults: List[TboxUMLElementPair[Uml, Omf]],
-  externalResults: List[TboxUMLElementPair[Uml, Omf]] )
+  finalResults: Vector[TboxUMLElementPair[Uml, Omf]],
+  internalResults: Vector[TboxUMLElementPair[Uml, Omf]],
+  externalResults: Vector[TboxUMLElementPair[Uml, Omf]] )
 
 
 abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
@@ -377,7 +377,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
       UMLStereotype2EntityConceptMap,
       UMLStereotype2EntityRelationshipMap,
       Set[UMLStereotype[Uml]] ),
-    Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]]
+    Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]]
 
   type Element2AspectCTorRuleFunction = Function3[
     MappingFunction[Uml, Omf, Provenance],
@@ -810,12 +810,17 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF, Provenance]() {
   ( context: OTI2OMFMappingContext[Uml, Omf, Provenance],
     current: TboxUMLElementPair[Uml, Omf],
     rules: List[MappingFunction[Uml, Omf, Provenance]] )
-  : Set[java.lang.Throwable] \/ Option[RuleResult[Uml, Omf, Provenance]] = {
+  : Set[java.lang.Throwable] \&/ Option[RuleResult[Uml, Omf, Provenance]]
+  = {
 
     val result
-    : Set[java.lang.Throwable] \/ Option[RuleResult[Uml, Omf, Provenance]]
-    = context.getAppliedStereotypesMappedToOMF(current.e)
-      .flatMap { case (as, cs, rs, us) =>
+    : Set[java.lang.Throwable] \&/ Option[RuleResult[Uml, Omf, Provenance]]
+    = context
+      .getAppliedStereotypesMappedToOMF(current.e)
+      .fold[Set[java.lang.Throwable] \&/ Option[RuleResult[Uml, Omf, Provenance]]](
+      (nels: Set[java.lang.Throwable]) =>
+        \&/.This(nels),
+      { case (as, cs, rs, us) =>
         val remaining =
           rules.dropWhile { r =>
             val isApplicable = r.mappingRule.isDefinedAt(Tuple6(r, current, as, cs, rs, us))
@@ -824,22 +829,21 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF, Provenance]() {
 
         remaining match {
           case Nil =>
-            Option.empty[RuleResult[Uml, Omf, Provenance]]
-              .right
+            \&/.That(Option.empty[RuleResult[Uml, Omf, Provenance]])
           case r :: _ =>
             r
               .mappingRule(Tuple6(r, current, as, cs, rs, us))
               .map(_.some)
         }
-      }
+      })
 
     result
   }
 
   type RulesResult =
-  ( List[TboxUMLElementPair[Uml, Omf]],
-    List[TboxUMLElementPair[Uml, Omf]],
-    List[TboxUMLElementPair[Uml, Omf]] )
+  ( Vector[TboxUMLElementPair[Uml, Omf]],
+    Vector[TboxUMLElementPair[Uml, Omf]],
+    Vector[TboxUMLElementPair[Uml, Omf]] )
 
   /**
    * Successively apply all matching rules to each content pair until
@@ -848,41 +852,42 @@ case class OTI2OMFMapper[Uml <: UML, Omf <: OMF, Provenance]() {
   def applyAllRules
   ( context: OTI2OMFMappingContext[Uml, Omf, Provenance],
     tbox: Option[Omf#MutableModelTerminologyGraph],
-    contentPairs: List[TboxUMLElementPair[Uml, Omf]],
+    contentPairs: Vector[TboxUMLElementPair[Uml, Omf]],
     rules: List[MappingFunction[Uml, Omf, Provenance]] )
   ( implicit omfOps: OMFOps[Omf] )
   : Set[java.lang.Throwable] \&/ RulesResult = {
 
     @annotation.tailrec def step
     ( errors: Set[java.lang.Throwable],
-      queue: List[TboxUMLElementPair[Uml, Omf]],
-      results: List[TboxUMLElementPair[Uml, Omf]],
-      deferred: List[TboxUMLElementPair[Uml, Omf]],
-      outputs: List[TboxUMLElementPair[Uml, Omf]] )
-    : Set[java.lang.Throwable] \&/ RulesResult =
-      queue match {
-        case Nil =>
-          if (errors.isEmpty)
-            \&/.That( ( results, deferred, outputs ) )
-          else
-            \&/.Both(errors, ( results, deferred, outputs ) )
-        case pair :: pairs =>
-          val ruleResult
-          : Set[java.lang.Throwable] \/ Option[RuleResult[Uml, Omf, Provenance]]
-          = applyMatchingRule( context, pair, rules )
-          ruleResult match {
-            case -\/( f ) =>
-              step( errors ++ f, pairs, results, deferred, outputs )
-            case \/-( None ) =>
-              step( errors, pairs, results, pair :: deferred, outputs )
-            case \/-( Some( RuleResult( rule, moreResults, morePairs, moreOutputs ) ) ) =>
-              step( errors, pairs ::: morePairs, moreResults ::: results, deferred, moreOutputs ::: outputs )
-          }
+      queue: Vector[TboxUMLElementPair[Uml, Omf]],
+      results: Vector[TboxUMLElementPair[Uml, Omf]],
+      deferred: Vector[TboxUMLElementPair[Uml, Omf]],
+      outputs: Vector[TboxUMLElementPair[Uml, Omf]] )
+    : Set[java.lang.Throwable] \&/ RulesResult
+    = if (queue.isEmpty) {
+      if (errors.isEmpty)
+        \&/.That((results, deferred, outputs))
+      else
+        \&/.Both(errors, (results, deferred, outputs))
+    } else {
+      val (pair, pairs) = (queue.head, queue.tail)
+
+      val ruleResult
+      : Set[java.lang.Throwable] \&/ Option[RuleResult[Uml, Omf, Provenance]]
+      = applyMatchingRule( context, pair, rules )
+
+      val nextErrors = errors ++ ruleResult.a.getOrElse(Set())
+      ruleResult.b.getOrElse(None) match {
+        case None =>
+          step( nextErrors, pairs, results, deferred :+ pair, outputs )
+        case Some( RuleResult( rule, moreResults, morePairs, moreOutputs ) ) =>
+          step( nextErrors, pairs ++ morePairs, results ++ moreResults, deferred, outputs ++ moreOutputs)
       }
+    }
 
     val result
     : Set[java.lang.Throwable] \&/ RulesResult
-    = step( Set[java.lang.Throwable](), contentPairs, Nil, Nil, Nil )
+    = step( Set[java.lang.Throwable](), contentPairs, Vector(), Vector(), Vector() )
 
     result
   }

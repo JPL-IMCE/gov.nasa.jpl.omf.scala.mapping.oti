@@ -64,24 +64,24 @@ case class R5[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
       as, cs, rs, unmappedS) =>
 
         val result
-        : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]
+        : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
         = if (TreeType.getIllFormedTreeBranchPairs(tree).nonEmpty) {
           System.out.println(s"*** Skip BST: $tree")
-          \/-(
+          \&/.That(
             RuleResult[Uml, Omf, Provenance](
               rule,
-              finalResults=Nil,
-              internalResults=Nil,
-              externalResults=Nil))
+              finalResults=Vector(),
+              internalResults=Vector(),
+              externalResults=Vector()))
         }
         else {
           System.out.println(s"*** Convert BST: $tree")
-          \/-(
+          \&/.That(
             RuleResult[Uml, Omf, Provenance](
               rule,
-              finalResults=Nil,
-              internalResults=Nil,
-              externalResults=Nil))
+              finalResults=Vector(),
+              internalResults=Vector(),
+              externalResults=Vector()))
         }
 
         result

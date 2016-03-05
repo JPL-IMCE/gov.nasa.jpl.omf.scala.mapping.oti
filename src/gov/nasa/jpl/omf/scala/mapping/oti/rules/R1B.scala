@@ -63,21 +63,8 @@ case class R1B[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOp
     = {
 
       case (rule, pair: TBoxOTIDocumentPackageConversion[Uml, Omf], as, cs, rs, unmappedS) => {
-        // @todo revisit when the rule engine returns \&/ instead of \/
         val conversions = R1B.documentPackageConversion(context, pkg2provenance, rule, pair, as, cs, rs, unmappedS)
-        conversions.fold[Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]](
-          (nels: Set[java.lang.Throwable]) =>
-            -\/(nels),
-          (result: RuleResult[Uml, Omf, Provenance]) =>
-            \/-(result),
-          (nels: Set[java.lang.Throwable], result: RuleResult[Uml, Omf, Provenance]) => {
-            java.lang.System.out.println(
-              s"R1B ${nels.size} errors" +
-                nels.map(_.toString).mkString("\n", "\n", "")
-            )
-            \/-(result)
-          }
-        )
+        conversions
       }
     }
 
@@ -102,7 +89,7 @@ object R1B {
   = {
 
     val r0: Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance] =
-      \&/.That(RuleResult[Uml, Omf, Provenance](rule, Nil, Nil, Nil))
+      \&/.That(RuleResult[Uml, Omf, Provenance](rule, Vector(), Vector(), Vector()))
 
     val rN: Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance] =
       ( r0 /: pair.e.nestedPackage ) { (ri, subPkgU) =>
@@ -119,8 +106,8 @@ object R1B {
               if (authorities.isEmpty)
                 \&/.That(acc.copy(
                     internalResults =
-                      pair.copy(e = subPkgU)(context.ops) ::
-                        acc.internalResults)
+                      acc.internalResults :+ pair.copy(e = subPkgU)(context.ops))
+
                 )
               else
                 context
@@ -130,7 +117,7 @@ object R1B {
                     \&/.Both(nels, acc),
                   (nestedPair: TBoxOTIDocumentPackageConversion[Uml, Omf]) =>
                     \&/.That(acc.copy(
-                      internalResults = nestedPair :: acc.internalResults)
+                      internalResults = acc.internalResults :+ nestedPair)
                     )
                 )
           )
