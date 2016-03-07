@@ -89,7 +89,11 @@ object R1B {
   = {
 
     val r0: Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance] =
-      \&/.That(RuleResult[Uml, Omf, Provenance](rule, Vector(), Vector(), Vector()))
+      \&/.That(RuleResult[Uml, Omf, Provenance](
+        rule,
+        Vector(),
+        Vector(),
+        Vector(pair.toContentsConversion())))
 
     val rN: Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance] =
       ( r0 /: pair.e.nestedPackage ) { (ri, subPkgU) =>

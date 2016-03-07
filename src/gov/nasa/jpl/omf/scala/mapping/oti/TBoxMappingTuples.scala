@@ -155,6 +155,11 @@ object TBoxMappingTuples {
   ( implicit omfOps: OMFOps[Omf] )
     extends TBoxOTIDocumentPackageTuple( tbox, e, authorities, pkgOTIDocument, nestingPkgTbox ) {
 
+    def toContentsConversion
+    ()
+    : TBoxPackageContentsConversion[Uml, Omf]
+    = TBoxPackageContentsConversion(tbox, e, pkgDocumentTbox)
+
     def toNestedConversion
     (authorities: Set[UMLStereotype[Uml]],
      nestedPkgU: UMLPackage[Uml],
@@ -181,6 +186,19 @@ object TBoxMappingTuples {
     override def toString: String =
       s"TBoxOTIDocumentPackageConverted[tbox=${omfOps.getTerminologyGraphIRI( pkgDocumentTbox )}, "+
       s"${e.xmiType.head}: ${e.toolSpecific_id}]"
+
+  }
+
+  case class TBoxPackageContentsConversion[Uml <: UML, Omf <: OMF]
+  ( override val tbox: Some[Omf#MutableModelTerminologyGraph],
+    override val e: UMLPackage[Uml],
+    pkgDocumentTbox: Omf#MutableModelTerminologyGraph)
+  ( implicit omfOps: OMFOps[Omf] )
+    extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
+
+    override def toString: String =
+      s"TBoxPackageContentsConversion[tbox=${omfOps.getTerminologyGraphIRI( pkgDocumentTbox )}, "+
+        s"${e.xmiType.head}: ${e.toolSpecific_id}]"
 
   }
 
