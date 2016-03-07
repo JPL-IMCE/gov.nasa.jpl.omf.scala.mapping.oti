@@ -51,7 +51,7 @@ import scala.{Some,StringContext,Tuple3,Unit}
 import scala.Predef.require
 import scala.collection.immutable._
 import scala.language.postfixOps
-import scalaz._
+import scalaz._, Scalaz._
 
 /**
   * Toplevel mapping of a kind of UML Package with an OTI Document.
@@ -240,15 +240,125 @@ object R1A {
               (nels: Set[java.lang.Throwable]) => {
                 java.lang.System.out.println(
                   s"-@R1A.package(New): [${pkgU.xmiElementLabel}] ${pkgU.qualifiedName.get} - ${nels.head}")
-                \&/.This(nels)
+                \&/.This(
+                  Set(UMLError.illegalElementException[Uml, UMLPackage[Uml]](
+                    s"Error creating an OMF terminology graph for a UML package or authority",
+                    Iterable(pair.e),
+                    NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))))
               },
-              (convertedPair: TBoxOTIDocumentPackageConversion[Uml, Omf]) =>
-                \&/.That(RuleResult[Uml, Omf, Provenance](
+              (convertedPair: TBoxOTIDocumentPackageConversion[Uml, Omf]) => {
+                val cp0
+                : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
+                = \&/.That(RuleResult[Uml, Omf, Provenance](
                   rule,
                   finalResults = Vector(),
                   internalResults = Vector(),
                   externalResults = Vector(convertedPair)
                 ))
+
+                val cp1
+                : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
+                = (cp0 /: convertedPair.e.profileApplication) { (acc, pa) =>
+                  acc.flatMap { cpi =>
+                    pa
+                      .appliedProfile
+                      .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]] {
+
+                      \&/.Both(
+                        Set(UMLError.illegalElementError[Uml, UMLProfileApplication[Uml]](
+                        s"Missing applied profile",
+                        Iterable(pa))),
+                        cpi)
+
+                    }{ apf =>
+
+                      context
+                        .lookupModelTerminologyGraphByProfile(apf)
+                        .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]] {
+
+                        \&/.Both(
+                          Set(UMLError.illegalElementError[Uml, UMLProfileApplication[Uml]](
+                            s"Applied profile does not map to an OMF Terminology graph",
+                            Iterable(pa))),
+                          cpi)
+
+                      } { appliedProfileTbox =>
+
+                        context
+                          .addDirectlyExtendedTerminologyGraph(rule, convertedPair.pkgDocumentTbox, appliedProfileTbox)
+                          .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
+                          (nels: Set[java.lang.Throwable]) =>
+                            \&/.Both(
+                              Set(UMLError.illegalElementException[Uml, UMLProfileApplication[Uml]](
+                                s"Error extending OMF Terminology graph according to applied profile",
+                                Iterable(pa),
+                                NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))),
+                              cpi),
+
+                          (_: Unit) =>
+                            \&/.That(cpi)
+                        )
+
+                      }
+
+                    }
+
+                  }
+                }
+
+                val cp2
+                : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
+                = (cp1 /: convertedPair.e.packageImport) { (acc, pi) =>
+                  acc.flatMap { cpi =>
+                    pi
+                      .importedPackage
+                      .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]] {
+
+                      \&/.Both(
+                        Set(UMLError.illegalElementError[Uml, UMLPackageImport[Uml]](
+                          s"Missing imported package",
+                          Iterable(pi))),
+                        cpi)
+
+                    }{ ipkg =>
+
+                      context
+                        .lookupMiodelTerminologyGraphByPackage(ipkg)
+                        .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]] {
+
+                        \&/.Both(
+                          Set(UMLError.illegalElementError[Uml, UMLPackageImport[Uml]](
+                            s"Imported package does not map to an OMF Terminology graph",
+                            Iterable(pi))),
+                          cpi)
+
+                      } { importedPackageTbox =>
+
+                        context
+                          .addDirectlyExtendedTerminologyGraph(rule, convertedPair.pkgDocumentTbox, importedPackageTbox)
+                          .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
+                          (nels: Set[java.lang.Throwable]) =>
+                            \&/.Both(
+                              Set(UMLError.illegalElementException[Uml, UMLPackageImport[Uml]](
+                                s"Error extending OMF Terminology graph according to imported package",
+                                Iterable(pi),
+                                NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))),
+                              cpi),
+
+                          (_: Unit) =>
+                            \&/.That(cpi)
+                        )
+
+                      }
+
+                    }
+
+                  }
+                }
+
+                cp2
+
+              }
             )
         }
       } { pkgTbox =>

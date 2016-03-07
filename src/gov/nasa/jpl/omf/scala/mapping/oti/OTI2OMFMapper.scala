@@ -351,6 +351,12 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   (pkg: UMLPackage[Uml])
   : Option[Omf#MutableModelTerminologyGraph]
 
+  def lookupMiodelTerminologyGraphByPackage
+  (pkg: UMLPackage[Uml])
+  : Option[Omf#ModelTerminologyGraph]
+  = lookupImmutableModelTerminologyGraphByPackage(pkg)
+    .orElse(lookupMutableModelTerminologyGraphByPackage(pkg))
+
   def lookupImmutableModelTerminologyGraphByProfile
   (pf: UMLProfile[Uml])
   : Option[Omf#ImmutableModelTerminologyGraph] = {
@@ -362,7 +368,15 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     result
   }
 
-  def lookupMutableModelTerminologyGraphByProfile(pf: UMLProfile[Uml]): Option[Omf#MutableModelTerminologyGraph]
+  def lookupMutableModelTerminologyGraphByProfile
+  (pf: UMLProfile[Uml])
+  : Option[Omf#MutableModelTerminologyGraph]
+
+  def lookupModelTerminologyGraphByProfile
+  (pf: UMLProfile[Uml])
+  : Option[Omf#ModelTerminologyGraph]
+  = lookupImmutableModelTerminologyGraphByProfile(pf)
+    .orElse(lookupMutableModelTerminologyGraphByProfile(pf))
 
   type UMLStereotype2EntityAspectMap = Map[UMLStereotype[Uml], Omf#ModelEntityAspect]
   type UMLStereotype2EntityConceptMap = Map[UMLStereotype[Uml], Omf#ModelEntityConcept]
