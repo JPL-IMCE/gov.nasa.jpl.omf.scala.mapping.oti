@@ -71,44 +71,55 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
     val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
       case (rule, TboxUMLElementTuple(Some(tbox), depU: UMLDependency[Uml]), as, cs, rs, unmappedS) =>
         if (rs.isEmpty) {
-          val explanation: String = unmappedS.toList.map(_.qualifiedName.get).mkString(s"${unmappedS.size} unmapped stereotypes (",",",")")
-          System.out.println(s"#OTI/OMF R3 dependency2RelationshipMapping => error: ${depU.xmiElementLabel}: ${depU.toolSpecific_id} $explanation")
+
+          val explanation: String =
+            "No relationship-mapped stereotypes applied" +
+              (if (unmappedS.isEmpty)
+                ""
+              else
+                unmappedS.toList.map(_.qualifiedName.get)
+                  .mkString(s", and ${unmappedS.size} unmapped stereotypes applied (",",",")"))
+
+          System.out.println(
+            s"#OTI/OMF R3 dependency2RelationshipMapping => error: "+
+            s"${depU.xmiElementLabel}: ${depU.toolSpecific_id} $explanation")
           \&/.This(Set(
             UMLError.illegalElementError[Uml, UMLDependency[Uml]](
               s"R3 is not applicable to: $depU because $explanation",
               Iterable(depU))
           ))
+
         } else {
           val ( ( sourceU, osourceE ), ( targetU, otargetE )) =
             context.getDependencySourceAndTargetMappings(depU)
 
           osourceE
-          .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]]({
-            System.out.println(
-              s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped source "+
-              s"(target? ${otargetE.isDefined}): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel} "+
-              s"- source: ${sourceU.toolSpecific_id.get} ${sourceU.xmiElementLabel} ${sourceU.qualifiedName.get}")
-            \&/.That(RuleResult[Uml, Omf, Provenance](
-              rule,
-              finalResults=Vector(),
-              internalResults=Vector(),
-              externalResults=Vector(TboxUMLElementTuple(Some(tbox), depU)) // try again at next phase
-            ))
-          }) { sourceOmf =>
+          .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]]{
+
+            val explanation: String =
+              s"R3 dependency2RelationshipMapping => unmapped source: "+
+              s"${sourceU.toolSpecific_id.get} ${sourceU.xmiElementLabel} ${sourceU.qualifiedName.get}"+
+              s"(target? ${otargetE.isDefined}): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel})"
+            \&/.This(Set(
+              UMLError.illegalElementError[Uml, UMLDependency[Uml]](
+                s"R3 is not applicable to: $depU because $explanation",
+                Iterable(depU))))
+
+          } { sourceOmf =>
 
             otargetE
-            .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]]({
-              System.out.println(
-                s"#OTI/OMF R3 dependency2RelationshipMapping => unmapped target "+
-                s"(source? true): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel} "+
-                s"- target: ${targetU.toolSpecific_id.get} ${targetU.xmiElementLabel} ${targetU.qualifiedName.get}")
-              \&/.That(RuleResult[Uml, Omf, Provenance](
-                rule,
-                finalResults=Vector(),
-                internalResults=Vector(),
-                externalResults=Vector(TboxUMLElementTuple(Some(tbox), depU)) // try again at next phase
-              ))
-            }) { targetOmf =>
+            .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]]{
+
+              val explanation: String =
+                s"R3 dependency2RelationshipMapping => unmapped target: "+
+                s"${targetU.toolSpecific_id.get} ${targetU.xmiElementLabel} ${targetU.qualifiedName.get}" +
+                s"(source? true): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel})"
+              \&/.This(Set(
+                UMLError.illegalElementError[Uml, UMLDependency[Uml]](
+                  s"R3 is not applicable to: $depU because $explanation",
+                  Iterable(depU))))
+
+            } { targetOmf =>
 
               if (unmappedS.nonEmpty) {
                 val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))

@@ -192,9 +192,10 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         }
 
 //        System.out.println(s"#OTI/OMF R2 class2concept: error? ${rC.isLeft} ok? ${rC.isRight}")
-        val result
-        : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
-        = context.treeOps.isRootBlockSpecificType(c)
+
+        rC.flatMap { result =>
+
+          context.treeOps.isRootBlockSpecificType(c)
             .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
             .toThese
             .flatMap { isRBST =>
@@ -208,45 +209,40 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                       val problems = TreeType.getIllFormedTreeBranchPairs(bst)
                       if (problems.isEmpty) {
                         System.out.println(s"#OTI/OMF R2 class2concept => RBST OK")
-                        val conceptPair = Vector(TboxUMLElementTreeType(Some(tbox), cConcept, bst))
-                        \&/.That(RuleResult[Uml, Omf, Provenance](
-                          rule,
-                          finalResults=conceptPair, // this is a result
-                          internalResults=Vector(),
-                          externalResults=conceptPair // it needs to be further expanded in the next phase
-                        ))
+                        val conceptPair = TboxUMLElementTreeType(Some(tbox), cConcept, bst)
+                        \&/.That(result.copy(
+                          // this is a result
+                          finalResults = result.finalResults :+ conceptPair,
+                          // it needs to be further expanded in the next phase
+                          externalResults = result.externalResults :+ conceptPair))
                       } else {
                         System.out.println(s"#OTI/OMF R2 class2concept => RBST ${problems.size} problems")
-                        \&/.This(Set(
+                        \&/.Both(Set(
                           treeOpsException(
                             context.treeOps,
                             problems
                               .map(_.toString)
-                              .mkString(s"TreeCompositeStructure has ${problems.size} problems\n", "\n", "\n"))
-                        ))
+                              .mkString(s"TreeCompositeStructure has ${problems.size} problems\n", "\n", "\n"))),
+                          result)
                       }
                     case tree =>
                       System.out.println(s"#OTI/OMF R2 class2concept => other $tree")
-                      \&/.This(Set(
+                      \&/.Both(Set(
                         treeOpsException(
                           context.treeOps,
-                          s"Not a TreeCompositeStructureType: $tree")
-                      ))
+                          s"Not a TreeCompositeStructureType: $tree")),
+                        result)
                   }
               else {
                 System.out.println(s"#OTI/OMF R2 class2concept => not RBST")
-                val conceptPair = Vector(TboxUMLElement2ConceptDefinition(Some(tbox), cConcept, c))
-                \&/.That(RuleResult[Uml, Omf, Provenance](
-                  rule,
-                  finalResults=conceptPair, // this is a result
-                  internalResults=Vector(),
-                  externalResults=Vector() // @todo enable when there are data property mapping rules conceptPair
-                ))
+                val conceptPair = TboxUMLElement2ConceptDefinition(Some(tbox), cConcept, c)
+                \&/.That(result.copy(
+                  // this is a result
+                  finalResults = result.finalResults :+ conceptPair,
+                  // @todo enable when there are data property mapping rules conceptPair
+                  externalResults = result.externalResults))
               }
             }
-
-        rC.flatMap{ _ =>
-          result
         }
       }
 
@@ -256,46 +252,75 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
      cls: UMLClassifier[Uml],
      as: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityAspectMap,
      cs: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityConceptMap)
-    : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance] =
-      context.mapElement2Concept(rule, tbox, cls, cls.isAbstract)
-        .flatMap { cConcept =>
-//          System.out
-//            .println(s"#OTI/OMF R2 other2concept: ${cls.qualifiedName.get} / a:${as.size}, c:${cs.size}")
-
-          val r0: Set[java.lang.Throwable] \/ Unit = \/-(())
-          val rA: Set[java.lang.Throwable] \/ Unit = (r0 /: as) {
-            case (ri, (ai, aiOmf)) =>
-//              System.out.println(
-//                s"""|#OTI/OMF R2 EntityDefinitionAspectSubClassAxiom:
-//                    | sup=${ai.name.get}, sub=${cls.qualifiedName.get}""".stripMargin)
-              ri +++
-                context
-                  .addEntityDefinitionAspectSubClassAxiom(rule, tbox, cConcept, aiOmf)
-                  .map(_ => ())
-          }
-
-          val rC: Set[java.lang.Throwable] \/ Unit = (rA /: cs) {
-            case (ri, (ci, ciOmf)) =>
-//              System.out.println(
-//                s"""|#OTI/OMF R2 EntityConceptSubClassAxiom:
-//                    | sup=${ci.name.get}, sub=${cls.qualifiedName.get}""".stripMargin)
-              ri +++
-                context
-                  .addEntityConceptSubClassAxiom(rule, tbox, cConcept, ciOmf)
-                  .map(_ => ())
-          }
-
-          rC.flatMap{ _ =>
-            val conceptPair = Vector(TboxUMLElement2ConceptDefinition(Some(tbox), cConcept, cls))
-            RuleResult[Uml, Omf, Provenance](
-              rule,
-              finalResults=conceptPair, // this is a result
-              internalResults=Vector(),
-              externalResults=Vector() // @todo enable when there are data property mapping rules conceptPair
-            ).right
-          }
-        }
+    : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
+    = context
+      .mapElement2Concept(rule, tbox, cls, cls.isAbstract)
       .toThese
+      .flatMap { cConcept =>
+        //          System.out
+        //            .println(s"#OTI/OMF R2 other2concept: ${cls.qualifiedName.get} / a:${as.size}, c:${cs.size}")
+
+        val r0
+        : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
+        = \&/.That(RuleResult(rule, Vector(), Vector(), Vector()))
+
+        val rA
+        : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
+        = (r0 /: as) {
+          case (acc, (ai, aiOmf)) =>
+            //              System.out.println(
+            //                s"""|#OTI/OMF R2 EntityDefinitionAspectSubClassAxiom:
+            //                    | sup=${ai.name.get}, sub=${cls.qualifiedName.get}""".stripMargin)
+            acc.flatMap { ri =>
+              context
+                .addEntityDefinitionAspectSubClassAxiom(rule, tbox, cConcept, aiOmf)
+                .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
+                (nels: Set[java.lang.Throwable]) =>
+                  \&/.Both(
+                    Set(UMLError.illegalElementException[Uml, UMLClassifier[Uml]](
+                      s"R2 (addEntityDefinitionAspectSubClassAxiom)",
+                      Iterable(cls, ai),
+                      NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))),
+                    ri),
+                (_: Omf#EntityDefinitionAspectSubClassAxiom) =>
+                  \&/.That(ri))
+            }
+        }
+
+        val rC
+        : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
+        = (rA /: cs) {
+          case (acc, (ci, ciOmf)) =>
+            //              System.out.println(
+            //                s"""|#OTI/OMF R2 EntityConceptSubClassAxiom:
+            //                    | sup=${ci.name.get}, sub=${cls.qualifiedName.get}""".stripMargin)
+
+            acc.flatMap { rj =>
+              context
+                .addEntityConceptSubClassAxiom(rule, tbox, cConcept, ciOmf)
+                .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
+                (nels: Set[java.lang.Throwable]) =>
+                  \&/.Both(
+                    Set(UMLError.illegalElementException[Uml, UMLClassifier[Uml]](
+                      s"R2 (addEntityConceptSubClassAxiom)",
+                      Iterable(cls, ci),
+                      NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))),
+                    rj),
+                (_: Omf#EntityConceptSubClassAxiom) =>
+                  \&/.That(rj))
+            }
+        }
+
+        rC.flatMap { result =>
+          val conceptPair = TboxUMLElement2ConceptDefinition(Some(tbox), cConcept, cls)
+          \&/.That(result.copy(
+            // this is a result
+            finalResults = result.finalResults :+ conceptPair,
+            // @todo enable when there are data property mapping rules conceptPair
+            externalResults = result.externalResults
+          ))
+        }
+      }
 
     val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
       case (rule, TboxUMLElementTuple(Some(tbox), neU: UMLNamedElement[Uml]), as, cs, rs, unmappedS)
