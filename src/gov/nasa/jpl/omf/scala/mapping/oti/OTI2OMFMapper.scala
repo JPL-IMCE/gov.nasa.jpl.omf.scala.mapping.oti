@@ -183,9 +183,10 @@ trait AddDirectlyExtendedTerminologyGraph[Uml <: UML, Omf <: OMF, Provenance]
     Set[java.lang.Throwable] \/ Unit]
 
 trait AddDirectlyNestedTerminologyGraph[Uml <: UML, Omf <: OMF, Provenance]
-  extends Function3[
+  extends Function4[
     MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
+    Omf#ModelEntityConcept,
     Omf#MutableModelTerminologyGraph,
     Set[java.lang.Throwable] \/ Unit]
 
@@ -622,13 +623,14 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     : Set[java.lang.Throwable] \/ TBoxOTIDocumentPackageConversion[Uml, Omf]
     = for {
       pkgTbox <- ns2tboxCtor(rule, pkgU, TerminologyKind.isToplevelDefinition, pkg2provenance(pkgU))
+      pkgAuth <- mapElement2Concept(rule, pair.tbox.get, pkgU, isAbstract=false)
       _ <- {
         val nestingResult
         : Set[java.lang.Throwable] \/ Unit
         = pair
           .nestingPkgTbox
           .fold[Set[java.lang.Throwable] \/ Unit](\/-(())) { nestingTbox =>
-          addDirectlyNestedTerminologyGraph(rule, nestingTbox, pkgTbox)
+          addDirectlyNestedTerminologyGraph(rule, nestingTbox, pkgAuth, pkgTbox)
         }
         nestingResult
       }
@@ -671,7 +673,8 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     : Set[java.lang.Throwable] \/ TBoxOTIDocumentPackageConversion[Uml, Omf]
     = for {
       nestedPkgTbox <- ns2tboxCtor(rule, nestedPkgU, TerminologyKind.isDefinition, pkg2provenance(nestedPkgU))
-      _ <- addDirectlyNestedTerminologyGraph(rule, pair.pkgDocumentTbox, nestedPkgTbox)
+      nestedPkgAuth <- mapElement2Concept(rule, pair.tbox.get, nestedPkgU, isAbstract=false)
+      _ <- addDirectlyNestedTerminologyGraph(rule, pair.pkgDocumentTbox, nestedPkgAuth, nestedPkgTbox)
       nestedPkgConv = pair.toNestedConversion(nestedPkgAuthorities, nestedPkgU, nestedPkgTbox)
     } yield nestedPkgConv
 
