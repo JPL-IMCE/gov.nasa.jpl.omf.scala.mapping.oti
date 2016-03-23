@@ -619,46 +619,42 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   = {
     val pkgU = pair.e
 
-    val result
+    val result1
     : Set[java.lang.Throwable] \/ TBoxOTIDocumentPackageConversion[Uml, Omf]
     = for {
       pkgTbox <- ns2tboxCtor(rule, pkgU, TerminologyKind.isToplevelDefinition, pkg2provenance(pkgU))
-      pkgAuth <- mapElement2Concept(rule, pair.tbox.get, pkgU, isAbstract=false)
       _ <- {
-        val nestingResult
+        val result2
         : Set[java.lang.Throwable] \/ Unit
-        = pair
-          .nestingPkgTbox
-          .fold[Set[java.lang.Throwable] \/ Unit](\/-(())) { nestingTbox =>
-          addDirectlyNestedTerminologyGraph(rule, nestingTbox, pkgAuth, pkgTbox)
-        }
-        nestingResult
-      }
-      pkgConv <- {
-        val convPair = pair.toConversion(pkgTbox)
-        val convResult
-        : Set[java.lang.Throwable] \/ TBoxOTIDocumentPackageConversion[Uml, Omf]
         = if (pair.authorities.isEmpty)
-          \/-(convPair)
-        else
-          mapElement2Concept(rule, pkgTbox, pkgU, isAbstract = false)
-            .flatMap { pkgC =>
-              val s0: Set[java.lang.Throwable] \/ Unit = \/-(())
-              val sN: Set[java.lang.Throwable] \/ Unit = (s0 /: pair.authorities) { (si, authS) =>
-                require(stereotype2Concept.contains(authS))
-                val authC = stereotype2Concept(authS)
-                si +++
-                  addEntityConceptSubClassAxiom(rule, pkgTbox, pkgC, authC)
-                    .map(_ => ())
+          \/-(())
+        else {
+          require(pair.nestingPkgTbox.isDefined)
+          val result3 =
+            for {
+              pkgAuthC <- mapElement2Concept(rule, pair.nestingPkgTbox.get, pkgU, isAbstract=false)
+              _ <- {
+                val a0: Set[java.lang.Throwable] \/ Unit = \/-(())
+                val aN: Set[java.lang.Throwable] \/ Unit = (a0 /: pair.authorities) { (ai, authS) =>
+                  require(stereotype2Concept.contains(authS))
+                  val authC = stereotype2Concept(authS)
+                  val inc
+                  : Set[java.lang.Throwable] \/ Omf#EntityConceptSubClassAxiom
+                  = addEntityConceptSubClassAxiom(rule, pair.nestingPkgTbox.get, pkgAuthC, authC)
+                  ai +++ inc.map(_ => ())
+                }
+                aN
               }
-              sN
-            }
-          .map { _ => convPair }
-        convResult
+              _ <- addDirectlyNestedTerminologyGraph(rule, pair.nestingPkgTbox.get, pkgAuthC, pkgTbox)
+            } yield ()
+          result3
+        }
+        result2
       }
+      pkgConv = pair.toConversion(pkgTbox)
     } yield pkgConv
 
-    result
+    result1
   }
 
   def nestedPackageOrAuthority2TBox
@@ -673,8 +669,20 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     : Set[java.lang.Throwable] \/ TBoxOTIDocumentPackageConversion[Uml, Omf]
     = for {
       nestedPkgTbox <- ns2tboxCtor(rule, nestedPkgU, TerminologyKind.isDefinition, pkg2provenance(nestedPkgU))
-      nestedPkgAuth <- mapElement2Concept(rule, pair.tbox.get, nestedPkgU, isAbstract=false)
-      _ <- addDirectlyNestedTerminologyGraph(rule, pair.pkgDocumentTbox, nestedPkgAuth, nestedPkgTbox)
+      nestedPkgAuthC <- mapElement2Concept(rule, pair.pkgDocumentTbox, nestedPkgU, isAbstract=false)
+      _ <- {
+        val a0: Set[java.lang.Throwable] \/ Unit = \/-(())
+        val aN: Set[java.lang.Throwable] \/ Unit = (a0 /: nestedPkgAuthorities) { (ai, authS) =>
+          require(stereotype2Concept.contains(authS))
+          val authC = stereotype2Concept(authS)
+          val inc
+          : Set[java.lang.Throwable] \/ Unit
+          = addEntityConceptSubClassAxiom(rule, pair.pkgDocumentTbox, nestedPkgAuthC, authC).map(_ => ())
+          ai +++ inc
+        }
+        aN
+      }
+      _ <- addDirectlyNestedTerminologyGraph(rule, pair.pkgDocumentTbox, nestedPkgAuthC, nestedPkgTbox)
       nestedPkgConv = pair.toNestedConversion(nestedPkgAuthorities, nestedPkgU, nestedPkgTbox)
     } yield nestedPkgConv
 
