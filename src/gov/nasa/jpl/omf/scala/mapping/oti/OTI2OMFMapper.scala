@@ -246,6 +246,8 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   val tboxLookup: Namespace2TBoxLookupFunction[Uml, Omf],
   val ns2tboxCtor: Namespace2TBoxCtor[Uml, Omf, Provenance],
 
+  val hasCanonicalNameDP: Omf#ModelDataRelationshipFromEntityToScalar,
+
   protected val element2aspectCtor: Element2AspectCTor[Uml, Omf, Provenance],
   protected val element2conceptCtor: Element2ConceptCTor[Uml, Omf, Provenance],
   protected val element2relationshipCtor: Element2RelationshipCTor[Uml, Omf, Provenance],
@@ -267,6 +269,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   val pf2ont: Map[UMLProfile[Uml], Omf#ImmutableModelTerminologyGraph],
   val rds: ResolvedDocumentSet[Uml],
   val ops: OMFOps[Omf],
+  val store: Omf#Store,
   val treeOps: TreeOps[Uml],
   val idg: IDGenerator[Uml]) {
 
@@ -580,6 +583,80 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     result
   }
 
+  val (baseIdentifiedElementS, baseIdentifiedElementA) = {
+    val pair = stereotype2Aspect.find { _._1.name.contains("base:IdentifiedElement") }
+    require(pair.isDefined)
+    pair.get
+  }
+
+  val hasCanonicalNameP: UMLProperty[Uml] = {
+    val p =
+      baseIdentifiedElementS
+        .attribute
+        .find { _.name.contains("hasCanonicalName") }
+    require(p.isDefined)
+    p.get
+  }
+
+  val baseIdentifiedElementOrSpecific: Set[UMLStereotype[Uml]] =
+    closure[UMLStereotype[Uml], UMLStereotype[Uml]](
+      baseIdentifiedElementS,
+      _.general_classifier.selectByKindOf { case s: UMLStereotype[Uml] => s})
+
+  def checkBaseIdentifiedElementOrSpecificAppliedStereotype
+  (e: UMLElement[Uml])
+  : Set[java.lang.Throwable] \/ Boolean
+  = {
+    val result
+    : Set[java.lang.Throwable] \/ Boolean
+    = e
+      .getAppliedStereotypes
+      .leftMap[Set[java.lang.Throwable]](_.list.to[Set])
+      .map { sp =>
+        val isID = (sp.keySet & baseIdentifiedElementOrSpecific).nonEmpty
+        isID
+      }
+
+    result
+  }
+
+  def getCanonicalNameIfAny
+  (u: UMLNamedElement[Uml])
+  : Set[java.lang.Throwable] \/ Option[String]
+  = checkBaseIdentifiedElementOrSpecificAppliedStereotype(u)
+    .flatMap { isIdentifiedElement =>
+      if (!isIdentifiedElement)
+        \/-(None)
+      else
+        u
+        .getStereotypeTagPropertyStringValues(hasCanonicalNameP)
+        .leftMap(_.to[Set])
+        .flatMap { tagValues =>
+          require(tagValues.size <= 1)
+          val cname: Option[String] = tagValues.headOption.orElse(u.name)
+          \/-(cname)
+        }
+    }
+
+  def mapCanonicalName
+  (tbox: Omf#MutableModelTerminologyGraph,
+   eU: UMLElement[Uml],
+   eC: Omf#ModelEntityDefinition)
+  : Set[java.lang.Throwable] \/ Option[Omf#ModelScalarDataRelationshipRestrictionAxiomFromEntityToLiteral]
+  = eU match {
+    case neU: UMLNamedElement[Uml] =>
+      getCanonicalNameIfAny(neU).flatMap(
+        _.fold[Set[java.lang.Throwable] \/ Option[Omf#ModelScalarDataRelationshipRestrictionAxiomFromEntityToLiteral]](
+          \/-(None)
+        ) { cname =>
+          ops
+            .addScalarDataRelationshipRestrictionAxiomFromEntityToLiteral(tbox, eC, hasCanonicalNameDP, cname)(store)
+            .map(Some(_))
+        })
+    case _ =>
+      \/-(None)
+  }
+
   val basePackageC = abbrevName2Concept( "base:Package" )
 
   val projectAuthorityC = abbrevName2Concept( "project:Authority" )
@@ -711,7 +788,9 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     : Set[java.lang.Throwable] \/ Omf#ModelEntityAspect
     = element2aspectCtor.applyMapping(this, rule, tbox, u)
 
-    result
+    result.flatMap { entity =>
+      mapCanonicalName(tbox, u, entity).map { _ => entity }
+    }
   }
 
   val mappedElement2Concept = scala.collection.mutable.HashMap[UMLElement[Uml], MappedEntityConcept]()
@@ -734,7 +813,9 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     : Set[java.lang.Throwable] \/ MappedEntityConcept
     = element2conceptCtor.applyMapping(this, rule, tbox, u, isAbstract)
 
-    result
+    result.flatMap { entity =>
+      mapCanonicalName(tbox, u, entity).map { _ => entity }
+    }
   }
 
   val mappedElement2Relationship = scala.collection.mutable.HashMap[UMLElement[Uml], MappedEntityRelationship]()
@@ -765,7 +846,9 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     = element2relationshipCtor.applyMapping(
       this, rule, tbox, u, source, target, characteristics, isAbstract, hasName)
 
-    result
+    result.flatMap { entity =>
+      mapCanonicalName(tbox, u, entity).map { _ => entity }
+    }
   }
 
   def lookupElementMapping
