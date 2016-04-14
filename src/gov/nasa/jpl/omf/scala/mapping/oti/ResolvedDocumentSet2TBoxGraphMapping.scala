@@ -41,7 +41,7 @@ package gov.nasa.jpl.omf.scala.mapping.oti
 import java.lang.System
 
 import gov.nasa.jpl.omf.scala.core._
-import org.omg.oti.uml.OTIPrimitiveTypes._
+import org.omg.oti.json.common.OTIPrimitiveTypes._
 import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
@@ -108,7 +108,6 @@ object ResolvedDocumentSet2TBoxGraphMapping {
             r = (duri: java.net.URI) => {
               catalogIRIMapper
                 .resolveURI(duri, catalogIRIMapper.loadResolutionStrategy(".owl".some))
-                .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
                 .flatMap {
                   _.fold[Set[java.lang.Throwable] \/ DocumentGraphMap](
                     mi.map { case (document2tboxMap, d2map) =>
@@ -120,10 +119,8 @@ object ResolvedDocumentSet2TBoxGraphMapping {
                     mi.flatMap { case (document2tboxMap, d2map) =>
                       // @todo it seems this should use the resolved uri instead of document.uri
                       makeIRI(uri.toString)
-                        .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
                         .flatMap { iri =>
                           loadTerminologyGraph(iri)
-                            .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
                             .flatMap { case (iTbox, _) =>
                               System.out.println(s"==> document: $duri")
                               (document2tboxMap + (document -> iTbox), d2map).right

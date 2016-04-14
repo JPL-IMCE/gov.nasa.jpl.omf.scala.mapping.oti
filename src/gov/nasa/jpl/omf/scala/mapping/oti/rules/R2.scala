@@ -49,7 +49,6 @@ import org.omg.oti.uml.read.operations._
 import org.omg.oti.uml.trees._
 
 import scala.{Some,StringContext,Tuple3,Unit}
-import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
 import scala.language.postfixOps
 import scalaz._, Scalaz._
@@ -87,7 +86,12 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         = {
           if (unmappedS.nonEmpty) {
             val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
-            require(foreign.isEmpty)
+            if (foreign.nonEmpty) {
+              System.out.println(s"*** R2 WARN: ignoring ${foreign.size} unrecognized stereotypes applied to Aspect: ${nsU.qualifiedName.get}")
+              foreign.foreach { s =>
+                System.out.println(s"***  ignoring ${s.qualifiedName.get}")
+              }
+            }
           }
 
           val result
@@ -160,7 +164,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                     Set(UMLError.illegalElementException[Uml, UMLClass[Uml]](
                       s"R2 (addEntityDefinitionAspectSubClassAxiom)",
                       Iterable(c, ai),
-                      NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))),
+                      nels)),
                     ri),
                 (_: Omf#EntityDefinitionAspectSubClassAxiom) =>
                   \&/.That(ri))
@@ -184,7 +188,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                     Set(UMLError.illegalElementException[Uml, UMLClass[Uml]](
                       s"R2 (addEntityConceptSubClassAxiom)",
                       Iterable(c, ci),
-                      NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))),
+                      nels)),
                     rj),
                 (_: Omf#EntityConceptSubClassAxiom) =>
                   \&/.That(rj))
@@ -196,13 +200,11 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         rC.flatMap { result =>
 
           context.treeOps.isRootBlockSpecificType(c)
-            .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
             .toThese
             .flatMap { isRBST =>
 
               if (isRBST)
                 analyze(c)(context.treeOps, context.idg, context.idg.otiCharacteristicsProvider)
-                  .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
                   .toThese
                   .flatMap {
                     case bst: TreeCompositeStructureType[Uml] =>
@@ -280,7 +282,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                     Set(UMLError.illegalElementException[Uml, UMLClassifier[Uml]](
                       s"R2 (addEntityDefinitionAspectSubClassAxiom)",
                       Iterable(cls, ai),
-                      NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))),
+                      nels)),
                     ri),
                 (_: Omf#EntityDefinitionAspectSubClassAxiom) =>
                   \&/.That(ri))
@@ -304,7 +306,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                     Set(UMLError.illegalElementException[Uml, UMLClassifier[Uml]](
                       s"R2 (addEntityConceptSubClassAxiom)",
                       Iterable(cls, ci),
-                      NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))),
+                      nels)),
                     rj),
                 (_: Omf#EntityConceptSubClassAxiom) =>
                   \&/.That(rj))
@@ -331,7 +333,12 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         = {
           if (unmappedS.nonEmpty) {
             val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
-            require(foreign.isEmpty)
+            if (foreign.nonEmpty) {
+              System.out.println(s"*** R2 WARN: ignoring ${foreign.size} unrecognized stereotypes applied to Concept: ${neU.qualifiedName.get}")
+              foreign.foreach { s =>
+                System.out.println(s"***  ignoring ${s.qualifiedName.get}")
+              }
+            }
           }
 
           neU match {

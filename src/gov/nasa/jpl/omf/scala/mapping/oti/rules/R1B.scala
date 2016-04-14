@@ -47,7 +47,6 @@ import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
 import scala.{Some,StringContext,Tuple3,Unit}
-import scala.Predef.require
 import scala.collection.immutable._
 import scala.language.postfixOps
 import scalaz._, Scalaz._
@@ -110,7 +109,7 @@ object R1B {
                 Set(UMLError.illegalElementException[Uml, UMLPackage[Uml]](
                   s"Error looking up authorities for UML Package",
                   Iterable(pair.e),
-                  NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))),
+                  nels)),
                 acc)
             },
 
@@ -132,7 +131,7 @@ object R1B {
                       Set(UMLError.illegalElementException[Uml, UMLPackage[Uml]](
                         s"Error creating an OMF terminology graph for a nested UML package or authority",
                         Iterable(pair.e),
-                        NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))),
+                        nels)),
                       acc)
 
                   },
@@ -179,7 +178,7 @@ object R1B {
                                   Set(UMLError.illegalElementException[Uml, UMLProfileApplication[Uml]](
                                     s"Error extending OMF Terminology graph according to applied profile",
                                     Iterable(pa),
-                                    NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))),
+                                    nels)),
                                   cpi),
 
                               (_: Unit) =>
@@ -229,7 +228,7 @@ object R1B {
                                   Set(UMLError.illegalElementException[Uml, UMLPackageImport[Uml]](
                                     s"Error extending OMF Terminology graph according to imported package",
                                     Iterable(pi),
-                                    NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))),
+                                    nels)),
                                   cpi),
 
                               (_: Unit) =>

@@ -98,8 +98,8 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
             val explanation: String =
               s"R3 dependency2RelationshipMapping => unmapped source: "+
-              s"${sourceU.toolSpecific_id.get} ${sourceU.xmiElementLabel} ${sourceU.qualifiedName.get}"+
-              s"(target? ${otargetE.isDefined}): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel})"
+              s"${sourceU.toolSpecific_id} ${sourceU.xmiElementLabel} ${sourceU.qualifiedName.get}"+
+              s"(target? ${otargetE.isDefined}): ${depU.toolSpecific_id} ${depU.xmiElementLabel})"
             \&/.This(Set(
               UMLError.illegalElementError[Uml, UMLDependency[Uml]](
                 s"R3 is not applicable to: $depU because $explanation",
@@ -112,8 +112,8 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
               val explanation: String =
                 s"R3 dependency2RelationshipMapping => unmapped target: "+
-                s"${targetU.toolSpecific_id.get} ${targetU.xmiElementLabel} ${targetU.qualifiedName.get}" +
-                s"(source? true): ${depU.toolSpecific_id.get} ${depU.xmiElementLabel})"
+                s"${targetU.toolSpecific_id} ${targetU.xmiElementLabel} ${targetU.qualifiedName.get}" +
+                s"(source? true): ${depU.toolSpecific_id} ${depU.xmiElementLabel})"
               \&/.This(Set(
                 UMLError.illegalElementError[Uml, UMLDependency[Uml]](
                   s"R3 is not applicable to: $depU because $explanation",
@@ -123,7 +123,14 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
               if (unmappedS.nonEmpty) {
                 val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
-                require(foreign.isEmpty)
+
+                if (foreign.nonEmpty) {
+                  System.out.println(s"*** R3 WARN: ignoring ${foreign.size} unrecognized stereotypes applied to Relationship:")
+                  System.out.println(s"*** ${depU.toolSpecific_id}")
+                  foreign.foreach { s =>
+                    System.out.println(s"***  ignoring ${s.qualifiedName.get}")
+                  }
+                }
               }
 
               val r1 =
@@ -158,7 +165,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
               } yield {
                 System.out.println(
                   s"#OTI/OMF R3 dependency2RelationshipMapping => "+
-                  s"mapped: ${depU.toolSpecific_id.get} ${depU.xmiElementLabel}")
+                  s"mapped: ${depU.toolSpecific_id} ${depU.xmiElementLabel}")
                 RuleResult[Uml, Omf, Provenance](
                   rule,
                   finalResults=refiedRelationPair,

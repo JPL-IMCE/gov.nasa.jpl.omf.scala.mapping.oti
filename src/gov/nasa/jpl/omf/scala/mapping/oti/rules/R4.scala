@@ -38,14 +38,16 @@
  */
 package gov.nasa.jpl.omf.scala.mapping.oti.rules
 
+import java.lang.System
+
 import gov.nasa.jpl.omf.scala.core._
 import gov.nasa.jpl.omf.scala.mapping.oti._
+
 import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
 import scala.{Option, Some, StringContext, Tuple3, Unit}
-import scala.Predef.{Map => _, Set => _, _}
 import scala.collection.immutable._
 import scala.language.postfixOps
 import scalaz.\/
@@ -79,7 +81,14 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         = {
           if (unmappedS.nonEmpty) {
             val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
-            require(foreign.isEmpty)
+
+            if (foreign.nonEmpty) {
+              System.out.println(s"*** R4 WARN: ignoring ${foreign.size} unrecognized stereotypes applied to composite relationship:")
+              System.out.println(s"*** ${bcaU.toolSpecific_id}")
+              foreign.foreach { s =>
+                System.out.println(s"***  ignoring ${s.qualifiedName.get}")
+              }
+            }
           }
 
           val ((sourceTU, sourceOmf), (targetTU, targetOmf)) =

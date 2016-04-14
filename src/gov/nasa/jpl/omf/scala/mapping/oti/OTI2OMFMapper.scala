@@ -452,7 +452,6 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     : Set[java.lang.Throwable] \/ Boolean
     = e
       .getAppliedStereotypes
-      .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
       .map { m2p =>
         m2p
           .keys
@@ -478,7 +477,6 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
         Set[UMLStereotype[Uml]])
     = e
       .getAppliedStereotypes
-      .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
       .map { m2p =>
 
         val appliedStereotypes =
@@ -572,7 +570,6 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     : Set[java.lang.Throwable] \/ (Set[UMLStereotype[Uml]], Set[UMLStereotype[Uml]])
     = e
       .getAppliedStereotypes
-      .leftMap[Set[java.lang.Throwable]](_.toList.toSet)
       .map { m2p =>
         m2p
           .keySet
@@ -611,7 +608,6 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     : Set[java.lang.Throwable] \/ Boolean
     = e
       .getAppliedStereotypes
-      .leftMap[Set[java.lang.Throwable]](_.list.to[Set])
       .map { sp =>
         val isID = (sp.keySet & baseIdentifiedElementOrSpecific).nonEmpty
         isID
@@ -630,7 +626,6 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
       else
         u
         .getStereotypeTagPropertyStringValues(hasCanonicalNameP)
-        .leftMap(_.to[Set])
         .flatMap { tagValues =>
           require(tagValues.size <= 1)
           val cname: Option[String] = tagValues.headOption.orElse(u.name)
@@ -679,7 +674,6 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     : Set[java.lang.Throwable] \/ Set[UMLStereotype[Uml]]
     = pkg
       .getAppliedStereotypes
-      .leftMap[Set[java.lang.Throwable]](_.list.to[Set])
       .map { sp =>
         val pas = sp.keySet & projectAuthorityOrSpecific
         pas

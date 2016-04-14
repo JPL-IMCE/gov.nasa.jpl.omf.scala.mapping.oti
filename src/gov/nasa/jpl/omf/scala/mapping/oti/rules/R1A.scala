@@ -244,7 +244,7 @@ object R1A {
                   Set(UMLError.illegalElementException[Uml, UMLPackage[Uml]](
                     s"Error creating an OMF terminology graph for a UML package or authority",
                     Iterable(pair.e),
-                    NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))))
+                    nels)))
               },
               (convertedPair: TBoxOTIDocumentPackageConversion[Uml, Omf]) => {
                 val cp0
@@ -292,7 +292,7 @@ object R1A {
                               Set(UMLError.illegalElementException[Uml, UMLProfileApplication[Uml]](
                                 s"Error extending OMF Terminology graph according to applied profile",
                                 Iterable(pa),
-                                NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))),
+                                nels)),
                               cpi),
 
                           (_: Unit) =>
@@ -342,7 +342,7 @@ object R1A {
                               Set(UMLError.illegalElementException[Uml, UMLPackageImport[Uml]](
                                 s"Error extending OMF Terminology graph according to imported package",
                                 Iterable(pi),
-                                NonEmptyList[java.lang.Throwable](nels.head, nels.tail.toSeq: _*))),
+                                nels)),
                               cpi),
 
                           (_: Unit) =>
