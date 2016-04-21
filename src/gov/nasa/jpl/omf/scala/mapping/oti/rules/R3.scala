@@ -121,32 +121,21 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
             } { targetOmf =>
 
-              if (unmappedS.nonEmpty) {
-                val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
+              val unmappedErrors
+              : Set[java.lang.Throwable]
+              = unmappedS.map { s =>
+                require(context.otherStereotypesApplied.contains(s), s.qualifiedName.get)
 
-                if (foreign.nonEmpty) {
-                  System.out.println(s"*** R3 WARN: ignoring ${foreign.size} unrecognized stereotypes applied to Relationship:")
-                  System.out.println(s"*** ${depU.toolSpecific_id}")
-                  foreign.foreach { s =>
-                    System.out.println(s"***  ignoring ${s.qualifiedName.get}")
-                  }
-                }
+                UMLError.illegalElementError[Uml, UMLDependency[Uml]](
+                  s"R3 unmapped non-IMCE stereotype application: <<${s.qualifiedName.get}>>$depU",
+                  Iterable(depU))
               }
 
-              val r1 =
-                if (rs.size == 1)
-                  rs.head._1.some
-                else
-                  Option.empty[UMLStereotype[Uml]]
-
-              val r1Name =
-                r1.fold[String]("") { s =>
-                  s.name.getOrElse("")
-                }
+              val rName = rs.flatMap(_._1.name).mkString("<<", ",", ">>")
 
               val hasName =
                 sourceU.name.getOrElse(sourceU.toolSpecific_id) +
-                  "-" + r1Name + "-" +
+                  "-" + rName + "-" +
                   targetU.name.getOrElse(targetU.toolSpecific_id)
 
               val result = for {
@@ -154,12 +143,14 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                   rule, tbox, depU, sourceOmf, targetOmf,
                   Iterable(), // @TODO
                   isAbstract = false,
-                  hasName.some)
+                  hasName.some).toThese
 
-                _ = rs.foreach {
-                  case (relUml, relOmf) =>
-                    context.addEntityRelationshipSubClassAxiom(rule, tbox, depOmfRelation, relOmf)
+                _ <- rs.foldLeft[Set[java.lang.Throwable] \&/ Unit](\&/.That(())) {
+                  case (acc, (relUml, relOmf)) =>
+                    val sub = context.addEntityRelationshipSubClassAxiom(rule, tbox, depOmfRelation, relOmf)
+                    sub.map(_ => ()).toThese
                 }
+
                 refiedRelationPair =
                 Vector(TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), depOmfRelation, depU))
               } yield {
@@ -172,7 +163,18 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                   internalResults=Vector(),
                   externalResults=Vector()) // nothing further to do
               }
-              result.toThese
+
+              if (unmappedErrors.isEmpty)
+                result
+              else
+                result match {
+                  case \&/.This(errors) =>
+                    \&/.This(errors ++ unmappedErrors)
+                  case \&/.That(r) =>
+                    \&/.Both(unmappedErrors, r)
+                  case \&/.Both(errors, r) =>
+                    \&/.Both(errors ++ unmappedErrors, r)
+                }
             }
           }
         }
