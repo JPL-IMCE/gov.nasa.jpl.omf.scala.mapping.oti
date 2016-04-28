@@ -323,7 +323,7 @@ object R1A {
                     }{ ipkg =>
 
                       context
-                        .lookupMiodelTerminologyGraphByPackage(ipkg)
+                        .lookupModelTerminologyGraphByPackage(ipkg)
                         .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]] {
 
                         \&/.Both(

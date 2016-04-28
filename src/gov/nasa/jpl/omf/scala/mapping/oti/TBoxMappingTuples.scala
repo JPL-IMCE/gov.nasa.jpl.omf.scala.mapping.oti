@@ -386,6 +386,22 @@ object TBoxMappingTuples {
       }
   }
 
+  case class TboxUMLNestedClassifier[Uml <: UML, Omf <: OMF]
+  ( override val tbox: Option[Omf#MutableModelTerminologyGraph],
+    override val e: UMLClassifier[Uml],
+    nestingClass: UMLClass[Uml])
+  ( implicit omfOps: OMFOps[Omf] )
+    extends TboxUMLElementPair[Uml, Omf]( tbox, e ) {
+
+    override def toString: String =
+      tbox
+        .fold[String](
+        s"NestedClassifier[tbox=<none>, nestingParent=${nestingClass.qualifiedName.get}, nestedChild=${e.qualifiedName.get}]"
+      ){ g =>
+        s"NestedClassifier[tbox=${omfOps.getTerminologyGraphIRI( g )}, , nestingParent=${nestingClass.qualifiedName.get}, nestedChild=${e.qualifiedName.get}]"
+      }
+  }
+
   case class TboxUMLElementTreeType[Uml <: UML, Omf <: OMF]
   ( override val tbox: Option[Omf#MutableModelTerminologyGraph],
     bstConcept: Omf#ModelEntityConcept,

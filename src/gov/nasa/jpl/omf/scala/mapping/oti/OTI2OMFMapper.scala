@@ -49,7 +49,8 @@ import org.omg.oti.uml.xmi._
 
 import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
-import scala.{annotation,Boolean,Enumeration,Function1,Function2,Function3,Function4,Function5,Function8}
+import scala.collection.parallel._
+import scala.{annotation,Boolean,Enumeration,Function1,Function2,Function3,Function4,Function5,Function6,Function8}
 import scala.{Option,None,PartialFunction,Some,StringContext,Tuple2,Tuple6,Unit}
 import scala.language.postfixOps
 import scalaz._, Scalaz._
@@ -191,26 +192,32 @@ trait AddDirectlyNestedTerminologyGraph[Uml <: UML, Omf <: OMF, Provenance]
     Set[java.lang.Throwable] \/ Unit]
 
 trait AddEntityDefinitionAspectSubClassAxiom[Uml <: UML, Omf <: OMF, Provenance]
-  extends Function4[
+  extends Function6[
     MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
+    UMLElement[Uml],
     Omf#ModelEntityDefinition,
+    UMLStereotype[Uml],
     Omf#ModelEntityAspect,
     Set[java.lang.Throwable] \/ Omf#EntityDefinitionAspectSubClassAxiom]
 
 trait AddEntityConceptSubClassAxiom[Uml <: UML, Omf <: OMF, Provenance]
-  extends Function4[
+  extends Function6[
     MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
+    UMLNamedElement[Uml],
     Omf#ModelEntityConcept,
+    UMLStereotype[Uml],
     Omf#ModelEntityConcept,
     Set[java.lang.Throwable] \/ Omf#EntityConceptSubClassAxiom]
 
 trait AddEntityReifiedRelationshipSubClassAxiom[Uml <: UML, Omf <: OMF, Provenance]
-  extends Function4[
+  extends Function6[
     MappingFunction[Uml, Omf, Provenance],
     Omf#MutableModelTerminologyGraph,
+    UMLElement[Uml],
     Omf#ModelEntityReifiedRelationship,
+    UMLStereotype[Uml],
     Omf#ModelEntityReifiedRelationship,
     Set[java.lang.Throwable] \/ Omf#EntityReifiedRelationshipSubClassAxiom]
 
@@ -264,7 +271,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   val stereotype2Relationship: Map[UMLStereotype[Uml], Omf#ModelEntityReifiedRelationship],
 
   val specializingProfiles: Set[UMLProfile[Uml]],
-  val otherStereotypesApplied: Set[UMLStereotype[Uml]],
+  val otherStereotypesApplied: ParMap[UMLStereotype[Uml], immutable.ParSet[UMLElement[Uml]]],
   val pkg2ont: Map[UMLPackage[Uml], Omf#ImmutableModelTerminologyGraph],
   val pf2ont: Map[UMLProfile[Uml], Omf#ImmutableModelTerminologyGraph],
   val rds: ResolvedDocumentSet[Uml],
@@ -353,9 +360,10 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
 
   def lookupMutableModelTerminologyGraphByPackage
   (pkg: UMLPackage[Uml])
+
   : Option[Omf#MutableModelTerminologyGraph]
 
-  def lookupMiodelTerminologyGraphByPackage
+  def lookupModelTerminologyGraphByPackage
   (pkg: UMLPackage[Uml])
   : Option[Omf#ModelTerminologyGraph]
   = lookupImmutableModelTerminologyGraphByPackage(pkg)
@@ -445,6 +453,11 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
 
     result
   }
+
+  def recordAppliedStereotype
+  (e: UMLElement[Uml])
+  (s: UMLStereotype[Uml])
+  : Unit
 
   def isStereotypedElementMapped( e: UMLElement[Uml] )
   : Set[java.lang.Throwable] \/ Boolean = {
@@ -711,7 +724,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
                   val authC = stereotype2Concept(authS)
                   val inc
                   : Set[java.lang.Throwable] \/ Omf#EntityConceptSubClassAxiom
-                  = addEntityConceptSubClassAxiom(rule, pair.nestingPkgTbox.get, pkgAuthC, authC)
+                  = addEntityConceptSubClassAxiom(rule, pair.nestingPkgTbox.get, pkgU, pkgAuthC, authS, authC)
                   ai +++ inc.map(_ => ())
                 }
                 aN
@@ -748,7 +761,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
           val authC = stereotype2Concept(authS)
           val inc
           : Set[java.lang.Throwable] \/ Unit
-          = addEntityConceptSubClassAxiom(rule, pair.pkgDocumentTbox, nestedPkgAuthC, authC).map(_ => ())
+          = addEntityConceptSubClassAxiom(rule, pair.pkgDocumentTbox, nestedPkgU, nestedPkgAuthC, authS, authC).map(_ => ())
           ai +++ inc
         }
         aN
@@ -760,7 +773,11 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     result
   }
 
-  lazy val baseContainsR = abbrevName2Relationship( "base:Contains" )
+  val (baseContainsS, baseContainsR) = {
+    val pair = stereotype2Relationship.find { _._1.name.contains("base:contains") }
+    require(pair.isDefined)
+    pair.get
+  }
 
   val mappedElement2Aspect = scala.collection.mutable.HashMap[UMLElement[Uml], Omf#ModelEntityAspect]()
   def lookupElementAspectMapping( e: UMLElement[Uml] ): Option[Omf#ModelEntityAspect] = {

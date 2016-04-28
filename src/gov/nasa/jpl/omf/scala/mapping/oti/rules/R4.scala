@@ -50,6 +50,7 @@ import org.omg.oti.uml.read.operations._
 import scala.{Option, Some, StringContext, Tuple3, Unit}
 import scala.collection.immutable._
 import scala.language.postfixOps
+import scala.Predef.ArrowAssoc
 import scalaz.\/
 
 /**
@@ -104,11 +105,11 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
               hasName)
 
             omfRelationshipParents =
-            if (rs.isEmpty) Set(context.baseContainsR)
-            else rs.values
+            if (rs.isEmpty) Map(context.baseContainsS -> context.baseContainsR)
+            else rs
 
-            _ = omfRelationshipParents.foreach { rel =>
-              context.addEntityRelationshipSubClassAxiom(rule, tbox, bcaOmfRelation, rel)
+            _ = omfRelationshipParents.foreach { case (relS, relO) =>
+              context.addEntityRelationshipSubClassAxiom(rule, tbox, bcaU, bcaOmfRelation, relS, relO)
             }
 
             reifiedRelationPair =

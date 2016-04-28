@@ -147,7 +147,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
                 _ <- rs.foldLeft[Set[java.lang.Throwable] \&/ Unit](\&/.That(())) {
                   case (acc, (relUml, relOmf)) =>
-                    val sub = context.addEntityRelationshipSubClassAxiom(rule, tbox, depOmfRelation, relOmf)
+                    val sub = context.addEntityRelationshipSubClassAxiom(rule, tbox, depU, depOmfRelation, relUml, relOmf)
                     sub.map(_ => ()).toThese
                 }
 

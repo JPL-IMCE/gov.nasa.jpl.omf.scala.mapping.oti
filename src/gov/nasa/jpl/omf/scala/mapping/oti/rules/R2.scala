@@ -41,17 +41,18 @@ package gov.nasa.jpl.omf.scala.mapping.oti.rules
 import java.lang.System
 
 import gov.nasa.jpl.omf.scala.core._
+import gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLNestedClassifier
 import gov.nasa.jpl.omf.scala.mapping.oti._
-
 import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 import org.omg.oti.uml.trees._
 
-import scala.{Some,StringContext,Tuple3,Unit}
+import scala.{Some, StringContext, Tuple3, Unit}
 import scala.collection.immutable._
 import scala.language.postfixOps
-import scalaz._, Scalaz._
+import scalaz._
+import Scalaz._
 
 /**
  * Mapping for a kind of UML Namespace (but not a kind of UML Package) to
@@ -100,17 +101,21 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
             _ = as.foreach {
               case (aS, aOmf) =>
-                context.addEntityDefinitionAspectSubClassAxiom(rule, tbox, clsOmfAspect, aOmf)
+                context.addEntityDefinitionAspectSubClassAxiom(rule, tbox, nsU, clsOmfAspect, aS, aOmf)
             }
 
             aspectPair = Vector(TboxUMLElement2AspectDefinition(Some(tbox), clsOmfAspect, nsU))
-          } yield
-            RuleResult[Uml, Omf, Provenance](
-              rule,
-              finalResults=aspectPair,
-              internalResults=Vector(),
-              externalResults=Vector() // @todo enable when there are data property mapping rules aspectPair
+            aspectResult = scanForNestedClassifiers(
+              context, tbox, nsU,
+              RuleResult[Uml, Omf, Provenance](
+                rule,
+                finalResults=aspectPair,
+                internalResults=Vector(),
+                externalResults=Vector() // @todo enable when there are data property mapping rules aspectPair
+              )
             )
+          } yield aspectResult
+
 
           result.toThese
         }
@@ -157,7 +162,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
             acc.flatMap { ri =>
               context
-                .addEntityDefinitionAspectSubClassAxiom(rule, tbox, cConcept, aiOmf)
+                .addEntityDefinitionAspectSubClassAxiom(rule, tbox, c, cConcept, ai, aiOmf)
                 .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
                 (nels: Set[java.lang.Throwable]) =>
                   \&/.Both(
@@ -174,20 +179,20 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         val rC
         : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
         = (rA /: cs) {
-          case (acc, (ci, ciOmf)) =>
+          case (acc, (ciS, ciOmf)) =>
 //            System.out.println(
 //              s"""|#OTI/OMF R2 EntityConceptSubClassAxiom:
 //                  | sup=${ci.name.get}, sub=${c.qualifiedName.get}""".stripMargin)
 
             acc.flatMap { rj =>
               context
-                .addEntityConceptSubClassAxiom(rule, tbox, cConcept, ciOmf)
+                .addEntityConceptSubClassAxiom(rule, tbox, c, cConcept, ciS, ciOmf)
                 .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
                 (nels: Set[java.lang.Throwable]) =>
                   \&/.Both(
                     Set(UMLError.illegalElementException[Uml, UMLClass[Uml]](
                       s"R2 (addEntityConceptSubClassAxiom)",
-                      Iterable(c, ci),
+                      Iterable(c, ciS),
                       nels)),
                     rj),
                 (_: Omf#EntityConceptSubClassAxiom) =>
@@ -238,11 +243,15 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
               else {
                 System.out.println(s"#OTI/OMF R2 class2concept => not RBST")
                 val conceptPair = TboxUMLElement2ConceptDefinition(Some(tbox), cConcept, c)
-                \&/.That(result.copy(
+                \&/.That(
+                  scanForNestedClassifiers(
+                    context, tbox, c,
+                  result.copy(
                   // this is a result
                   finalResults = result.finalResults :+ conceptPair,
                   // @todo enable when there are data property mapping rules conceptPair
                   externalResults = result.externalResults))
+                )
               }
             }
         }
@@ -275,7 +284,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
             //                    | sup=${ai.name.get}, sub=${cls.qualifiedName.get}""".stripMargin)
             acc.flatMap { ri =>
               context
-                .addEntityDefinitionAspectSubClassAxiom(rule, tbox, cConcept, aiOmf)
+                .addEntityDefinitionAspectSubClassAxiom(rule, tbox, cls, cConcept, ai, aiOmf)
                 .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
                 (nels: Set[java.lang.Throwable]) =>
                   \&/.Both(
@@ -292,20 +301,20 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         val rC
         : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
         = (rA /: cs) {
-          case (acc, (ci, ciOmf)) =>
+          case (acc, (ciS, ciOmf)) =>
             //              System.out.println(
             //                s"""|#OTI/OMF R2 EntityConceptSubClassAxiom:
             //                    | sup=${ci.name.get}, sub=${cls.qualifiedName.get}""".stripMargin)
 
             acc.flatMap { rj =>
               context
-                .addEntityConceptSubClassAxiom(rule, tbox, cConcept, ciOmf)
+                .addEntityConceptSubClassAxiom(rule, tbox, cls, cConcept, ciS, ciOmf)
                 .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
                 (nels: Set[java.lang.Throwable]) =>
                   \&/.Both(
                     Set(UMLError.illegalElementException[Uml, UMLClassifier[Uml]](
                       s"R2 (addEntityConceptSubClassAxiom)",
-                      Iterable(cls, ci),
+                      Iterable(cls, ciS),
                       nels)),
                     rj),
                 (_: Omf#EntityConceptSubClassAxiom) =>
@@ -315,12 +324,16 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
         rC.flatMap { result =>
           val conceptPair = TboxUMLElement2ConceptDefinition(Some(tbox), cConcept, cls)
-          \&/.That(result.copy(
-            // this is a result
-            finalResults = result.finalResults :+ conceptPair,
-            // @todo enable when there are data property mapping rules conceptPair
-            externalResults = result.externalResults
-          ))
+          \&/.That(
+            scanForNestedClassifiers(
+              context, tbox, cls,
+              result.copy(
+                // this is a result
+                finalResults = result.finalResults :+ conceptPair,
+                // @todo enable when there are data property mapping rules conceptPair
+                externalResults = result.externalResults
+              ))
+          )
         }
       }
 
@@ -367,4 +380,22 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
     MappingFunction[Uml, Omf, Provenance]("namedElement2ConceptMapping", mapping)
 
   }
+
+  def scanForNestedClassifiers
+  (context: OTI2OMFMappingContext[Uml, Omf, Provenance],
+   tbox: Omf#MutableModelTerminologyGraph,
+   e: UMLElement[Uml],
+   result: RuleResult[Uml, Omf, Provenance])
+  : RuleResult[Uml, Omf, Provenance]
+  = e match {
+    case cls: UMLClass[Uml] =>
+      result.copy(
+          externalResults =
+            result.externalResults ++
+              cls.nestedClassifier.map(TboxUMLNestedClassifier(Some(tbox), _, cls))
+        )
+    case _ =>
+      result
+  }
+
 }
