@@ -41,7 +41,7 @@ package gov.nasa.jpl.omf.scala.mapping.oti.rules
 import java.lang.System
 
 import gov.nasa.jpl.omf.scala.core._
-import gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLNestedClassifier
+import gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.{TboxUMLElementTuple, TboxUMLNestedClassifier}
 import gov.nasa.jpl.omf.scala.mapping.oti._
 import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
@@ -105,7 +105,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
             }
 
             aspectPair = Vector(TboxUMLElement2AspectDefinition(Some(tbox), clsOmfAspect, nsU))
-            aspectResult = scanForNestedClassifiers(
+            aspectResult = scanForNestedElements(
               context, tbox, nsU,
               RuleResult[Uml, Omf, Provenance](
                 rule,
@@ -244,7 +244,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                 System.out.println(s"#OTI/OMF R2 class2concept => not RBST")
                 val conceptPair = TboxUMLElement2ConceptDefinition(Some(tbox), cConcept, c)
                 \&/.That(
-                  scanForNestedClassifiers(
+                  scanForNestedElements(
                     context, tbox, c,
                   result.copy(
                   // this is a result
@@ -325,7 +325,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         rC.flatMap { result =>
           val conceptPair = TboxUMLElement2ConceptDefinition(Some(tbox), cConcept, cls)
           \&/.That(
-            scanForNestedClassifiers(
+            scanForNestedElements(
               context, tbox, cls,
               result.copy(
                 // this is a result
@@ -381,21 +381,56 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
   }
 
-  def scanForNestedClassifiers
+  def scanForNestedElements
   (context: OTI2OMFMappingContext[Uml, Omf, Provenance],
    tbox: Omf#MutableModelTerminologyGraph,
    e: UMLElement[Uml],
    result: RuleResult[Uml, Omf, Provenance])
   : RuleResult[Uml, Omf, Provenance]
-  = e match {
-    case cls: UMLClass[Uml] =>
-      result.copy(
-          externalResults =
-            result.externalResults ++
-              cls.nestedClassifier.map(TboxUMLNestedClassifier(Some(tbox), _, cls))
-        )
-    case _ =>
-      result
+  = result.copy(
+      internalResults =
+        result.internalResults ++
+          collectNestedElements(e, expandNestedElements _)
+            .map(TboxUMLElementTuple(Some(tbox), _)))
+
+  def expandNestedElements
+  (e: UMLElement[Uml])
+  : (Vector[UMLElement[Uml]], Vector[UMLElement[Uml]])
+  = {
+    val expand = e.ownedElement.filter {
+      case _: UMLPackage[Uml] => true
+      case _ => false
+    }
+      .toVector
+    val result = e.ownedElement.filter {
+      case _: UMLFeature[Uml] => false
+      case _: UMLPackage[Uml] => false
+      case _ => true
+    }
+      .toVector
+    (expand, result)
   }
 
+  def collectNestedElements
+  (e: UMLElement[Uml],
+   expand: UMLElement[Uml] => (Vector[UMLElement[Uml]], Vector[UMLElement[Uml]]))
+  : Vector[UMLElement[Uml]]
+  = {
+
+    @scala.annotation.tailrec
+    def collectNestedElements
+    (queue: Vector[UMLElement[Uml]],
+     acc: Vector[UMLElement[Uml]])
+    (implicit expand: UMLElement[Uml] => (Vector[UMLElement[Uml]], Vector[UMLElement[Uml]]))
+    : Vector[UMLElement[Uml]]
+    = if (queue.isEmpty)
+      acc
+    else {
+      val (e, rest) = (queue.head, queue.drop(1))
+      val (more, results) = expand(e)
+      collectNestedElements(more ++ rest, acc ++ results)
+    }
+
+    collectNestedElements(Vector(e), Vector())(expand)
+  }
 }
