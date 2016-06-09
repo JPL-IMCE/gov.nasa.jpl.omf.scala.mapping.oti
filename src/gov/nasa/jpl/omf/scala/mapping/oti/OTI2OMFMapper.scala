@@ -799,9 +799,10 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     : Set[java.lang.Throwable] \/ Omf#ModelEntityAspect
     = element2aspectCtor.applyMapping(this, rule, tbox, u)
 
-    result.flatMap { entity =>
-      mapCanonicalName(tbox, u, entity).map { _ => entity }
-    }
+//    result.flatMap { entity =>
+//      mapCanonicalName(tbox, u, entity).map { _ => entity }
+//    }
+    result
   }
 
   val mappedElement2Concept = scala.collection.mutable.HashMap[UMLElement[Uml], MappedEntityConcept]()
@@ -824,9 +825,10 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     : Set[java.lang.Throwable] \/ MappedEntityConcept
     = element2conceptCtor.applyMapping(this, rule, tbox, u, isAbstract)
 
-    result.flatMap { entity =>
-      mapCanonicalName(tbox, u, entity).map { _ => entity }
-    }
+//    result.flatMap { entity =>
+//      mapCanonicalName(tbox, u, entity).map { _ => entity }
+//    }
+    result
   }
 
   val mappedElement2Relationship = scala.collection.mutable.HashMap[UMLElement[Uml], MappedEntityRelationship]()
@@ -857,9 +859,10 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     = element2relationshipCtor.applyMapping(
       this, rule, tbox, u, source, target, characteristics, isAbstract, hasName)
 
-    result.flatMap { entity =>
-      mapCanonicalName(tbox, u, entity).map { _ => entity }
-    }
+//    result.flatMap { entity =>
+//      mapCanonicalName(tbox, u, entity).map { _ => entity }
+//    }
+    result
   }
 
   def lookupElementMapping
