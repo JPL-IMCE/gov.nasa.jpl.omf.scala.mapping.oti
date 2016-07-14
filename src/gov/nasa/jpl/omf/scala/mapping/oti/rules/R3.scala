@@ -64,6 +64,7 @@ import scalaz._, Scalaz._
  */
 case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf]) {
 
+
   def dependency2RelationshipMapping(context: OTI2OMFMappingContext[Uml, Omf, Provenance]) = {
 
     import gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples._
@@ -107,82 +108,123 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
           } { sourceOmf =>
 
-            otargetE
-            .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]]{
+            omfOps.foldTerm[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
+              sourceOmf
+            )(
+              funEntityConcept = sourceConceptDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
+              funEntityReifiedRelationship = illegalSourceDependency2RelationshipMapping[Omf#ModelEntityReifiedRelationship](depU),
+              funEntityUnreifiedRelationship = illegalSourceDependency2RelationshipMapping[Omf#ModelEntityUnreifiedRelationship](depU),
+              funScalarDataType = illegalSourceDependency2RelationshipMapping[Omf#ModelScalarDataType](depU),
+              funStructuredDataType = illegalSourceDependency2RelationshipMapping[Omf#ModelStructuredDataType](depU),
+              funDataRelationshipFromEntityToScalar = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromEntityToScalar](depU),
+              funDataRelationshipFromEntityToStructure = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromEntityToStructure](depU),
+              funDataRelationshipFromStructureToScalar = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToScalar](depU),
+              funDataRelationshipFromStructureToStructure = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToStructure](depU))
 
-              val explanation: String =
-                s"R3 dependency2RelationshipMapping => unmapped target: "+
-                s"${targetU.toolSpecific_id} ${targetU.xmiElementLabel} ${targetU.qualifiedName.get}" +
-                s"(source? true): ${depU.toolSpecific_id} ${depU.xmiElementLabel})"
-              \&/.This(Set(
-                UMLError.illegalElementError[Uml, UMLDependency[Uml]](
-                  s"R3 is not applicable to: $depU because $explanation",
-                  Iterable(depU))))
-
-            } { targetOmf =>
-
-              val unmappedErrors
-              : Set[java.lang.Throwable]
-              = unmappedS.map { s =>
-                require(context.otherStereotypesApplied.contains(s), s.qualifiedName.get)
-
-                UMLError.illegalElementError[Uml, UMLDependency[Uml]](
-                  s"R3 unmapped non-IMCE stereotype application: <<${s.qualifiedName.get}>>$depU",
-                  Iterable(depU))
-              }
-
-              val rName = rs.flatMap(_._1.name).mkString("<<", ",", ">>")
-
-              val hasName =
-                sourceU.name.getOrElse(sourceU.toolSpecific_id) +
-                  "-" + rName + "-" +
-                  targetU.name.getOrElse(targetU.toolSpecific_id)
-
-              val result = for {
-                restrictions <-
-                rs
-                  .foldLeft[Set[java.lang.Throwable] \&/ Vector[TboxUMLElement2ReifiedRelationshipRestriction[Uml, Omf]]](\&/.That(Vector.empty)) {
-                  case (acc, (relUml, relOmf)) =>
-                    val ax =
-                      context
-                        .addReifiedRelationshipRestrictionAxiom(
-                          rule, tbox, depU, relUml, sourceOmf, relOmf, targetOmf, ExistentialRestrictionKind)
-                    val inc =
-                      ax
-                        .map(_ => Vector(TboxUMLElement2ReifiedRelationshipRestriction(
-                          Some(tbox), relOmf, depU, sourceU, sourceOmf, targetU, targetOmf, ExistentialRestrictionKind)))
-                        .toThese
-
-                    acc append inc
-                }
-              } yield {
-                System.out.println(
-                  s"#OTI/OMF R3 dependency2RelationshipMapping => "+
-                  s"mapped: ${depU.toolSpecific_id} ${depU.xmiElementLabel}")
-                RuleResult[Uml, Omf, Provenance](
-                  rule,
-                  finalResults=restrictions,
-                  internalResults=Vector(),
-                  externalResults=Vector()) // nothing further to do
-              }
-
-              if (unmappedErrors.isEmpty)
-                result
-              else
-                result match {
-                  case \&/.This(errors) =>
-                    \&/.This(errors ++ unmappedErrors)
-                  case \&/.That(r) =>
-                    \&/.Both(unmappedErrors, r)
-                  case \&/.Both(errors, r) =>
-                    \&/.Both(errors ++ unmappedErrors, r)
-                }
-            }
           }
         }
     }
 
     MappingFunction[Uml, Omf, Provenance]("dependency2RelationshipMapping", mapping)
 
+  }
+
+  def illegalSourceDependency2RelationshipMapping[Term <: Omf#ModelTypeTerm]
+  (depU: UMLDependency[Uml])
+  ( other: Term )
+  : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
+  = \&/.This(
+    Set(
+      UMLError.illegalElementError[Uml, UMLDependency[Uml]](
+        s"R3 is not applicable to: $depU because its source is not mapped to an OMF Entity Concept",
+        Iterable(depU))))
+
+  def sourceConceptDependency2RelationshipMapping
+  (rule: MappingFunction[Uml, Omf, Provenance],
+   tbox: Omf#MutableModelTerminologyGraph,
+   context: OTI2OMFMappingContext[Uml, Omf, Provenance],
+   rs: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityRelationshipMap,
+   unmappedS: Set[UMLStereotype[Uml]],
+   sourceU: UMLNamedElement[Uml],
+   depU: UMLDependency[Uml],
+   targetU: UMLNamedElement[Uml],
+   otargetE: Option[Omf#ModelEntityDefinition])
+  ( sourceOmf: Omf#ModelEntityConcept)
+  : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
+  = {
+
+    otargetE
+      .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]]{
+
+      val explanation: String =
+        s"R3 dependency2RelationshipMapping => unmapped target: "+
+          s"${targetU.toolSpecific_id} ${targetU.xmiElementLabel} ${targetU.qualifiedName.get}" +
+          s"(source? true): ${depU.toolSpecific_id} ${depU.xmiElementLabel})"
+      \&/.This(Set(
+        UMLError.illegalElementError[Uml, UMLDependency[Uml]](
+          s"R3 is not applicable to: $depU because $explanation",
+          Iterable(depU))))
+
+    } { targetOmf =>
+
+      import gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples._
+
+      val unmappedErrors
+      : Set[java.lang.Throwable]
+      = unmappedS.map { s =>
+        require(context.otherStereotypesApplied.contains(s), s.qualifiedName.get)
+
+        UMLError.illegalElementError[Uml, UMLDependency[Uml]](
+          s"R3 unmapped non-IMCE stereotype application: <<${s.qualifiedName.get}>>$depU",
+          Iterable(depU))
+      }
+
+      val rName = rs.flatMap(_._1.name).mkString("<<", ",", ">>")
+
+      val hasName =
+        sourceU.name.getOrElse(sourceU.toolSpecific_id) +
+          "-" + rName + "-" +
+          targetU.name.getOrElse(targetU.toolSpecific_id)
+
+      val result = for {
+        restrictions <-
+        rs
+          .foldLeft[Set[java.lang.Throwable] \&/ Vector[TboxUMLElement2ReifiedRelationshipRestriction[Uml, Omf]]](\&/.That(Vector.empty)) {
+          case (acc, (relUml, relOmf)) =>
+            val ax =
+              context
+                .addEntityConceptExistentialRestrictionAxiom(
+                  rule, tbox, depU, relUml, sourceOmf, relOmf, targetOmf)
+            val inc =
+              ax
+                .map(_ => Vector(TboxUMLElement2ReifiedRelationshipRestriction(
+                  Some(tbox), relOmf, depU, sourceU, sourceOmf, targetU, targetOmf, ExistentialRestrictionKind)))
+                .toThese
+
+            acc append inc
+        }
+      } yield {
+        System.out.println(
+          s"#OTI/OMF R3 dependency2RelationshipMapping => "+
+            s"mapped: ${depU.toolSpecific_id} ${depU.xmiElementLabel}")
+        RuleResult[Uml, Omf, Provenance](
+          rule,
+          finalResults=restrictions,
+          internalResults=Vector(),
+          externalResults=Vector()) // nothing further to do
+      }
+
+      if (unmappedErrors.isEmpty)
+        result
+      else
+        result match {
+          case \&/.This(errors) =>
+            \&/.This(errors ++ unmappedErrors)
+          case \&/.That(r) =>
+            \&/.Both(unmappedErrors, r)
+          case \&/.Both(errors, r) =>
+            \&/.Both(errors ++ unmappedErrors, r)
+        }
+    }
   }
 }

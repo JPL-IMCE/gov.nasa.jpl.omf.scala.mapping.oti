@@ -50,7 +50,7 @@ import org.omg.oti.uml.xmi._
 import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
 import scala.collection.parallel._
-import scala.{annotation,Boolean,Enumeration,Function1,Function2,Function3,Function4,Function5,Function6,Function8}
+import scala.{annotation,Boolean,Enumeration,Function1,Function2,Function3,Function4,Function5,Function6,Function7,Function8}
 import scala.{Option,None,PartialFunction,Some,StringContext,Tuple2,Tuple6,Unit}
 import scala.language.postfixOps
 import scalaz._, Scalaz._
@@ -211,6 +211,28 @@ trait AddEntityConceptSubClassAxiom[Uml <: UML, Omf <: OMF, Provenance]
     Omf#ModelEntityConcept,
     Set[java.lang.Throwable] \/ Omf#EntityConceptSubClassAxiom]
 
+trait AddEntityConceptExistentialRestrictionAxiom[Uml <: UML, Omf <: OMF, Provenance]
+  extends Function7[
+    MappingFunction[Uml, Omf, Provenance],
+    Omf#MutableModelTerminologyGraph,
+    UMLElement[Uml],
+    UMLStereotype[Uml],
+    Omf#ModelEntityConcept,
+    Omf#ModelEntityReifiedRelationship,
+    Omf#ModelEntityDefinition,
+    Set[java.lang.Throwable] \/ Omf#EntityConceptExistentialRestrictionAxiom]
+
+trait AddEntityConceptUniversalRestrictionAxiom[Uml <: UML, Omf <: OMF, Provenance]
+  extends Function7[
+    MappingFunction[Uml, Omf, Provenance],
+    Omf#MutableModelTerminologyGraph,
+    UMLElement[Uml],
+    UMLStereotype[Uml],
+    Omf#ModelEntityConcept,
+    Omf#ModelEntityReifiedRelationship,
+    Omf#ModelEntityDefinition,
+    Set[java.lang.Throwable] \/ Omf#EntityConceptUniversalRestrictionAxiom]
+
 trait AddEntityReifiedRelationshipSubClassAxiom[Uml <: UML, Omf <: OMF, Provenance]
   extends Function6[
     MappingFunction[Uml, Omf, Provenance],
@@ -287,6 +309,8 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   val addDirectlyNestedTerminologyGraph: AddDirectlyNestedTerminologyGraph[Uml, Omf, Provenance],
   val addEntityDefinitionAspectSubClassAxiom: AddEntityDefinitionAspectSubClassAxiom[Uml, Omf, Provenance],
   val addEntityConceptSubClassAxiom: AddEntityConceptSubClassAxiom[Uml, Omf, Provenance],
+  val addEntityConceptExistentialRestrictionAxiom: AddEntityConceptExistentialRestrictionAxiom[Uml, Omf, Provenance],
+  val addEntityConceptUniversalRestrictionAxiom: AddEntityConceptUniversalRestrictionAxiom[Uml, Omf, Provenance],
   val addEntityRelationshipSubClassAxiom: AddEntityReifiedRelationshipSubClassAxiom[Uml, Omf, Provenance],
   val addEntityRelationshipContextualizationAxiom: AddEntityReifiedRelationshipContextualizationAxiom[Uml, Omf, Provenance],
   val addReifiedRelationshipRestrictionAxiom: AddEntityReifiedRelationshipRestrictionAxiom[Uml, Omf, Provenance],
