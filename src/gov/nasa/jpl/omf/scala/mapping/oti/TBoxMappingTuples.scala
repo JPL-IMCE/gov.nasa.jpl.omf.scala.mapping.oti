@@ -274,6 +274,48 @@ object TBoxMappingTuples {
       }
   }
 
+  case class TboxUMLElement2ReifiedRelationshipContextualization[Uml <: UML, Omf <: OMF]
+  ( override val tbox: Option[Omf#MutableModelTerminologyGraph],
+    override val omfEntity: Omf#ModelEntityReifiedRelationship,
+    override val e: UMLElement[Uml],
+    umlDomain: UMLElement[Uml],
+    omfDomain: Omf#ModelEntityDefinition,
+    umlRange: UMLElement[Uml],
+    omfRange: Omf#ModelEntityDefinition,
+    contextName: String)
+  ( implicit omfOps: OMFOps[Omf] )
+    extends TboxUMLElement2EntityDefinition[Uml, Omf]( tbox, omfEntity, e ) {
+
+    override def toString: String =
+      tbox
+        .fold[String](
+        s"${e.xmiElementLabel} / OMF TboxUMLElement2ReifiedRelationshipContextualization Tuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+      ){ g =>
+        s"${e.xmiElementLabel} / OMF TboxUMLElement2ReifiedRelationshipContextualization Tuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}] entity: $omfEntity"
+      }
+  }
+
+  case class TboxUMLElement2ReifiedRelationshipRestriction[Uml <: UML, Omf <: OMF]
+  ( override val tbox: Option[Omf#MutableModelTerminologyGraph],
+    override val omfEntity: Omf#ModelEntityReifiedRelationship,
+    override val e: UMLElement[Uml],
+    umlDomain: UMLElement[Uml],
+    omfDomain: Omf#ModelEntityDefinition,
+    umlRange: UMLElement[Uml],
+    omfRange: Omf#ModelEntityDefinition,
+    kind: RestrictionKind)
+  ( implicit omfOps: OMFOps[Omf] )
+    extends TboxUMLElement2EntityDefinition[Uml, Omf]( tbox, omfEntity, e ) {
+
+    override def toString: String =
+      tbox
+        .fold[String](
+        s"${e.xmiElementLabel} / OMF TboxUMLElement2ReifiedRelationshipRestriction Tuple[tbox=<none>, ${e.xmiType.head}: ${e.toolSpecific_id}]"
+      ){ g =>
+        s"${e.xmiElementLabel} / OMF TboxUMLElement2ReifiedRelationshipRestriction Tuple[tbox=${omfOps.getTerminologyGraphIRI( g )}, ${e.xmiType.head}: ${e.toolSpecific_id}] entity: $omfEntity"
+      }
+  }
+
   // @todo Is this case possible at all?
   case class TboxUMLPackage2MutableTBoxTuple[Uml <: UML, Omf <: OMF]
   ( override val tbox: Option[Omf#MutableModelTerminologyGraph],

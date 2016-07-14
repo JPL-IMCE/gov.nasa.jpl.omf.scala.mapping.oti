@@ -48,10 +48,11 @@ import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
 import scala.{Option, Some, StringContext, Tuple3, Unit}
+import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
 import scala.language.postfixOps
 import scala.Predef.ArrowAssoc
-import scalaz.\/
+import scalaz._, Scalaz._
 
 /**
  * Mapping for a kind of binary, directed, composite UML Association to
@@ -77,55 +78,150 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         if cs.isEmpty && bcaU.memberEnd.exists(_.aggregation == UMLAggregationKind.composite) &&
           context.getDirectedBinaryAssociationSourceAndTargetMappings(bcaU).isDefined =>
 
+        val unmappedErrors
+        : Set[java.lang.Throwable]
+        = unmappedS.map { s =>
+          require(context.otherStereotypesApplied.contains(s), s.qualifiedName.get)
+
+          UMLError.illegalElementError[Uml, UMLAssociation[Uml]](
+            s"R4 unmapped non-IMCE stereotype application: <<${s.qualifiedName.get}>>$bcaU",
+            Iterable(bcaU))
+        }
+
+        val ((sourceTU, sourceOmf), (targetTU, targetOmf))
+        = context.getDirectedBinaryAssociationSourceAndTargetMappings(bcaU).get
+
+        val sourceName = sourceTU.name.get
+        val targetName = targetTU.name.get
+        val hasName = bcaU.name
+
+        val omfRelationshipParents
+        = if (rs.isEmpty)
+          Map(context.baseContainsS -> context.baseContainsR)
+        else
+          rs
+
         val result
-        : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]
-        = {
-          if (unmappedS.nonEmpty) {
-            val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
+        : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
+        = for {
+          contexts <-
+          omfRelationshipParents
+            .foldLeft[Set[java.lang.Throwable] \&/ Vector[TboxUMLElement2ReifiedRelationshipContextualization[Uml, Omf]]](\&/.That(Vector.empty)) {
+            case (acc, (relS, relO)) =>
+              val contextName = hasName.getOrElse(sourceName + "_" + relS.name.get + "_" + targetName)
+              val ax =
+                context
+                  .addEntityRelationshipContextualizationAxiom(
+                    rule, tbox, bcaU, relS, sourceOmf, relO, contextName, targetOmf)
+              val inc =
+                ax
+                  .map(_ => Vector(TboxUMLElement2ReifiedRelationshipContextualization(
+                    Some(tbox), relO, bcaU, sourceTU, sourceOmf, targetTU, targetOmf, contextName)))
+                  .toThese
 
-            if (foreign.nonEmpty) {
-              System.out.println(s"*** R4 WARN: ignoring ${foreign.size} unrecognized stereotypes applied to composite relationship:")
-              System.out.println(s"*** ${bcaU.toolSpecific_id}")
-              foreign.foreach { s =>
-                System.out.println(s"***  ignoring ${s.qualifiedName.get}")
-              }
-            }
+              acc append inc
           }
-
-          val ((sourceTU, sourceOmf), (targetTU, targetOmf)) =
-            context.getDirectedBinaryAssociationSourceAndTargetMappings(bcaU).get
-
-          val hasName = bcaU.name
-
-          for {
-            bcaOmfRelation <- context.mapElement2Relationship(
-              rule, tbox, bcaU, sourceOmf, targetOmf,
-              Iterable(), // @TODO
-              isAbstract = bcaU.isAbstract,
-              hasName)
-
-            omfRelationshipParents =
-            if (rs.isEmpty) Map(context.baseContainsS -> context.baseContainsR)
-            else rs
-
-            _ = omfRelationshipParents.foreach { case (relS, relO) =>
-              context.addEntityRelationshipSubClassAxiom(rule, tbox, bcaU, bcaOmfRelation, relS, relO)
-            }
-
-            reifiedRelationPair =
-            Vector(TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), bcaOmfRelation, bcaU))
-          } yield
+        } yield {
             RuleResult[Uml, Omf, Provenance](
               rule,
-              finalResults=reifiedRelationPair,
+              finalResults=contexts,
               internalResults=Vector(),
               externalResults=Vector())
         }
 
-        result.toThese
+        if (unmappedErrors.isEmpty)
+          result
+        else
+          result match {
+            case \&/.This(errors) =>
+              \&/.This(errors ++ unmappedErrors)
+            case \&/.That(r) =>
+              \&/.Both(unmappedErrors, r)
+            case \&/.Both(errors, r) =>
+              \&/.Both(errors ++ unmappedErrors, r)
+          }
     }
 
     MappingFunction[Uml, Omf, Provenance]("binaryCompositeAssociation2RelationshipMapping", mapping)
+
+  }
+
+  def binaryReferenceAssociation2RelationshipMapping(context: OTI2OMFMappingContext[Uml, Omf, Provenance]) = {
+
+    import gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples._
+    val mapping: OTI2OMFMappingContext[Uml, Omf, Provenance]#RuleFunction = {
+      case (
+        rule,
+        TboxUMLElementTuple(Some(tbox), braU: UMLAssociation[Uml]),
+        as, cs, rs, unmappedS)
+        if cs.isEmpty && braU.memberEnd.forall(_.aggregation != UMLAggregationKind.composite) &&
+          context.getDirectedBinaryAssociationSourceAndTargetMappings(braU).isDefined =>
+
+        val unmappedErrors
+        : Set[java.lang.Throwable]
+        = unmappedS.map { s =>
+          require(context.otherStereotypesApplied.contains(s), s.qualifiedName.get)
+
+          UMLError.illegalElementError[Uml, UMLAssociation[Uml]](
+            s"R4 unmapped non-IMCE stereotype application: <<${s.qualifiedName.get}>>$braU",
+            Iterable(braU))
+        }
+
+        val ((sourceTU, sourceOmf), (targetTU, targetOmf))
+        = context.getDirectedBinaryAssociationSourceAndTargetMappings(braU).get
+
+        val sourceName = sourceTU.name.get
+        val targetName = targetTU.name.get
+        val hasName = braU.name
+
+        val omfRelationshipParents
+        = if (rs.isEmpty)
+          Map(context.baseContainsS -> context.baseContainsR)
+        else
+          rs
+
+        val result
+        : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
+        = for {
+          contexts <-
+          omfRelationshipParents
+            .foldLeft[Set[java.lang.Throwable] \&/ Vector[TboxUMLElement2ReifiedRelationshipContextualization[Uml, Omf]]](\&/.That(Vector.empty)) {
+            case (acc, (relS, relO)) =>
+              val contextName = hasName.getOrElse(sourceName + "_" + relS.name.get + "_" + targetName)
+              val ax =
+                context
+                  .addEntityRelationshipContextualizationAxiom(
+                    rule, tbox, braU, relS, sourceOmf, relO, contextName, targetOmf)
+              val inc =
+                ax
+                  .map(_ => Vector(TboxUMLElement2ReifiedRelationshipContextualization(
+                    Some(tbox), relO, braU, sourceTU, sourceOmf, targetTU, targetOmf, contextName)))
+                  .toThese
+
+              acc append inc
+          }
+        } yield {
+          RuleResult[Uml, Omf, Provenance](
+            rule,
+            finalResults=contexts,
+            internalResults=Vector(),
+            externalResults=Vector())
+        }
+
+        if (unmappedErrors.isEmpty)
+          result
+        else
+          result match {
+            case \&/.This(errors) =>
+              \&/.This(errors ++ unmappedErrors)
+            case \&/.That(r) =>
+              \&/.Both(unmappedErrors, r)
+            case \&/.Both(errors, r) =>
+              \&/.Both(errors ++ unmappedErrors, r)
+          }
+    }
+
+    MappingFunction[Uml, Omf, Provenance]("binaryReferenceAssociation2RelationshipMapping", mapping)
 
   }
 }

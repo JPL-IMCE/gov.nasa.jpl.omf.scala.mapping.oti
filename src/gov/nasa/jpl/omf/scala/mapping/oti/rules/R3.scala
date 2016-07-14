@@ -139,27 +139,29 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                   targetU.name.getOrElse(targetU.toolSpecific_id)
 
               val result = for {
-                depOmfRelation <- context.mapElement2Relationship(
-                  rule, tbox, depU, sourceOmf, targetOmf,
-                  Iterable(), // @TODO
-                  isAbstract = false,
-                  hasName.some).toThese
-
-                _ <- rs.foldLeft[Set[java.lang.Throwable] \&/ Unit](\&/.That(())) {
+                restrictions <-
+                rs
+                  .foldLeft[Set[java.lang.Throwable] \&/ Vector[TboxUMLElement2ReifiedRelationshipRestriction[Uml, Omf]]](\&/.That(Vector.empty)) {
                   case (acc, (relUml, relOmf)) =>
-                    val sub = context.addEntityRelationshipSubClassAxiom(rule, tbox, depU, depOmfRelation, relUml, relOmf)
-                    sub.map(_ => ()).toThese
-                }
+                    val ax =
+                      context
+                        .addReifiedRelationshipRestrictionAxiom(
+                          rule, tbox, depU, relUml, sourceOmf, relOmf, targetOmf, ExistentialRestrictionKind)
+                    val inc =
+                      ax
+                        .map(_ => Vector(TboxUMLElement2ReifiedRelationshipRestriction(
+                          Some(tbox), relOmf, depU, sourceU, sourceOmf, targetU, targetOmf, ExistentialRestrictionKind)))
+                        .toThese
 
-                refiedRelationPair =
-                Vector(TboxUMLElement2ReifiedRelationshipDefinition(Some(tbox), depOmfRelation, depU))
+                    acc append inc
+                }
               } yield {
                 System.out.println(
                   s"#OTI/OMF R3 dependency2RelationshipMapping => "+
                   s"mapped: ${depU.toolSpecific_id} ${depU.xmiElementLabel}")
                 RuleResult[Uml, Omf, Provenance](
                   rule,
-                  finalResults=refiedRelationPair,
+                  finalResults=restrictions,
                   internalResults=Vector(),
                   externalResults=Vector()) // nothing further to do
               }
