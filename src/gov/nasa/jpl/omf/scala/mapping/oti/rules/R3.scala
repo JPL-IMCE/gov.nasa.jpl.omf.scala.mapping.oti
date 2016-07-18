@@ -78,12 +78,9 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
               (if (unmappedS.isEmpty)
                 ""
               else
-                unmappedS.toList.map(_.qualifiedName.get)
+                unmappedS.toList.map(s => s.qualifiedName.getOrElse(s.toolSpecific_id))
                   .mkString(s", and ${unmappedS.size} unmapped stereotypes applied (",",",")"))
 
-          System.out.println(
-            s"#OTI/OMF R3 dependency2RelationshipMapping => error: "+
-            s"${depU.xmiElementLabel}: ${depU.toolSpecific_id} $explanation")
           \&/.This(Set(
             UMLError.illegalElementError[Uml, UMLDependency[Uml]](
               s"R3 is not applicable to: $depU because $explanation",
@@ -99,7 +96,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
             val explanation: String =
               s"R3 dependency2RelationshipMapping => unmapped source: "+
-              s"${sourceU.toolSpecific_id} ${sourceU.xmiElementLabel} ${sourceU.qualifiedName.get}"+
+              s"${sourceU.toolSpecific_id} ${sourceU.xmiElementLabel} ${sourceU.qualifiedName.getOrElse(sourceU.toolSpecific_id)}"+
               s"(target? ${otargetE.isDefined}): ${depU.toolSpecific_id} ${depU.xmiElementLabel})"
             \&/.This(Set(
               UMLError.illegalElementError[Uml, UMLDependency[Uml]](
@@ -158,7 +155,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
       val explanation: String =
         s"R3 dependency2RelationshipMapping => unmapped target: "+
-          s"${targetU.toolSpecific_id} ${targetU.xmiElementLabel} ${targetU.qualifiedName.get}" +
+          s"${targetU.toolSpecific_id} ${targetU.xmiElementLabel} ${targetU.qualifiedName.getOrElse(targetU.toolSpecific_id)}" +
           s"(source? true): ${depU.toolSpecific_id} ${depU.xmiElementLabel})"
       \&/.This(Set(
         UMLError.illegalElementError[Uml, UMLDependency[Uml]](
@@ -203,16 +200,12 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
             acc append inc
         }
-      } yield {
-        System.out.println(
-          s"#OTI/OMF R3 dependency2RelationshipMapping => "+
-            s"mapped: ${depU.toolSpecific_id} ${depU.xmiElementLabel}")
+      } yield
         RuleResult[Uml, Omf, Provenance](
           rule,
           finalResults=restrictions,
           internalResults=Vector(),
           externalResults=Vector()) // nothing further to do
-      }
 
       if (unmappedErrors.isEmpty)
         result

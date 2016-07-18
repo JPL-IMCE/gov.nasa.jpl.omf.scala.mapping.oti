@@ -82,45 +82,48 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
       case (rule, TboxUMLElementTuple(Some(tbox), nsU: UMLNamespace[Uml]), as, cs, rs, unmappedS)
         if as.nonEmpty && cs.isEmpty && rs.isEmpty =>
 
+        val unmappedErrors
+        : Set[java.lang.Throwable]
+        = for {
+          s <- unmappedS
+          if !context.otherStereotypesApplied.contains(s)
+          error =
+          UMLError.illegalElementError[Uml, UMLNamespace[Uml]](
+            s"R2 ignoring unrecognized stereotype application: <<${s.qualifiedName.get}>> to aspect: ${nsU.qualifiedName.getOrElse(nsU.toolSpecific_id)}",
+            Iterable(nsU))
+        } yield error
+
         val result
-        : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
-        = {
-          if (unmappedS.nonEmpty) {
-            val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
-            if (foreign.nonEmpty) {
-              System.out.println(s"*** R2 WARN: ignoring ${foreign.size} unrecognized stereotypes applied to Aspect: ${nsU.qualifiedName.get}")
-              foreign.foreach { s =>
-                System.out.println(s"***  ignoring ${s.qualifiedName.get}")
-              }
-            }
+        : Set[java.lang.Throwable] \/ RuleResult[Uml, Omf, Provenance]
+        = for {
+          clsOmfAspect <- context.mapElement2Aspect(rule, tbox, nsU)
+
+          _ = as.foreach {
+            case (aS, aOmf) =>
+              context.addEntityDefinitionAspectSubClassAxiom(rule, tbox, nsU, clsOmfAspect, aS, aOmf)
           }
 
-          val result
-          = for {
-            clsOmfAspect <- context.mapElement2Aspect(rule, tbox, nsU)
-
-            _ = as.foreach {
-              case (aS, aOmf) =>
-                context.addEntityDefinitionAspectSubClassAxiom(rule, tbox, nsU, clsOmfAspect, aS, aOmf)
-            }
-
-            aspectPair = Vector(TboxUMLElement2AspectDefinition(Some(tbox), clsOmfAspect, nsU))
-            aspectResult = scanForNestedElements(
-              context, tbox, nsU,
-              RuleResult[Uml, Omf, Provenance](
-                rule,
-                finalResults=aspectPair,
-                internalResults=Vector(),
-                externalResults=Vector() // @todo enable when there are data property mapping rules aspectPair
-              )
+          aspectPair = Vector(TboxUMLElement2AspectDefinition(Some(tbox), clsOmfAspect, nsU))
+          aspectResult = scanForNestedElements(
+            context, tbox, nsU,
+            RuleResult[Uml, Omf, Provenance](
+              rule,
+              finalResults = aspectPair,
+              internalResults = Vector(),
+              externalResults = Vector() // @todo enable when there are data property mapping rules aspectPair
             )
-          } yield aspectResult
+          )
+        } yield aspectResult
 
-
+        if (unmappedErrors.isEmpty)
           result.toThese
-        }
-
-        result
+        else
+          result match {
+            case -\/(errors) =>
+              \&/.This(errors ++ unmappedErrors)
+            case \/-(r) =>
+              \&/.Both(unmappedErrors, r)
+          }
     }
 
     MappingFunction[Uml, Omf, Provenance]("namespace2AspectMapping", mapping)
@@ -145,8 +148,6 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
       .mapElement2Concept(rule, tbox, c, c.isAbstract)
       .toThese
       .flatMap { cConcept =>
-//        System.out
-//          .println(s"#OTI/OMF R2 class2concept: ${c.qualifiedName.get} / a:${as.size}, c:${cs.size}")
 
         val r0
         : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
@@ -156,9 +157,6 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
         = (r0 /: as) {
           case (acc, (ai, aiOmf)) =>
-//            System.out.println(
-//              s"""|#OTI/OMF R2 EntityDefinitionAspectSubClassAxiom:
-//                  | sup=${ai.name.get}, sub=${c.qualifiedName.get}""".stripMargin)
 
             acc.flatMap { ri =>
               context
@@ -180,9 +178,6 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
         = (rA /: cs) {
           case (acc, (ciS, ciOmf)) =>
-//            System.out.println(
-//              s"""|#OTI/OMF R2 EntityConceptSubClassAxiom:
-//                  | sup=${ci.name.get}, sub=${c.qualifiedName.get}""".stripMargin)
 
             acc.flatMap { rj =>
               context
@@ -200,8 +195,6 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
             }
         }
 
-//        System.out.println(s"#OTI/OMF R2 class2concept: error? ${rC.isLeft} ok? ${rC.isRight}")
-
         rC.flatMap { result =>
 
           context.treeOps.isRootBlockSpecificType(c)
@@ -215,7 +208,6 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                     case bst: TreeCompositeStructureType[Uml] =>
                       val problems = TreeType.getIllFormedTreeBranchPairs(bst)
                       if (problems.isEmpty) {
-                        System.out.println(s"#OTI/OMF R2 class2concept => RBST OK")
                         val conceptPair = TboxUMLElementTreeType(Some(tbox), cConcept, bst)
                         \&/.That(result.copy(
                           // this is a result
@@ -223,7 +215,6 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                           // it needs to be further expanded in the next phase
                           externalResults = result.externalResults :+ conceptPair))
                       } else {
-                        System.out.println(s"#OTI/OMF R2 class2concept => RBST ${problems.size} problems")
                         \&/.Both(Set(
                           treeOpsException(
                             context.treeOps,
@@ -233,7 +224,6 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                           result)
                       }
                     case tree =>
-                      System.out.println(s"#OTI/OMF R2 class2concept => other $tree")
                       \&/.Both(Set(
                         treeOpsException(
                           context.treeOps,
@@ -241,7 +231,6 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                         result)
                   }
               else {
-                System.out.println(s"#OTI/OMF R2 class2concept => not RBST")
                 val conceptPair = TboxUMLElement2ConceptDefinition(Some(tbox), cConcept, c)
                 \&/.That(
                   scanForNestedElements(
@@ -268,8 +257,6 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
       .mapElement2Concept(rule, tbox, cls, cls.isAbstract)
       .toThese
       .flatMap { cConcept =>
-        //          System.out
-        //            .println(s"#OTI/OMF R2 other2concept: ${cls.qualifiedName.get} / a:${as.size}, c:${cs.size}")
 
         val r0
         : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
@@ -279,9 +266,6 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
         = (r0 /: as) {
           case (acc, (ai, aiOmf)) =>
-            //              System.out.println(
-            //                s"""|#OTI/OMF R2 EntityDefinitionAspectSubClassAxiom:
-            //                    | sup=${ai.name.get}, sub=${cls.qualifiedName.get}""".stripMargin)
             acc.flatMap { ri =>
               context
                 .addEntityDefinitionAspectSubClassAxiom(rule, tbox, cls, cConcept, ai, aiOmf)
@@ -302,10 +286,6 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
         = (rA /: cs) {
           case (acc, (ciS, ciOmf)) =>
-            //              System.out.println(
-            //                s"""|#OTI/OMF R2 EntityConceptSubClassAxiom:
-            //                    | sup=${ci.name.get}, sub=${cls.qualifiedName.get}""".stripMargin)
-
             acc.flatMap { rj =>
               context
                 .addEntityConceptSubClassAxiom(rule, tbox, cls, cConcept, ciS, ciOmf)
@@ -343,24 +323,12 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
         val result
         : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
-        = {
-          if (unmappedS.nonEmpty) {
-            val foreign = unmappedS.filter(!context.otherStereotypesApplied.contains(_))
-            if (foreign.nonEmpty) {
-              System.out.println(s"*** R2 WARN: ignoring ${foreign.size} unrecognized stereotypes applied to Concept: ${neU.qualifiedName.get}")
-              foreign.foreach { s =>
-                System.out.println(s"***  ignoring ${s.qualifiedName.get}")
-              }
-            }
-          }
-
-          neU match {
+        = neU match {
             case c: UMLClass[Uml] =>
               class2concept(rule, tbox, c, as, cs)
             case cls: UMLClassifier[Uml] =>
               other2concept(rule, tbox, cls, as, cs)
             case _ =>
-              System.out.println(s"#OTI/OMF R2 EntityConcept => unknown: ${neU.xmiElementLabel} ${neU.toolSpecific_id}")
               \&/.This(Set(
                 treeOpsException(
                   context.treeOps,
@@ -372,9 +340,29 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                     s" / a:${as.size}, c:${cs.size}, r:${rs.size}", Iterable(neU)))
               ))
           }
-        }
 
-        result
+        val unmappedErrors
+        : Set[java.lang.Throwable]
+        = for {
+          s <- unmappedS
+          if !context.otherStereotypesApplied.contains(s)
+          error =
+          UMLError.illegalElementError[Uml, UMLNamedElement[Uml]](
+            s"R2 ignoring unrecognized stereotype application: <<${s.qualifiedName.get}>> to: ${neU.qualifiedName.getOrElse(neU.toolSpecific_id)}",
+            Iterable(neU))
+        } yield error
+
+        if (unmappedErrors.isEmpty)
+          result
+        else
+          result match {
+            case \&/.This(errors) =>
+              \&/.This(errors ++ unmappedErrors)
+            case \&/.That(r) =>
+              \&/.Both(unmappedErrors, r)
+            case \&/.Both(errors, r) =>
+              \&/.Both(errors ++ unmappedErrors, r)
+          }
     }
 
     MappingFunction[Uml, Omf, Provenance]("namedElement2ConceptMapping", mapping)
@@ -390,7 +378,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
   = result.copy(
       internalResults =
         result.internalResults ++
-          collectNestedElements(e, expandNestedElements _)
+          collectNestedElements(e, expandNestedElements)
             .map(TboxUMLElementTuple(Some(tbox), _)))
 
   def expandNestedElements
