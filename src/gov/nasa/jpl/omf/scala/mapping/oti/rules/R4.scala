@@ -85,8 +85,9 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         omfOps.foldTerm[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
           sourceOmf
         )(
-          funEntityConcept = sourceConceptAssociation2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceTU, bcaU, targetTU, targetOmf),
-          funEntityReifiedRelationship = illegalSourceAssociation2RelationshipMapping[Omf#ModelEntityReifiedRelationship](bcaU),
+          funEntityAspect = sourceDefinitionAssociation2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceTU, bcaU, targetTU, targetOmf),
+          funEntityConcept = sourceDefinitionAssociation2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceTU, bcaU, targetTU, targetOmf),
+          funEntityReifiedRelationship = sourceDefinitionAssociation2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceTU, bcaU, targetTU, targetOmf),
           funEntityUnreifiedRelationship = illegalSourceAssociation2RelationshipMapping[Omf#ModelEntityUnreifiedRelationship](bcaU),
           funScalarDataType = illegalSourceAssociation2RelationshipMapping[Omf#ModelScalarDataType](bcaU),
           funStructuredDataType = illegalSourceAssociation2RelationshipMapping[Omf#ModelStructuredDataType](bcaU),
@@ -116,8 +117,9 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         omfOps.foldTerm[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
           sourceOmf
         )(
-          funEntityConcept = sourceConceptAssociation2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceTU, braU, targetTU, targetOmf),
-          funEntityReifiedRelationship = illegalSourceAssociation2RelationshipMapping[Omf#ModelEntityReifiedRelationship](braU),
+          funEntityAspect = sourceDefinitionAssociation2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceTU, braU, targetTU, targetOmf),
+          funEntityConcept = sourceDefinitionAssociation2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceTU, braU, targetTU, targetOmf),
+          funEntityReifiedRelationship = sourceDefinitionAssociation2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceTU, braU, targetTU, targetOmf),
           funEntityUnreifiedRelationship = illegalSourceAssociation2RelationshipMapping[Omf#ModelEntityUnreifiedRelationship](braU),
           funScalarDataType = illegalSourceAssociation2RelationshipMapping[Omf#ModelScalarDataType](braU),
           funStructuredDataType = illegalSourceAssociation2RelationshipMapping[Omf#ModelStructuredDataType](braU),
@@ -130,6 +132,16 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
     MappingFunction[Uml, Omf, Provenance]("binaryReferenceAssociation2RelationshipMapping", mapping)
   }
 
+  def illegalSourceAssociation2AspectMapping[Term <: Omf#ModelTypeTerm]
+  (aU: UMLAssociation[Uml])
+  ( other: Term )
+  : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
+  = \&/.This(
+    Set(
+      UMLError.illegalElementError[Uml, UMLAssociation[Uml]](
+        s"R4 is not applicable to: $aU because its source is not mapped to an OMF Entity Concept",
+        Iterable(aU))))
+
   def illegalSourceAssociation2RelationshipMapping[Term <: Omf#ModelTypeTerm]
   (aU: UMLAssociation[Uml])
   ( other: Term )
@@ -140,7 +152,7 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         s"R4 is not applicable to: $aU because its source is not mapped to an OMF Entity Concept",
         Iterable(aU))))
 
-  def sourceConceptAssociation2RelationshipMapping
+  def sourceDefinitionAssociation2RelationshipMapping
   (rule: MappingFunction[Uml, Omf, Provenance],
    tbox: Omf#MutableModelTerminologyGraph,
    context: OTI2OMFMappingContext[Uml, Omf, Provenance],
@@ -150,7 +162,7 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
    aU: UMLAssociation[Uml],
    targetTU: UMLClassifier[Uml],
    targetOmf: Omf#ModelEntityDefinition)
-  ( sourceOmf: Omf#ModelEntityConcept)
+  ( sourceOmf: Omf#ModelEntityDefinition)
   : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
   = {
 
@@ -186,7 +198,7 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
           val contextName = hasName.getOrElse(sourceName + "_" + relS.name.get + "_" + targetName)
           val ax =
             context
-              .addEntityConceptExistentialRestrictionAxiom(
+              .addEntityDefinitionExistentialRestrictionAxiom(
                 rule, tbox, aU, relS, sourceOmf, relO, targetOmf)
           val inc =
             ax

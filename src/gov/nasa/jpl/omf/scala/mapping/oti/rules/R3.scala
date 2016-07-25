@@ -107,9 +107,9 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
             omfOps.foldTerm[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
               sourceOmf
-            )(
-              funEntityConcept = sourceConceptDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
-              funEntityReifiedRelationship = illegalSourceDependency2RelationshipMapping[Omf#ModelEntityReifiedRelationship](depU),
+            )(funEntityAspect = sourceDefinitionDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
+              funEntityConcept = sourceDefinitionDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
+              funEntityReifiedRelationship = sourceDefinitionDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
               funEntityUnreifiedRelationship = illegalSourceDependency2RelationshipMapping[Omf#ModelEntityUnreifiedRelationship](depU),
               funScalarDataType = illegalSourceDependency2RelationshipMapping[Omf#ModelScalarDataType](depU),
               funStructuredDataType = illegalSourceDependency2RelationshipMapping[Omf#ModelStructuredDataType](depU),
@@ -126,6 +126,16 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
   }
 
+  def illegalSourceDependency2AspectMapping[Term <: Omf#ModelTypeTerm]
+  (depU: UMLDependency[Uml])
+  ( other: Term )
+  : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
+  = \&/.This(
+    Set(
+      UMLError.illegalElementError[Uml, UMLDependency[Uml]](
+        s"R3 is not applicable to: $depU because its source is not mapped to an OMF Entity Concept",
+        Iterable(depU))))
+
   def illegalSourceDependency2RelationshipMapping[Term <: Omf#ModelTypeTerm]
   (depU: UMLDependency[Uml])
   ( other: Term )
@@ -136,7 +146,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         s"R3 is not applicable to: $depU because its source is not mapped to an OMF Entity Concept",
         Iterable(depU))))
 
-  def sourceConceptDependency2RelationshipMapping
+  def sourceDefinitionDependency2RelationshipMapping
   (rule: MappingFunction[Uml, Omf, Provenance],
    tbox: Omf#MutableModelTerminologyGraph,
    context: OTI2OMFMappingContext[Uml, Omf, Provenance],
@@ -146,7 +156,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
    depU: UMLDependency[Uml],
    targetU: UMLNamedElement[Uml],
    otargetE: Option[Omf#ModelEntityDefinition])
-  ( sourceOmf: Omf#ModelEntityConcept)
+  ( sourceOmf: Omf#ModelEntityDefinition)
   : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
   = {
 
@@ -190,7 +200,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
           case (acc, (relUml, relOmf)) =>
             val ax =
               context
-                .addEntityConceptExistentialRestrictionAxiom(
+                .addEntityDefinitionExistentialRestrictionAxiom(
                   rule, tbox, depU, relUml, sourceOmf, relOmf, targetOmf)
             val inc =
               ax
