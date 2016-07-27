@@ -52,7 +52,6 @@ import scala.collection.immutable._
 import scala.collection.parallel._
 import scala.{annotation,Boolean,Enumeration,Function1,Function2,Function3,Function4,Function5,Function6,Function7,Function8}
 import scala.{Option,None,PartialFunction,Some,StringContext,Tuple2,Tuple6,Unit}
-import scala.language.postfixOps
 import scalaz._, Scalaz._
 
 object Namespace2OMFTypeTermKind extends Enumeration {

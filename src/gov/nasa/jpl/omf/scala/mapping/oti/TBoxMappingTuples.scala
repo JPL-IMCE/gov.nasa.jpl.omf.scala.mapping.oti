@@ -39,17 +39,13 @@
 package gov.nasa.jpl.omf.scala.mapping.oti
 
 import gov.nasa.jpl.omf.scala.core._
-import org.omg.oti.uml.UMLError
-import org.omg.oti.uml.canonicalXMI.ResolvedDocumentSet
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.trees._
 import org.omg.oti.uml.xmi._
 
 import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
-import scala.{annotation,Boolean,Enumeration,Function1,Function2,Function3,Function4,Function5,Function8}
-import scala.{Option,None,PartialFunction,Some,StringContext,Tuple2,Tuple6,Unit}
-import scala.language.postfixOps
+import scala.{Option,Some,StringContext}
 
 object TBoxMappingTuples {
 

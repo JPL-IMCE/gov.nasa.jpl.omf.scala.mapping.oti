@@ -38,19 +38,16 @@
  */
 package gov.nasa.jpl.omf.scala.mapping.oti.rules
 
-import java.lang.System
-
 import gov.nasa.jpl.omf.scala.core._
-import gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.{TboxUMLElementTuple, TboxUMLNestedClassifier}
+import gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementTuple
 import gov.nasa.jpl.omf.scala.mapping.oti._
 import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 import org.omg.oti.uml.trees._
 
-import scala.{Some, StringContext, Tuple3, Unit}
+import scala.{Some, StringContext}
 import scala.collection.immutable._
-import scala.language.postfixOps
 import scalaz._
 import Scalaz._
 

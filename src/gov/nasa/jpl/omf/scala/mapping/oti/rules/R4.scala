@@ -38,8 +38,6 @@
  */
 package gov.nasa.jpl.omf.scala.mapping.oti.rules
 
-import java.lang.System
-
 import gov.nasa.jpl.omf.scala.core._
 import gov.nasa.jpl.omf.scala.mapping.oti._
 
@@ -47,10 +45,9 @@ import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
-import scala.{Option, Some, StringContext, Tuple3, Unit}
+import scala.{Some, StringContext}
 import scala.Predef.{Set => _, Map => _, _}
 import scala.collection.immutable._
-import scala.language.postfixOps
 import scala.Predef.ArrowAssoc
 import scalaz._, Scalaz._
 

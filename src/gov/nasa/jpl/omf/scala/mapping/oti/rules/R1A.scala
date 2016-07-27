@@ -47,10 +47,9 @@ import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 import org.omg.oti.uml.xmi.BuiltInDocument
 
-import scala.{Some,StringContext,Tuple3,Unit}
+import scala.{StringContext,Unit}
 import scala.Predef.require
 import scala.collection.immutable._
-import scala.language.postfixOps
 import scalaz._, Scalaz._
 
 /**

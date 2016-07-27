@@ -46,9 +46,8 @@ import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
 
-import scala.{Some,StringContext,Tuple3,Unit}
+import scala.{StringContext,Unit}
 import scala.collection.immutable._
-import scala.language.postfixOps
 import scalaz._, Scalaz._
 
 case class R1B[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOps[Uml], omfOps: OMFOps[Omf] ) {
