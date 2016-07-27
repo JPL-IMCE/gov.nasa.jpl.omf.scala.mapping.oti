@@ -1,0 +1,7 @@
+{
+  "org.omg.oti.uml.core": "../org.omg.oti.uml.core",
+  "org.omg.oti.uml.json":"../org.omg.oti.uml.json",
+  "org.omg.oti.uml.composite_structure_tree_analysis":"../org.omg.oti.uml.composite_structure_tree_analysis",
+  "org.omg.oti.uml.canonical_xmi.serialization":"../org.omg.oti.uml.canonical_xmi.serialization",
+  "gov.nasa.jpl.omf.scala.core":"../gov.nasa.jpl.omf.scala.core"
+}
