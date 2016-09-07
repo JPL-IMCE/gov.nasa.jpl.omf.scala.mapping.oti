@@ -8,16 +8,7 @@ import gov.nasa.jpl.imce.sbt.ProjectHelper._
 
 import java.io.File
 
-useGpg := true
-
 updateOptions := updateOptions.value.withCachedResolution(true)
-
-developers := List(
-  Developer(
-    id="rouquett",
-    name="Nicolas F. Rouquette",
-    email="nicolas.f.rouquette@jpl.nasa.gov",
-    url=url("https://gateway.jpl.nasa.gov/personal/rouquett/default.aspx")))
 
 resolvers := {
   val previous = resolvers.value
@@ -30,83 +21,15 @@ resolvers := {
 import scala.io.Source
 import scala.util.control.Exception._
 
-def docSettings(diagrams:Boolean): Seq[Setting[_]] =
-  Seq(
-    sources in (Compile,doc) <<= (git.gitUncommittedChanges, sources in (Compile,compile)) map {
-      (uncommitted, compileSources) =>
-        if (uncommitted)
-          Seq.empty
-        else
-          compileSources
-    },
-
-    sources in (Test,doc) <<= (git.gitUncommittedChanges, sources in (Test,compile)) map {
-      (uncommitted, testSources) =>
-        if (uncommitted)
-          Seq.empty
-        else
-          testSources
-    },
-
-    scalacOptions in (Compile,doc) ++=
-      (if (diagrams)
-        Seq("-diagrams")
-      else
-        Seq()
-        ) ++
-        Seq(
-          "-doc-title", name.value,
-          "-doc-root-content", baseDirectory.value + "/rootdoc.txt"
-        ),
-    autoAPIMappings := ! git.gitUncommittedChanges.value,
-    apiMappings <++=
-      ( git.gitUncommittedChanges,
-        dependencyClasspath in Compile in doc,
-        IMCEKeys.nexusJavadocRepositoryRestAPIURL2RepositoryName,
-        IMCEKeys.pomRepositoryPathRegex,
-        streams ) map { (uncommitted, deps, repoURL2Name, repoPathRegex, s) =>
-        if (uncommitted)
-          Map[File, URL]()
-        else
-          (for {
-            jar <- deps
-            url <- jar.metadata.get(AttributeKey[ModuleID]("moduleId")).flatMap { moduleID =>
-              val urls = for {
-                (repoURL, repoName) <- repoURL2Name
-                (query, match2publishF) = IMCEPlugin.nexusJavadocPOMResolveQueryURLAndPublishURL(
-                  repoURL, repoName, moduleID)
-                url <- nonFatalCatch[Option[URL]]
-                  .withApply { (_: java.lang.Throwable) => None }
-                  .apply({
-                    val conn = query.openConnection.asInstanceOf[java.net.HttpURLConnection]
-                    conn.setRequestMethod("GET")
-                    conn.setDoOutput(true)
-                    repoPathRegex
-                      .findFirstMatchIn(Source.fromInputStream(conn.getInputStream).getLines.mkString)
-                      .map { m =>
-                        val javadocURL = match2publishF(m)
-                        s.log.info(s"Javadoc for: $moduleID")
-                        s.log.info(s"= mapped to: $javadocURL")
-                        javadocURL
-                      }
-                  })
-              } yield url
-              urls.headOption
-            }
-          } yield jar.data -> url).toMap
-      }
-  )
-
 lazy val core = 
   Project("omf-scala-mapping-oti", file("."))
   .enablePlugins(IMCEGitPlugin)
   .enablePlugins(IMCEReleasePlugin)
   .settings(dynamicScriptsResourceSettings(Some("gov.nasa.jpl.omf.scala.mapping.oti")))
   .settings(IMCEPlugin.strictScalacFatalWarningsSettings)
-  //.settings(docSettings(diagrams=true))
   .settings(IMCEReleasePlugin.packageReleaseProcessSettings)
   .settings(
-    IMCEKeys.licenseYearOrRange := "2014-2016",
+    IMCEKeys.licenseYearOrRange := "2015-2016",
     IMCEKeys.organizationInfo := IMCEPlugin.Organizations.omf,
 
     buildInfoPackage := "gov.nasa.jpl.omf.scala.mapping.oti",
@@ -122,12 +45,8 @@ lazy val core =
     IMCEKeys.targetJDK := IMCEKeys.jdk18.value,
     git.baseVersion := Versions.version,
 
-    scalaSource in Compile := baseDirectory.value / "src",
-
-    IMCEKeys.nexusJavadocRepositoryRestAPIURL2RepositoryName := Map(
-      "https://oss.sonatype.org/service/local" -> "releases",
-      "https://cae-nexuspro.jpl.nasa.gov/nexus/service/local" -> "JPL"),
-    IMCEKeys.pomRepositoryPathRegex := """\<repositoryPath\>\s*([^\"]*)\s*\<\/repositoryPath\>""".r,
+    resolvers += Resolver.bintrayRepo("jpl-imce", "gov.nasa.jpl.imce"),
+    resolvers += Resolver.bintrayRepo("tiwg", "org.omg.tiwg"),
 
     extractArchives := {}
   )
@@ -135,26 +54,30 @@ lazy val core =
     "oti-uml-composite_structure_tree_analysis",
     "org.omg.oti.uml.composite_structure_tree_analysis",
     Seq(
-      "org.omg.tiwg" %% "oti-uml-composite_structure_tree_analysis"
-        % Versions_oti_uml_composite_structure_tree_analysis.version % "compile" withSources() withJavadoc() artifacts
-        Artifact("oti-uml-composite_structure_tree_analysis", "zip", "zip", Some("resource"), Seq(), None, Map())
+      //      //  extra("artifact.kind" -> "generic.library")
+      "org.omg.tiwg" %% "org.omg.oti.uml.composite_structure_tree_analysis"
+        % Versions_oti_uml_composite_structure_tree_analysis.version %
+        "compile" withSources() withJavadoc() artifacts
+        Artifact("org.omg.oti.uml.composite_structure_tree_analysis", "zip", "zip", Some("resource"), Seq(), None, Map())
     )
   )
   .dependsOnSourceProjectOrLibraryArtifacts(
     "oti-uml-canonical_xmi-serialization",
     "org.omg.oti.uml.canonical_xmi.serialization",
     Seq(
-      "org.omg.tiwg" %% "oti-uml-canonical_xmi-serialization"
+      "org.omg.tiwg" %% "org.omg.oti.uml.canonical_xmi.serialization"
       % Versions_oti_uml_canonical_xmi_serialization.version % "compile" withSources() withJavadoc() artifacts
-      Artifact("oti-uml-canonical_xmi-serialization", "zip", "zip", Some("resource"), Seq(), None, Map())
+      Artifact("org.omg.oti.uml.canonical_xmi.serialization", "zip", "zip", Some("resource"), Seq(), None, Map())
     )
   )
   .dependsOnSourceProjectOrLibraryArtifacts(
     "omf-scala-core",
     "gov.nasa.jpl.omf.scala.core",
     Seq(
-      "gov.nasa.jpl.imce.omf" %% "omf-scala-core"
-      % Versions_omf_scala_core.version % "compile" withSources() withJavadoc()
+      "gov.nasa.jpl.imce" %% "gov.nasa.jpl.omf.scala.core"
+        % Versions_omf_scala_core.version % "test->compile;compile->compile" artifacts(
+        Artifact("gov.nasa.jpl.omf.scala.core"),
+        Artifact("gov.nasa.jpl.omf.scala.core", "tests"))
     )
   )
 
