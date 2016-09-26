@@ -1,11 +1,10 @@
 .cache
-.classpath
 .ensime*
 .idea
 .project
-off.links.json
+*links.json
 project/project
 project/target
-target
 local.*
 gh-pages/
+target
