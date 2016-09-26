@@ -355,23 +355,28 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
   = result.copy(
       internalResults =
         result.internalResults ++
-          collectNestedElements(e, expandNestedElements)
+          collectNestedElements(e, expandNestedElements(context))
             .map(TboxUMLElementTuple(Some(tbox), _)))
 
   def expandNestedElements
+  (context: OTI2OMFMappingContext[Uml, Omf, Provenance])
   (e: UMLElement[Uml])
   : (Vector[UMLElement[Uml]], Vector[UMLElement[Uml]])
   = {
-    val expand = e.ownedElement.filter {
-      case _: UMLPackage[Uml] => true
-      case _ => false
-    }
+    val expand = e
+      .ownedElement
+      .filter {
+        case p: UMLPackage[Uml] => !context.ignoreCrossReferencedElementFilter(p)
+        case _ => false
+      }
       .toVector
-    val result = e.ownedElement.filter {
-      case _: UMLFeature[Uml] => false
-      case _: UMLPackage[Uml] => false
-      case _ => true
-    }
+    val result = e
+      .ownedElement
+      .filter {
+        case _: UMLFeature[Uml] => false
+        case _: UMLPackage[Uml] => false
+        case x => !context.ignoreCrossReferencedElementFilter(x)
+      }
       .toVector
     (expand, result)
   }

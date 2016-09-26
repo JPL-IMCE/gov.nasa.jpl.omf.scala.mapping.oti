@@ -49,8 +49,8 @@ case class R1C[Uml <: UML, Omf <: OMF, Provenance]()( implicit val umlOps: UMLOp
             false
           case _: UMLPackageMerge[Uml] =>
             false
-          case _ =>
-            true
+          case e =>
+            ! context.ignoreCrossReferencedElementFilter(e)
         }
 
         \&/.That(RuleResult[Uml, Omf, Provenance](

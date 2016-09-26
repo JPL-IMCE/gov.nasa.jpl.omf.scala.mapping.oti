@@ -55,9 +55,8 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         if cs.isEmpty && bcaU.memberEnd.exists(_.aggregation == UMLAggregationKind.composite) &&
           context.getDirectedBinaryAssociationSourceAndTargetMappings(bcaU).isDefined =>
 
-        val ((sourceTU, sourceOmf), (targetTU, targetOmf))
+        val ((targetTU, targetOmf), (sourceTU, sourceOmf))
         = context.getDirectedBinaryAssociationSourceAndTargetMappings(bcaU).get
-
 
         omfOps.foldTerm[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
           sourceOmf
@@ -88,7 +87,7 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         if cs.isEmpty && braU.memberEnd.forall(_.aggregation != UMLAggregationKind.composite) &&
           context.getDirectedBinaryAssociationSourceAndTargetMappings(braU).isDefined =>
 
-        val ((sourceTU, sourceOmf), (targetTU, targetOmf))
+        val ((targetTU, targetOmf), (sourceTU, sourceOmf))
         = context.getDirectedBinaryAssociationSourceAndTargetMappings(braU).get
 
         omfOps.foldTerm[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](

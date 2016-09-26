@@ -74,7 +74,7 @@ object R1B {
         Vector(pair.toContentsConversion())))
 
     val rN: Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance] =
-      ( r0 /: pair.e.nestedPackage ) { (ri, subPkgU) =>
+      ( r0 /: pair.e.nestedPackage.filterNot(context.ignoreCrossReferencedElementFilter(_)) ) { (ri, subPkgU) =>
 
         ri.flatMap { acc =>
 
