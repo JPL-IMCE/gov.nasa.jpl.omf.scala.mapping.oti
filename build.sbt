@@ -29,7 +29,7 @@ lazy val core =
   .settings(IMCEPlugin.strictScalacFatalWarningsSettings)
   .settings(IMCEReleasePlugin.packageReleaseProcessSettings)
   .settings(
-    IMCEKeys.licenseYearOrRange := "2015-2016",
+    IMCEKeys.licenseYearOrRange := "2015",
     IMCEKeys.organizationInfo := IMCEPlugin.Organizations.omf,
 
     buildInfoPackage := "gov.nasa.jpl.omf.scala.mapping.oti",
@@ -44,6 +44,8 @@ lazy val core =
 
     IMCEKeys.targetJDK := IMCEKeys.jdk18.value,
     git.baseVersion := Versions.version,
+
+    scalacOptions in (Compile,doc) ++= Seq("-diagrams"),
 
     resolvers += Resolver.bintrayRepo("jpl-imce", "gov.nasa.jpl.imce"),
     resolvers += Resolver.bintrayRepo("tiwg", "org.omg.tiwg"),
@@ -115,6 +117,8 @@ def dynamicScriptsResourceSettings(dynamicScriptsProjectName: Option[String] = N
       packageSrc in Test,
       packageDoc in Test) map {
       (base, bin, src, doc, binT, srcT, docT) =>
+        val dir = base
+        addIfExists(base, ".classpath") ++
         addIfExists(bin, "lib/" + bin.name) ++
         addIfExists(binT, "lib/" + binT.name) ++
         addIfExists(src, "lib.sources/" + src.name) ++

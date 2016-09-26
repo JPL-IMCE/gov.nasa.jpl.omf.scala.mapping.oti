@@ -7,8 +7,11 @@ enablePlugins(SiteScaladocPlugin)
 import com.typesafe.sbt.SbtGhPages._
 
 preprocessVars in Preprocess := Map(
+  "CI" -> "https://imce-jenkins.jpl.nasa.gov/job/omf.scala.mapping.oti/",
+  "GIT" -> "github.jpl.nasa.gov",
   "REPO" -> "gov.nasa.jpl.imce",
-  "ORG" -> "JPL-IMCE",
+  "VER" -> version.value,
+  "ORG" -> "imce",
   "SUBJECT" -> "jpl-imce",
   "ORG_NAME" -> organizationName.value,
   "DESC" -> description.value,
@@ -43,12 +46,34 @@ target in preprocess := (target in makeSite).value
 
 ghpages.settings
 
+dependencyDotFile := baseDirectory.value / "target" / "dependencies.dot"
+
+lazy val dependencySvgFile = settingKey[File]("Location of the dependency graph in SVG format")
+
+dependencySvgFile := baseDirectory.value / "target" / "dependencies.svg"
+
+lazy val filter: ScopeFilter = ScopeFilter(inProjects(ThisProject), inConfigurations(Compile))
+
+dumpLicenseReport := {
+  val dotFile = dependencyDot.all(filter).value
+  val ok = Process(command="dot", arguments=Seq[String]("-Tsvg", dotFile.head.getAbsolutePath, "-o"+dependencySvgFile.value.getAbsolutePath)).!
+  require(0 == ok, "dot2svg failed: $ok")
+  dumpLicenseReport.value
+}
+
 makeSite <<= makeSite.dependsOn(dumpLicenseReport)
 
 siteMappings <<= siteMappings.dependsOn(dumpLicenseReport)
 
 siteMappings += (licenseReportDir.value / "LicenseReportOfAggregatedSBTPluginsAndLibraries.html") -> "LicenseReportOfAggregatedSBTPluginsAndLibraries.html"
+siteMappings += dependencySvgFile.value -> "dependencies.svg"
 
 previewFixedPort := Some(4004)
 
 previewLaunchBrowser := false
+
+
+releasePublishArtifactsAction := {
+  val _ = GhPagesKeys.pushSite.value
+  releasePublishArtifactsAction.value
+}
