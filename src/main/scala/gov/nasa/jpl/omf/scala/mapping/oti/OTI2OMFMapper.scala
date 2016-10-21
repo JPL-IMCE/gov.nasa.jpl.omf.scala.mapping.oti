@@ -213,18 +213,6 @@ trait AddEntityReifiedRelationshipSubClassAxiom[Uml <: UML, Omf <: OMF, Provenan
     Omf#ModelEntityReifiedRelationship,
     Set[java.lang.Throwable] \/ Omf#EntityReifiedRelationshipSubClassAxiom]
 
-trait AddEntityReifiedRelationshipContextualizationAxiom[Uml <: UML, Omf <: OMF, Provenance]
-  extends Function8[
-    MappingFunction[Uml, Omf, Provenance],
-    Omf#MutableModelTerminologyGraph,
-    UMLElement[Uml],
-    UMLStereotype[Uml],
-    Omf#ModelEntityDefinition,
-    Omf#ModelEntityReifiedRelationship,
-    String,
-    Omf#ModelEntityDefinition,
-    Set[java.lang.Throwable] \/ Omf#EntityReifiedRelationshipContextualizationAxiom]
-
 trait AddEntityReifiedRelationshipRestrictionAxiom[Uml <: UML, Omf <: OMF, Provenance]
   extends Function8[
     MappingFunction[Uml, Omf, Provenance],
@@ -282,7 +270,6 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   val addEntityDefinitionExistentialRestrictionAxiom: AddEntityDefinitionExistentialRestrictionAxiom[Uml, Omf, Provenance],
   val addEntityDefinitionUniversalRestrictionAxiom: AddEntityDefinitionUniversalRestrictionAxiom[Uml, Omf, Provenance],
   val addEntityRelationshipSubClassAxiom: AddEntityReifiedRelationshipSubClassAxiom[Uml, Omf, Provenance],
-  val addEntityRelationshipContextualizationAxiom: AddEntityReifiedRelationshipContextualizationAxiom[Uml, Omf, Provenance],
   val addReifiedRelationshipRestrictionAxiom: AddEntityReifiedRelationshipRestrictionAxiom[Uml, Omf, Provenance],
   val addEntityConceptDesignationTerminologyGraphAxiom: AddEntityConceptDesignationTerminologyGraphAxiom[Uml, Omf, Provenance],
 
@@ -726,7 +713,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     val result1
     : Set[java.lang.Throwable] \/ TBoxOTIDocumentPackageConversion[Uml, Omf]
     = for {
-      pkgTbox <- ns2tboxCtor(rule, pkgU, TerminologyKind.isToplevelDefinition, pkg2provenance(pkgU))
+      pkgTbox <- ns2tboxCtor(rule, pkgU, TerminologyKind.isDefinition, pkg2provenance(pkgU))
       _ <- {
         val result2
         : Set[java.lang.Throwable] \/ Unit
