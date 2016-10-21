@@ -1,0 +1,522 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>TboxUMLElementPair - gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementPair</title>
+          <meta name="description" content="TboxUMLElementPair - gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementPair" />
+          <meta name="keywords" content="TboxUMLElementPair gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementPair" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../../../lib/tools.tooltip.js"></script>
+      <script type="text/javascript" src="../../../../../../../lib/modernizr.custom.js"></script><script type="text/javascript" src="../../../../../../../lib/diagrams.js" id="diagrams-js"></script>
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../../../index.html';
+            var hash = 'gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <img alt="Class" src="../../../../../../../lib/class_big.png" />
+        <p id="owner"><a href="../../../../../../package.html" class="extype" name="gov">gov</a>.<a href="../../../../../package.html" class="extype" name="gov.nasa">nasa</a>.<a href="../../../../package.html" class="extype" name="gov.nasa.jpl">jpl</a>.<a href="../../../package.html" class="extype" name="gov.nasa.jpl.omf">omf</a>.<a href="../../package.html" class="extype" name="gov.nasa.jpl.omf.scala">scala</a>.<a href="../package.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping">mapping</a>.<a href="package.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti">oti</a>.<a href="TBoxMappingTuples$.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples">TBoxMappingTuples</a></p>
+        <h1>TboxUMLElementPair</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="TBoxMappingTuples$.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples">package TBoxMappingTuples</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">TboxUMLElementPair</span><span class="tparams">[<span name="Uml">Uml &lt;: <span class="extype" name="org.omg.oti.uml.read.api.UML">UML</span></span>, <span name="Omf">Omf &lt;: <span class="extype" name="gov.nasa.jpl.omf.scala.core.OMF">OMF</span></span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div><div class="toggleContainer block">
+            <span class="toggle">Known Subclasses</span>
+            <div class="subClasses hiddenContent"><a href="TBoxMappingTuples$$TBoxOTIDocumentPackageConversion.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TBoxOTIDocumentPackageConversion">TBoxOTIDocumentPackageConversion</a>, <a href="TBoxMappingTuples$$TBoxOTIDocumentPackageConverted.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TBoxOTIDocumentPackageConverted">TBoxOTIDocumentPackageConverted</a>, <a href="TBoxMappingTuples$$TBoxOTIDocumentPackagePair.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TBoxOTIDocumentPackagePair">TBoxOTIDocumentPackagePair</a>, <a href="TBoxMappingTuples$$TBoxOTIDocumentPackageTuple.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TBoxOTIDocumentPackageTuple">TBoxOTIDocumentPackageTuple</a>, <a href="TBoxMappingTuples$$TBoxOTIDocumentProfileConversion.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TBoxOTIDocumentProfileConversion">TBoxOTIDocumentProfileConversion</a>, <a href="TBoxMappingTuples$$TBoxOTIDocumentProfileConverted.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TBoxOTIDocumentProfileConverted">TBoxOTIDocumentProfileConverted</a>, <a href="TBoxMappingTuples$$TBoxOTIDocumentProfilePair.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TBoxOTIDocumentProfilePair">TBoxOTIDocumentProfilePair</a>, <a href="TBoxMappingTuples$$TBoxOTIDocumentProfileTuple.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TBoxOTIDocumentProfileTuple">TBoxOTIDocumentProfileTuple</a>, <a href="TBoxMappingTuples$$TBoxPackageContentsConversion.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TBoxPackageContentsConversion">TBoxPackageContentsConversion</a>, <a href="TBoxMappingTuples$$TboxUMLElement2AspectDefinition.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElement2AspectDefinition">TboxUMLElement2AspectDefinition</a>, <a href="TBoxMappingTuples$$TboxUMLElement2ConceptDefinition.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElement2ConceptDefinition">TboxUMLElement2ConceptDefinition</a>, <a href="TBoxMappingTuples$$TboxUMLElement2EntityDefinition.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElement2EntityDefinition">TboxUMLElement2EntityDefinition</a>, <a href="TBoxMappingTuples$$TboxUMLElement2ReifiedRelationshipContextualization.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElement2ReifiedRelationshipContextualization">TboxUMLElement2ReifiedRelationshipContextualization</a>, <a href="TBoxMappingTuples$$TboxUMLElement2ReifiedRelationshipDefinition.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElement2ReifiedRelationshipDefinition">TboxUMLElement2ReifiedRelationshipDefinition</a>, <a href="TBoxMappingTuples$$TboxUMLElement2ReifiedRelationshipRestriction.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElement2ReifiedRelationshipRestriction">TboxUMLElement2ReifiedRelationshipRestriction</a>, <a href="TBoxMappingTuples$$TboxUMLElementTreeType.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementTreeType">TboxUMLElementTreeType</a>, <a href="TBoxMappingTuples$$TboxUMLElementTreeTypedFeatureBranchType.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementTreeTypedFeatureBranchType">TboxUMLElementTreeTypedFeatureBranchType</a>, <a href="TBoxMappingTuples$$TboxUMLElementTuple.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementTuple">TboxUMLElementTuple</a>, <a href="TBoxMappingTuples$$TboxUMLNestedClassifier.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLNestedClassifier">TboxUMLNestedClassifier</a>, <a href="TBoxMappingTuples$$TboxUMLPackage2ConceptDefinition.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLPackage2ConceptDefinition">TboxUMLPackage2ConceptDefinition</a>, <a href="TBoxMappingTuples$$TboxUMLPackage2ImmutableTBoxTuple.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLPackage2ImmutableTBoxTuple">TboxUMLPackage2ImmutableTBoxTuple</a>, <a href="TBoxMappingTuples$$TboxUMLPackage2MutableTBoxConversion.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLPackage2MutableTBoxConversion">TboxUMLPackage2MutableTBoxConversion</a>, <a href="TBoxMappingTuples$$TboxUMLPackage2MutableTBoxTuple.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLPackage2MutableTBoxTuple">TboxUMLPackage2MutableTBoxTuple</a>, <a href="TBoxMappingTuples$$TboxUMLProfile2ImmutableTBoxTuple.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLProfile2ImmutableTBoxTuple">TboxUMLProfile2ImmutableTBoxTuple</a>, <a href="TBoxMappingTuples$$TboxUMLProfile2MutableTBoxConversion.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLProfile2MutableTBoxConversion">TboxUMLProfile2MutableTBoxConversion</a>, <a href="TBoxMappingTuples$$TboxUMLProfile2MutableTBoxTuple.html" class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLProfile2MutableTBoxTuple">TboxUMLProfile2MutableTBoxTuple</a></div>
+          </div><div class="toggleContainer block diagram-container" id="inheritance-diagram-container">
+                <span class="toggle diagram-link">Type Hierarchy</span>
+                <div class="diagram" id="inheritance-diagram"><svg class="class-diagram" id="graph1" viewBox="0.00 0.00 3918.00 155.00" height="155pt" width="3918pt" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><g transform="scale(1 1) rotate(0) translate(4 151)" class="graph" id="graph0"><polygon points="-4,4 -4,-151 3914,-151 3914,4 -4,4" stroke="none" fill="white"></polygon><g class="cluster" id="clust1"></g><g class="cluster" id="clust2"></g><!-- node0 --><g class="node this class" id="graph1_0"><g id="a_this class|graph1_0"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementPair (this class)" xlink:href="#inheritance-diagram"><polygon points="1918.5,-86 1725.5,-86 1725.5,-61 1918.5,-61 1918.5,-86" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-80.5" x="1736" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-70" x="1757" text-anchor="start">TboxUMLElementPair[Uml, Omf]</text></a></g></g><!-- node1 --><g class="node class" id="graph1_1"><g id="a_class|graph1_1"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TBoxOTIDocumentPackageTuple" xlink:href="TBoxMappingTuples$$TBoxOTIDocumentPackageTuple.html#inheritance-diagram"><polygon points="244,-25 -1.42109e-14,-25 -1.42109e-14,-0 244,-0 244,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-19.5" x="10" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9" x="31" text-anchor="start">TBoxOTIDocumentPackageTuple[Uml, Omf]</text></a></g></g><!-- node0&#45;&gt;node1 --><g class="edge inheritance" id="graph1_0_1"><g id="a_inheritance|graph1_0_1"><a xlink:title="TBoxOTIDocumentPackageTuple[Uml, Omf] is a subtype of TboxUMLElementPair[Uml, Omf]"><path d="M1719.94,-71.4338C1469.73,-68.3792 805.872,-57.6093 253,-25 250.037,-24.8252 247.037,-24.6386 244.012,-24.4417" stroke="#d4d4d4" fill="none"></path><polygon points="1720.03,-73.1849 1725.05,-71.4958 1720.07,-69.6852 1720.03,-73.1849" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node2 --><g class="node class" id="graph1_2"><g id="a_class|graph1_2"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TBoxOTIDocumentProfileTuple" xlink:href="TBoxMappingTuples$$TBoxOTIDocumentProfileTuple.html#inheritance-diagram"><polygon points="496,-25 262,-25 262,-0 496,-0 496,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-19.5" x="272" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9" x="293" text-anchor="start">TBoxOTIDocumentProfileTuple[Uml, Omf]</text></a></g></g><!-- node0&#45;&gt;node2 --><g class="edge inheritance" id="graph1_0_2"><g id="a_inheritance|graph1_0_2"><a xlink:title="TBoxOTIDocumentProfileTuple[Uml, Omf] is a subtype of TboxUMLElementPair[Uml, Omf]"><path d="M1720.08,-70.7316C1498.73,-66.4721 957.532,-53.7901 505,-25 502.041,-24.8117 499.043,-24.6113 496.019,-24.4006" stroke="#d4d4d4" fill="none"></path><polygon points="1720.22,-72.4845 1725.25,-70.8307 1720.28,-68.9851 1720.22,-72.4845" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node3 --><g class="node class" id="graph1_3"><g id="a_class|graph1_3"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TBoxPackageContentsConversion" xlink:href="TBoxMappingTuples$$TBoxPackageContentsConversion.html#inheritance-diagram"><polygon points="761.5,-25 514.5,-25 514.5,-0 761.5,-0 761.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-19.5" x="525" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9" x="546" text-anchor="start">TBoxPackageContentsConversion[Uml, Omf]</text></a></g></g><!-- node0&#45;&gt;node3 --><g class="edge inheritance" id="graph1_0_3"><g id="a_inheritance|graph1_0_3"><a xlink:title="TBoxPackageContentsConversion[Uml, Omf] is a subtype of TboxUMLElementPair[Uml, Omf]"><path d="M1719.99,-69.2827C1532.12,-63.0477 1118.82,-47.8873 771,-25 767.878,-24.7946 764.715,-24.5788 761.525,-24.3544" stroke="#d4d4d4" fill="none"></path><polygon points="1720.15,-71.039 1725.21,-69.4555 1720.27,-67.5409 1720.15,-71.039" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node4 --><g class="node class" id="graph1_4"><g id="a_class|graph1_4"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElement2EntityDefinition" xlink:href="TBoxMappingTuples$$TboxUMLElement2EntityDefinition.html#inheritance-diagram"><polygon points="1028,-25 780,-25 780,-0 1028,-0 1028,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-19.5" x="790" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9" x="811" text-anchor="start">TboxUMLElement2EntityDefinition[Uml, Omf]</text></a></g></g><!-- node0&#45;&gt;node4 --><g class="edge inheritance" id="graph1_0_4"><g id="a_inheritance|graph1_0_4"><a xlink:title="TboxUMLElement2EntityDefinition[Uml, Omf] is a subtype of TboxUMLElementPair[Uml, Omf]"><path d="M1720,-67.1704C1570.19,-59.1522 1281.92,-42.9956 1037,-25 1034.11,-24.7877 1031.19,-24.5687 1028.24,-24.3442" stroke="#d4d4d4" fill="none"></path><polygon points="1720.18,-68.9326 1725.27,-67.4521 1720.37,-65.4376 1720.18,-68.9326" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node5 --><g class="node class" id="graph1_5"><g id="a_class|graph1_5"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementTreeType" xlink:href="TBoxMappingTuples$$TboxUMLElementTreeType.html#inheritance-diagram"><polygon points="1263.5,-25 1046.5,-25 1046.5,-0 1263.5,-0 1263.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-19.5" x="1057" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9" x="1078" text-anchor="start">TboxUMLElementTreeType[Uml, Omf]</text></a></g></g><!-- node0&#45;&gt;node5 --><g class="edge inheritance" id="graph1_0_5"><g id="a_inheritance|graph1_0_5"><a xlink:title="TboxUMLElementTreeType[Uml, Omf] is a subtype of TboxUMLElementPair[Uml, Omf]"><path d="M1720.08,-64.0148C1609.84,-54.7582 1428.91,-39.3412 1273,-25 1269.93,-24.7172 1266.81,-24.428 1263.66,-24.1343" stroke="#d4d4d4" fill="none"></path><polygon points="1720.15,-65.7765 1725.28,-64.4509 1720.44,-62.2887 1720.15,-65.7765" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node6 --><g class="node class" id="graph1_6"><g id="a_class|graph1_6"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementTreeTypedFeatureBranchType" xlink:href="TBoxMappingTuples$$TboxUMLElementTreeTypedFeatureBranchType.html#inheritance-diagram"><polygon points="1592,-25 1282,-25 1282,-0 1592,-0 1592,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-19.5" x="1292" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9" x="1313" text-anchor="start">TboxUMLElementTreeTypedFeatureBranchType[Uml, Omf]</text></a></g></g><!-- node0&#45;&gt;node6 --><g class="edge inheritance" id="graph1_0_6"><g id="a_inheritance|graph1_0_6"><a xlink:title="TboxUMLElementTreeTypedFeatureBranchType[Uml, Omf] is a subtype of TboxUMLElementPair[Uml, Omf]"><path d="M1741.64,-60.1844C1674.11,-49.8371 1578.34,-35.1591 1512.28,-25.0371" stroke="#d4d4d4" fill="none"></path><polygon points="1741.65,-61.9565 1746.85,-60.9841 1742.18,-58.4969 1741.65,-61.9565" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node7 --><g class="node class" id="graph1_7"><g id="a_class|graph1_7"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementTuple" xlink:href="TBoxMappingTuples$$TboxUMLElementTuple.html#inheritance-diagram"><polygon points="1810,-25 1610,-25 1610,-0 1810,-0 1810,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-19.5" x="1620" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9" x="1641" text-anchor="start">TboxUMLElementTuple[Uml, Omf]</text></a></g></g><!-- node0&#45;&gt;node7 --><g class="edge inheritance" id="graph1_0_7"><g id="a_inheritance|graph1_0_7"><a xlink:title="TboxUMLElementTuple[Uml, Omf] is a subtype of TboxUMLElementPair[Uml, Omf]"><path d="M1795.39,-58.4807C1776.11,-48.3269 1750.36,-34.7588 1732.19,-25.1884" stroke="#d4d4d4" fill="none"></path><polygon points="1794.9,-60.202 1800.14,-60.9841 1796.53,-57.1054 1794.9,-60.202" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node8 --><g class="node class" id="graph1_8"><g id="a_class|graph1_8"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLNestedClassifier" xlink:href="TBoxMappingTuples$$TboxUMLNestedClassifier.html#inheritance-diagram"><polygon points="2039.5,-25 1828.5,-25 1828.5,-0 2039.5,-0 2039.5,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-19.5" x="1839" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9" x="1860" text-anchor="start">TboxUMLNestedClassifier[Uml, Omf]</text></a></g></g><!-- node0&#45;&gt;node8 --><g class="edge inheritance" id="graph1_0_8"><g id="a_inheritance|graph1_0_8"><a xlink:title="TboxUMLNestedClassifier[Uml, Omf] is a subtype of TboxUMLElementPair[Uml, Omf]"><path d="M1848.61,-58.4807C1867.89,-48.3269 1893.64,-34.7588 1911.81,-25.1884" stroke="#d4d4d4" fill="none"></path><polygon points="1847.47,-57.1054 1843.86,-60.9841 1849.1,-60.202 1847.47,-57.1054" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node9 --><g class="node class" id="graph1_9"><g id="a_class|graph1_9"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLPackage2ImmutableTBoxTuple" xlink:href="TBoxMappingTuples$$TboxUMLPackage2ImmutableTBoxTuple.html#inheritance-diagram"><polygon points="2336,-25 2058,-25 2058,-0 2336,-0 2336,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-19.5" x="2068" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9" x="2089" text-anchor="start">TboxUMLPackage2ImmutableTBoxTuple[Uml, Omf]</text></a></g></g><!-- node0&#45;&gt;node9 --><g class="edge inheritance" id="graph1_0_9"><g id="a_inheritance|graph1_0_9"><a xlink:title="TboxUMLPackage2ImmutableTBoxTuple[Uml, Omf] is a subtype of TboxUMLElementPair[Uml, Omf]"><path d="M1900.28,-60.1844C1966.04,-49.8371 2059.34,-35.1591 2123.67,-25.0371" stroke="#d4d4d4" fill="none"></path><polygon points="1899.86,-58.4782 1895.19,-60.9841 1900.41,-61.9357 1899.86,-58.4782" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node10 --><g class="node class" id="graph1_10"><g id="a_class|graph1_10"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLPackage2MutableTBoxConversion" xlink:href="TBoxMappingTuples$$TboxUMLPackage2MutableTBoxConversion.html#inheritance-diagram"><polygon points="2706,-25 2354,-25 2354,-0 2706,-0 2706,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-19.5" x="2364" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9" x="2385" text-anchor="start">TboxUMLPackage2MutableTBoxConversion[Uml, Omf, Provenance]</text></a></g></g><!-- node0&#45;&gt;node10 --><g class="edge inheritance" id="graph1_0_10"><g id="a_inheritance|graph1_0_10"><a xlink:title="TboxUMLPackage2MutableTBoxConversion[Uml, Omf, Provenance] is a subtype of TboxUMLElementPair[Uml, Omf]"><path d="M1923.66,-64.0286C2046.68,-53.7766 2254.39,-36.4675 2391.86,-25.012" stroke="#d4d4d4" fill="none"></path><polygon points="1923.43,-62.2916 1918.59,-64.4508 1923.72,-65.7795 1923.43,-62.2916" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node11 --><g class="node class" id="graph1_11"><g id="a_class|graph1_11"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLPackage2MutableTBoxTuple" xlink:href="TBoxMappingTuples$$TboxUMLPackage2MutableTBoxTuple.html#inheritance-diagram"><polygon points="2990,-25 2724,-25 2724,-0 2990,-0 2990,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-19.5" x="2734" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9" x="2755" text-anchor="start">TboxUMLPackage2MutableTBoxTuple[Uml, Omf]</text></a></g></g><!-- node0&#45;&gt;node11 --><g class="edge inheritance" id="graph1_0_11"><g id="a_inheritance|graph1_0_11"><a xlink:title="TboxUMLPackage2MutableTBoxTuple[Uml, Omf] is a subtype of TboxUMLElementPair[Uml, Omf]"><path d="M1923.86,-68.0003C2089.72,-60.4668 2428.44,-44.2214 2715,-25 2717.96,-24.8014 2720.96,-24.5961 2723.98,-24.3852" stroke="#d4d4d4" fill="none"></path><polygon points="1923.43,-66.2677 1918.52,-68.2426 1923.59,-69.7641 1923.43,-66.2677" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node12 --><g class="node class" id="graph1_12"><g id="a_class|graph1_12"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLProfile2ImmutableTBoxTuple" xlink:href="TBoxMappingTuples$$TboxUMLProfile2ImmutableTBoxTuple.html#inheritance-diagram"><polygon points="3276,-25 3008,-25 3008,-0 3276,-0 3276,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-19.5" x="3018" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9" x="3039" text-anchor="start">TboxUMLProfile2ImmutableTBoxTuple[Uml, Omf]</text></a></g></g><!-- node0&#45;&gt;node12 --><g class="edge inheritance" id="graph1_0_12"><g id="a_inheritance|graph1_0_12"><a xlink:title="TboxUMLProfile2ImmutableTBoxTuple[Uml, Omf] is a subtype of TboxUMLElementPair[Uml, Omf]"><path d="M1923.63,-69.7646C2127.63,-63.9722 2601.46,-48.9973 2999,-25 3001.86,-24.8274 3004.75,-24.6471 3007.66,-24.4602" stroke="#d4d4d4" fill="none"></path><polygon points="1923.51,-68.0171 1918.57,-69.9081 1923.61,-71.5157 1923.51,-68.0171" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node13 --><g class="node class" id="graph1_13"><g id="a_class|graph1_13"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLProfile2MutableTBoxConversion" xlink:href="TBoxMappingTuples$$TboxUMLProfile2MutableTBoxConversion.html#inheritance-diagram"><polygon points="3636,-25 3294,-25 3294,-0 3636,-0 3636,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-19.5" x="3304" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9" x="3325" text-anchor="start">TboxUMLProfile2MutableTBoxConversion[Uml, Omf, Provenance]</text></a></g></g><!-- node0&#45;&gt;node13 --><g class="edge inheritance" id="graph1_0_13"><g id="a_inheritance|graph1_0_13"><a xlink:title="TboxUMLProfile2MutableTBoxConversion[Uml, Omf, Provenance] is a subtype of TboxUMLElementPair[Uml, Omf]"><path d="M1923.98,-70.2889C2162.26,-64.882 2774.12,-49.607 3285,-25 3287.97,-24.8569 3290.97,-24.7085 3293.99,-24.5556" stroke="#d4d4d4" fill="none"></path><polygon points="1923.72,-68.5442 1918.76,-70.407 1923.8,-72.0433 1923.72,-68.5442" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node14 --><g class="node class" id="graph1_14"><g id="a_class|graph1_14"><a xlink:title="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLProfile2MutableTBoxTuple" xlink:href="TBoxMappingTuples$$TboxUMLProfile2MutableTBoxTuple.html#inheritance-diagram"><polygon points="3910,-25 3654,-25 3654,-0 3910,-0 3910,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-19.5" x="3664" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9" x="3685" text-anchor="start">TboxUMLProfile2MutableTBoxTuple[Uml, Omf]</text></a></g></g><!-- node0&#45;&gt;node14 --><g class="edge inheritance" id="graph1_0_14"><g id="a_inheritance|graph1_0_14"><a xlink:title="TboxUMLProfile2MutableTBoxTuple[Uml, Omf] is a subtype of TboxUMLElementPair[Uml, Omf]"><path d="M1924.17,-71.9031C2201.23,-69.8376 2990.07,-60.9905 3645,-25 3647.86,-24.8428 3650.75,-24.6751 3653.67,-24.4983" stroke="#d4d4d4" fill="none"></path><polygon points="1923.91,-70.1549 1918.92,-71.9419 1923.93,-73.6548 1923.91,-70.1549" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node15 --><g class="node class" id="graph1_15"><g id="a_class|graph1_15"><a xlink:title="scala.AnyRef"><polygon points="1861.5,-147 1782.5,-147 1782.5,-122 1861.5,-122 1861.5,-147" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../../../lib/class_diagram.png" y="-141.5" x="1793" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-131" x="1814" text-anchor="start">AnyRef</text></a></g></g><!-- node15&#45;&gt;node0 --><g class="edge inheritance" id="graph1_15_0"><g id="a_inheritance|graph1_15_0"><a xlink:title="TboxUMLElementPair[Uml, Omf] is a subtype of AnyRef"><path d="M1822,-116.687C1822,-106.917 1822,-94.8534 1822,-86.1323" stroke="#d4d4d4" fill="none"></path><polygon points="1820.25,-116.843 1822,-121.843 1823.75,-116.844 1820.25,-116.843" stroke="#d4d4d4" fill="none"></polygon></a></g></g></g></svg></div>
+              </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By Inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementPair"><span>TboxUMLElementPair</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show All</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@##():Int" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@clone():Object" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementPair#e" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="e:org.omg.oti.uml.read.api.UMLElement[Uml]"></a>
+      <a id="e:UMLElement[Uml]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">e</span><span class="result">: <span class="extype" name="org.omg.oti.uml.read.api.UMLElement">UMLElement</span>[<span class="extype" name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementPair.Uml">Uml</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@e:org.omg.oti.uml.read.api.UMLElement[Uml]" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@notify():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples.TboxUMLElementPair#tbox" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="tbox:Option[Omf#ModelTerminologyGraph]"></a>
+      <a id="tbox:Option[Omf.ModelTerminologyGraph]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">tbox</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="gov.nasa.jpl.omf.scala.core.OMFtbox.ModelTerminologyGraph">Omf.ModelTerminologyGraph</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@tbox:Option[Omf#ModelTerminologyGraph]" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@toString():String" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@wait():Unit" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../../index.html#gov.nasa.jpl.omf.scala.mapping.oti.TBoxMappingTuples$$TboxUMLElementPair@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
