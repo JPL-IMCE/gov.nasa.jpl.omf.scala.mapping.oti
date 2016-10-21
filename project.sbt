@@ -9,7 +9,7 @@ moduleName := name.value
 
 organization := "gov.nasa.jpl.imce"
 
-homepage := Some(url(s"https://github.com/JPL-IMCE/${moduleName.value}"))
+homepage := Some(url(s"https://jpl-imce.github.io/${moduleName.value}"))
 
 organizationName := "JPL-IMCE"
 
