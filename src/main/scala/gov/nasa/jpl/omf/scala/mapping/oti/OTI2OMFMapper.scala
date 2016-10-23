@@ -213,18 +213,6 @@ trait AddEntityReifiedRelationshipSubClassAxiom[Uml <: UML, Omf <: OMF, Provenan
     Omf#ModelEntityReifiedRelationship,
     Set[java.lang.Throwable] \/ Omf#EntityReifiedRelationshipSubClassAxiom]
 
-trait AddEntityReifiedRelationshipRestrictionAxiom[Uml <: UML, Omf <: OMF, Provenance]
-  extends Function8[
-    MappingFunction[Uml, Omf, Provenance],
-    Omf#MutableModelTerminologyGraph,
-    UMLElement[Uml],
-    UMLStereotype[Uml],
-    Omf#ModelEntityDefinition,
-    Omf#ModelEntityReifiedRelationship,
-    Omf#ModelEntityDefinition,
-    RestrictionKind,
-    Set[java.lang.Throwable] \/ Omf#EntityReifiedRelationshipRestrictionAxiom]
-
 trait AddEntityConceptDesignationTerminologyGraphAxiom[Uml <: UML, Omf <: OMF, Provenance]
   extends Function5[
     MappingFunction[Uml, Omf, Provenance],
@@ -270,7 +258,6 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   val addEntityDefinitionExistentialRestrictionAxiom: AddEntityDefinitionExistentialRestrictionAxiom[Uml, Omf, Provenance],
   val addEntityDefinitionUniversalRestrictionAxiom: AddEntityDefinitionUniversalRestrictionAxiom[Uml, Omf, Provenance],
   val addEntityRelationshipSubClassAxiom: AddEntityReifiedRelationshipSubClassAxiom[Uml, Omf, Provenance],
-  val addReifiedRelationshipRestrictionAxiom: AddEntityReifiedRelationshipRestrictionAxiom[Uml, Omf, Provenance],
   val addEntityConceptDesignationTerminologyGraphAxiom: AddEntityConceptDesignationTerminologyGraphAxiom[Uml, Omf, Provenance],
 
   val stereotype2Aspect: Map[UMLStereotype[Uml], Omf#ModelEntityAspect],

@@ -7,12 +7,12 @@ enablePlugins(SiteScaladocPlugin)
 import com.typesafe.sbt.SbtGhPages._
 
 preprocessVars in Preprocess := Map(
-  "CI" -> "https://travis-ci.org/JPL-IMCE/gov.nasa.jpl.omf.scala.mapping.oti",
   "GIT" -> "github.com",
-  "REPO" -> "gov.nasa.jpl.imce",
+  "REPO" -> organization.value,
+  "CI" -> s"https://travis-ci.org/${organizationName.value}/${name.value}",
   "VER" -> version.value,
-  "ORG" -> "JPL-IMCE",
-  "SUBJECT" -> "JPL-IMCE",
+  "ORG" -> organizationName.value,
+  "SUBJECT" -> organizationName.value,
   "ORG_NAME" -> organizationName.value,
   "DESC" -> description.value,
   "PKG" -> moduleName.value,
