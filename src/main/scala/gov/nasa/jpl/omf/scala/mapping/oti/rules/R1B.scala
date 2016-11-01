@@ -123,8 +123,8 @@ object R1B {
 
                     val cp1
                     : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
-                    = (cp0 /: nestedPair.e.profileApplication) { (acc, pa) =>
-                      acc.flatMap { cpi =>
+                    = (cp0 /: nestedPair.e.profileApplication) { (cp_acc, pa) =>
+                      cp_acc.flatMap { cpi =>
                         pa
                           .appliedProfile
                           .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]] {
@@ -173,8 +173,8 @@ object R1B {
 
                     val cp2
                     : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
-                    = (cp1 /: nestedPair.e.packageImport) { (acc, pi) =>
-                      acc.flatMap { cpi =>
+                    = (cp1 /: nestedPair.e.packageImport) { (cp_acc, pi) =>
+                      cp_acc.flatMap { cpi =>
                         pi
                           .importedPackage
                           .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]] {

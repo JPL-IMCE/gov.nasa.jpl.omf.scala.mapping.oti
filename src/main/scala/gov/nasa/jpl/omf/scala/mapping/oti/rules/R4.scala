@@ -52,7 +52,7 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         rule,
         TboxUMLElementTuple(Some(tbox), bcaU: UMLAssociation[Uml]),
         as, cs, rs, unmappedS)
-        if cs.isEmpty && bcaU.memberEnd.exists(_.aggregation == UMLAggregationKind.composite) &&
+        if cs.isEmpty && bcaU.memberEnd.exists(_.aggregation.contains(UMLAggregationKind.composite)) &&
           context.getDirectedBinaryAssociationSourceAndTargetMappings(bcaU).isDefined =>
 
         val ((targetTU, targetOmf), (sourceTU, sourceOmf))
@@ -84,7 +84,7 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         rule,
         TboxUMLElementTuple(Some(tbox), braU: UMLAssociation[Uml]),
         as, cs, rs, unmappedS)
-        if cs.isEmpty && braU.memberEnd.forall(_.aggregation != UMLAggregationKind.composite) &&
+        if cs.isEmpty && braU.memberEnd.forall(!_.aggregation.contains(UMLAggregationKind.composite)) &&
           context.getDirectedBinaryAssociationSourceAndTargetMappings(braU).isDefined =>
 
         val ((targetTU, targetOmf), (sourceTU, sourceOmf))
