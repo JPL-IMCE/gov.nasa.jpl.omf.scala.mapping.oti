@@ -58,8 +58,8 @@ lazy val core =
     Seq(
       //      //  extra("artifact.kind" -> "generic.library")
       "org.omg.tiwg" %% "org.omg.oti.uml.composite_structure_tree_analysis"
-        % Versions_oti_uml_composite_structure_tree_analysis.version %
-        "compile" withSources() withJavadoc() artifacts
+        % Versions_oti_uml_composite_structure_tree_analysis.version
+        % "compile" withSources() withJavadoc() artifacts
         Artifact("org.omg.oti.uml.composite_structure_tree_analysis", "zip", "zip", Some("resource"), Seq(), None, Map())
     )
   )
@@ -68,8 +68,9 @@ lazy val core =
     "org.omg.oti.uml.canonical_xmi.serialization",
     Seq(
       "org.omg.tiwg" %% "org.omg.oti.uml.canonical_xmi.serialization"
-      % Versions_oti_uml_canonical_xmi_serialization.version % "compile" withSources() withJavadoc() artifacts
-      Artifact("org.omg.oti.uml.canonical_xmi.serialization", "zip", "zip", Some("resource"), Seq(), None, Map())
+        % Versions_oti_uml_canonical_xmi_serialization.version
+        % "compile" withSources() withJavadoc() artifacts
+        Artifact("org.omg.oti.uml.canonical_xmi.serialization", "zip", "zip", Some("resource"), Seq(), None, Map())
     )
   )
   .dependsOnSourceProjectOrLibraryArtifacts(
@@ -77,7 +78,12 @@ lazy val core =
     "gov.nasa.jpl.omf.scala.core",
     Seq(
       "gov.nasa.jpl.imce" %% "gov.nasa.jpl.omf.scala.core"
-        % Versions_omf_scala_core.version % "test->compile;compile->compile" artifacts(
+        % Versions_omf_scala_core.version
+        % "compile" artifacts
+        Artifact("gov.nasa.jpl.omf.scala.core", "zip", "zip", Some("resource"), Seq(), None, Map()),
+      "gov.nasa.jpl.imce" %% "gov.nasa.jpl.omf.scala.core"
+        % Versions_omf_scala_core.version
+        % "test->compile;compile->compile" artifacts(
         Artifact("gov.nasa.jpl.omf.scala.core"),
         Artifact("gov.nasa.jpl.omf.scala.core", "tests"))
     )
