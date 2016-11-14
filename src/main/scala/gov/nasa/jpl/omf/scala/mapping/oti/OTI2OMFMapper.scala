@@ -767,6 +767,12 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     result
   }
 
+  val (baseAggregatesS, baseAggregatesR) = {
+    val pair = stereotype2Relationship.find { _._1.name.contains("base:aggregates") }
+    require(pair.isDefined)
+    pair.get
+  }
+
   val (baseContainsS, baseContainsR) = {
     val pair = stereotype2Relationship.find { _._1.name.contains("base:contains") }
     require(pair.isDefined)
