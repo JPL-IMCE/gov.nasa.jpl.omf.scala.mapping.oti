@@ -175,7 +175,9 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
           val ax =
             context
               .addEntityDefinitionExistentialRestrictionAxiom(
-                rule, tbox, aU, relS, sourceOmf, relO, targetOmf)
+                rule,
+                aU, s"R4.sourceDefinitionCompositeAssociation2RelationshipMapping(${relS.qualifiedName.get})",
+                tbox, aU, relS, sourceOmf, relO, targetOmf)
           val inc =
             ax
               .map(_ => Vector(TboxUMLElement2ReifiedRelationshipContextualization(
@@ -252,7 +254,9 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
           val ax =
             context
               .addEntityDefinitionExistentialRestrictionAxiom(
-                rule, tbox, aU, relS, sourceOmf, relO, targetOmf)
+                rule,
+                aU, s"R4.sourceDefinitionReferenceAssociation2RelationshipMapping(${relS.qualifiedName.get})",
+                tbox, aU, relS, sourceOmf, relO, targetOmf)
           val inc =
             ax
               .map(_ => Vector(TboxUMLElement2ReifiedRelationshipContextualization(

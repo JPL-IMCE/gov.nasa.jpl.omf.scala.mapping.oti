@@ -77,7 +77,9 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
           _ = as.foreach {
             case (aS, aOmf) =>
-              context.addEntityDefinitionAspectSubClassAxiom(rule, tbox, nsU, clsOmfAspect, aS, aOmf)
+              context.addEntityDefinitionAspectSubClassAxiom(rule,
+                nsU, s"R2.namespace2AspectMapping(${aS.qualifiedName.get})",
+                tbox, nsU, clsOmfAspect, aS, aOmf)
           }
 
           aspectPair = Vector(TboxUMLElement2AspectDefinition(Some(tbox), clsOmfAspect, nsU))
@@ -137,7 +139,9 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
             acc.flatMap { ri =>
               context
-                .addEntityDefinitionAspectSubClassAxiom(rule, tbox, c, cConcept, ai, aiOmf)
+                .addEntityDefinitionAspectSubClassAxiom(rule,
+                  c, s"R2.class2concept(${ai.qualifiedName.get})",
+                  tbox, c, cConcept, ai, aiOmf)
                 .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
                 (nels: Set[java.lang.Throwable]) =>
                   \&/.Both(
@@ -158,7 +162,9 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
             acc.flatMap { rj =>
               context
-                .addEntityConceptSubClassAxiom(rule, tbox, c, cConcept, ciS, ciOmf)
+                .addEntityConceptSubClassAxiom(rule,
+                  c, s"R2.class2concept(${ciS.qualifiedName.get})",
+                  tbox, c, cConcept, ciS, ciOmf)
                 .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
                 (nels: Set[java.lang.Throwable]) =>
                   \&/.Both(
@@ -245,7 +251,9 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
           case (acc, (ai, aiOmf)) =>
             acc.flatMap { ri =>
               context
-                .addEntityDefinitionAspectSubClassAxiom(rule, tbox, cls, cConcept, ai, aiOmf)
+                .addEntityDefinitionAspectSubClassAxiom(rule,
+                  cls, s"R2.other2concept(${ai.qualifiedName.get})",
+                  tbox, cls, cConcept, ai, aiOmf)
                 .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
                 (nels: Set[java.lang.Throwable]) =>
                   \&/.Both(
@@ -265,7 +273,9 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
           case (acc, (ciS, ciOmf)) =>
             acc.flatMap { rj =>
               context
-                .addEntityConceptSubClassAxiom(rule, tbox, cls, cConcept, ciS, ciOmf)
+                .addEntityConceptSubClassAxiom(rule,
+                  cls, s"R2.other2concept(${ciS.qualifiedName.get})",
+                  tbox, cls, cConcept, ciS, ciOmf)
                 .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
                 (nels: Set[java.lang.Throwable]) =>
                   \&/.Both(

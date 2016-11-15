@@ -178,7 +178,9 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
             val ax =
               context
                 .addEntityDefinitionExistentialRestrictionAxiom(
-                  rule, tbox, depU, relUml, sourceOmf, relOmf, targetOmf)
+                  rule,
+                  depU, s"R3.sourceDefinitionDependency2RelationshipMapping(${relUml.qualifiedName.get})",
+                  tbox, depU, relUml, sourceOmf, relOmf, targetOmf)
             val inc =
               ax
                 .map(_ => Vector(TboxUMLElement2ReifiedRelationshipRestriction(

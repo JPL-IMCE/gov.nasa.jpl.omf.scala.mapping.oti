@@ -264,7 +264,7 @@ object R1A {
                       } { appliedProfileTbox =>
 
                         context
-                          .addDirectlyExtendedTerminologyGraph(rule, convertedPair.pkgDocumentTbox, appliedProfileTbox)
+                          .addDirectlyExtendedTerminologyGraph(rule, pa, convertedPair.pkgDocumentTbox, appliedProfileTbox)
                           .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
                           (nels: Set[java.lang.Throwable]) =>
                             \&/.Both(
@@ -314,7 +314,7 @@ object R1A {
                       } { importedPackageTbox =>
 
                         context
-                          .addDirectlyExtendedTerminologyGraph(rule, convertedPair.pkgDocumentTbox, importedPackageTbox)
+                          .addDirectlyExtendedTerminologyGraph(rule, pi, convertedPair.pkgDocumentTbox, importedPackageTbox)
                           .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
                           (nels: Set[java.lang.Throwable]) =>
                             \&/.Both(
