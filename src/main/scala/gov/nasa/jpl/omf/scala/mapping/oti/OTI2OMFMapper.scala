@@ -867,21 +867,30 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
 
   def getDependencySourceAndTargetMappings
   ( d: UMLDependency[Uml] )
-  : ( ( UMLNamedElement[Uml], Option[Omf#ModelEntityDefinition] ),
-      ( UMLNamedElement[Uml], Option[Omf#ModelEntityDefinition] ) ) = {
-    val sourceU = {
-      require( d.client.size == 1 )
-      d.client.head
-    }
-    val targetU = {
-      require( d.supplier.size == 1 )
-      d.supplier.head
-    }
-
-    Tuple2(
+  : Set[java.lang.Throwable] \&/
+    ( ( UMLNamedElement[Uml], Option[Omf#ModelEntityDefinition] ),
+      ( UMLNamedElement[Uml], Option[Omf#ModelEntityDefinition] ) )
+  = for {
+    sourceU <- if (1 == d.client.size)
+      \&/.That(d.client.head)
+    else
+      \&/.This(Set(
+        UMLError.illegalElementError[Uml, UMLDependency[Uml]](
+          s"getDependencySourceAndTargetMappings: dependency should have exactly 1 client but it has: ${d.client.size}",
+          Iterable(d)
+        )))
+    targetU <- if (1 == d.supplier.size)
+      \&/.That(d.supplier.head)
+    else
+      \&/.This(Set(
+        UMLError.illegalElementError[Uml, UMLDependency[Uml]](
+          s"getDependencySourceAndTargetMappings: dependency should have exactly 1 supplier but it has: ${d.supplier.size}",
+          Iterable(d)
+        )))
+    result = Tuple2(
       Tuple2( sourceU, lookupElementMapping(sourceU) ),
       Tuple2( targetU, lookupElementMapping(targetU) ) )
-  }
+  } yield result
 
   def getDirectedBinaryAssociationSourceAndTargetMappings
   ( a: UMLAssociation[Uml] )

@@ -56,7 +56,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                 ""
               else
                 unmappedS.toList.map(s => s.qualifiedName.getOrElse(s.toolSpecific_id))
-                  .mkString(s", and ${unmappedS.size} unmapped stereotypes applied (",",",")"))
+                  .mkString(s", and ${unmappedS.size} unmapped stereotypes applied (", ",", ")"))
 
           \&/.This(Set(
             UMLError.illegalElementError[Uml, UMLDependency[Uml]](
@@ -65,23 +65,27 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
           ))
 
         } else {
-          val ( ( sourceU, osourceE ), ( targetU, otargetE )) =
-            context.getDependencySourceAndTargetMappings(depU)
 
-          osourceE
-          .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]]{
+          val mappingResult = for {
+            source2target <- context.getDependencySourceAndTargetMappings(depU)
+            ((sourceU, osourceE), (targetU, otargetE)) = source2target
 
-            val explanation: String =
-              s"R3 dependency2RelationshipMapping => unmapped source: "+
-              s"${sourceU.toolSpecific_id} ${sourceU.xmiElementLabel} ${sourceU.qualifiedName.getOrElse(sourceU.toolSpecific_id)}"+
-              s"(target? ${otargetE.isDefined}): ${depU.toolSpecific_id} ${depU.xmiElementLabel})"
-            \&/.This(Set(
-              UMLError.illegalElementError[Uml, UMLDependency[Uml]](
-                s"R3 is not applicable to: $depU because $explanation",
-                Iterable(depU))))
+            sourceOmf <- osourceE.fold[Set[java.lang.Throwable] \&/ Omf#ModelEntityDefinition] {
 
-          } { sourceOmf =>
+              val explanation: String =
+                s"R3 dependency2RelationshipMapping => unmapped source: " +
+                  s"${sourceU.toolSpecific_id} ${sourceU.xmiElementLabel} ${sourceU.qualifiedName.getOrElse(sourceU.toolSpecific_id)}" +
+                  s"(target? ${otargetE.isDefined}): ${depU.toolSpecific_id} ${depU.xmiElementLabel})"
+              \&/.This(Set(
+                UMLError.illegalElementError[Uml, UMLDependency[Uml]](
+                  s"R3 is not applicable to: $depU because $explanation",
+                  Iterable(depU))))
 
+            } { s =>
+              \&/.That(s)
+            }
+
+            result <-
             omfOps.foldTerm[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
               sourceOmf
             )(funEntityAspect = sourceDefinitionDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
@@ -95,7 +99,9 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
               funDataRelationshipFromStructureToScalar = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToScalar](depU),
               funDataRelationshipFromStructureToStructure = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToStructure](depU))
 
-          }
+          } yield result
+
+          mappingResult
         }
     }
 
