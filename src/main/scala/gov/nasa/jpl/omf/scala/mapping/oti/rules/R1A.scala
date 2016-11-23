@@ -28,7 +28,6 @@ import org.omg.oti.uml.read.operations._
 import org.omg.oti.uml.xmi.BuiltInDocument
 
 import scala.{StringContext,Unit}
-import scala.Predef.require
 import scala.collection.immutable._
 import scalaz._, Scalaz._
 
@@ -110,11 +109,9 @@ object R1A {
         context.lookupMutableModelTerminologyGraphByProfile(pfU)
           .fold[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]] {
 
-          require(!context.specializingProfiles.contains(pfU))
-
           java.lang.System.out.println(
             s"-R1A.profile: [${pfU.xmiElementLabel}] ${pfU.qualifiedName.get} => " +
-              s"cannot be mapped as an extension of an OMF-mapped profile")
+              s"cannot be mapped as an extension of an OMF-mapped profile (specializing profile? ${context.specializingProfiles.contains(pfU)}")
           \&/.This(Set(
             UMLError.illegalElementError[Uml, UMLProfile[Uml]](
               s"R1A: profile ${pfU.qualifiedName.get} cannot be mapped as an extension of an OMF-mapped profile",
