@@ -1068,7 +1068,7 @@ object OTI2OMFMappingContext {
   : OMF2OTIProvenance
   = OMF2OTIProvenance(
     explanation,
-    omfUUID = ops.getTermUUID(tbox, o).toString,
+    omfUUID = ops.getTermUUID(o).toString,
     otiID = OTIPrimitiveTypes.TOOL_SPECIFIC_ID.unwrap(u.toolSpecific_id),
     otiURL = OTIPrimitiveTypes.TOOL_SPECIFIC_URL.unwrap(u.toolSpecific_url),
     otiUUID = u.toolSpecific_uuid.map(OTIPrimitiveTypes.TOOL_SPECIFIC_UUID.unwrap)
@@ -1083,7 +1083,7 @@ object OTI2OMFMappingContext {
   : OMF2OTIProvenance
   = OMF2OTIProvenance(
     explanation,
-    omfUUID = ops.getTermAxiomUUID(tbox, o).toString,
+    omfUUID = ops.getTermAxiomUUID(o).toString,
     otiID = OTIPrimitiveTypes.TOOL_SPECIFIC_ID.unwrap(u.toolSpecific_id),
     otiURL = OTIPrimitiveTypes.TOOL_SPECIFIC_URL.unwrap(u.toolSpecific_url),
     otiUUID = u.toolSpecific_uuid.map(OTIPrimitiveTypes.TOOL_SPECIFIC_UUID.unwrap)

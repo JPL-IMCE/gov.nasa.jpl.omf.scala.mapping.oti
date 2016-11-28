@@ -59,8 +59,6 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         = context.getDirectedBinaryAssociationSourceAndTargetMappings(bcaU).get
 
         omfOps.foldTerm[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
-          sourceOmf
-        )(
           funEntityAspect = sourceDefinitionCompositeAssociation2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceTU, bcaU, targetTU, targetOmf),
           funEntityConcept = sourceDefinitionCompositeAssociation2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceTU, bcaU, targetTU, targetOmf),
           funEntityReifiedRelationship = sourceDefinitionCompositeAssociation2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceTU, bcaU, targetTU, targetOmf),
@@ -70,7 +68,9 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
           funDataRelationshipFromEntityToScalar = illegalSourceAssociation2RelationshipMapping[Omf#ModelDataRelationshipFromEntityToScalar](bcaU),
           funDataRelationshipFromEntityToStructure = illegalSourceAssociation2RelationshipMapping[Omf#ModelDataRelationshipFromEntityToStructure](bcaU),
           funDataRelationshipFromStructureToScalar = illegalSourceAssociation2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToScalar](bcaU),
-          funDataRelationshipFromStructureToStructure = illegalSourceAssociation2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToStructure](bcaU))
+          funDataRelationshipFromStructureToStructure = illegalSourceAssociation2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToStructure](bcaU))(
+          sourceOmf
+        )
     }
 
     MappingFunction[Uml, Omf, Provenance]("binaryCompositeAssociation2RelationshipMapping", mapping)
@@ -91,8 +91,6 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         = context.getDirectedBinaryAssociationSourceAndTargetMappings(braU).get
 
         omfOps.foldTerm[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
-          sourceOmf
-        )(
           funEntityAspect = sourceDefinitionReferenceAssociation2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceTU, braU, targetTU, targetOmf),
           funEntityConcept = sourceDefinitionReferenceAssociation2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceTU, braU, targetTU, targetOmf),
           funEntityReifiedRelationship = sourceDefinitionReferenceAssociation2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceTU, braU, targetTU, targetOmf),
@@ -102,7 +100,9 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
           funDataRelationshipFromEntityToScalar = illegalSourceAssociation2RelationshipMapping[Omf#ModelDataRelationshipFromEntityToScalar](braU),
           funDataRelationshipFromEntityToStructure = illegalSourceAssociation2RelationshipMapping[Omf#ModelDataRelationshipFromEntityToStructure](braU),
           funDataRelationshipFromStructureToScalar = illegalSourceAssociation2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToScalar](braU),
-          funDataRelationshipFromStructureToStructure = illegalSourceAssociation2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToStructure](braU))
+          funDataRelationshipFromStructureToStructure = illegalSourceAssociation2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToStructure](braU))(
+          sourceOmf
+        )
     }
 
     MappingFunction[Uml, Omf, Provenance]("binaryReferenceAssociation2RelationshipMapping", mapping)

@@ -87,8 +87,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
             result <-
             omfOps.foldTerm[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
-              sourceOmf
-            )(funEntityAspect = sourceDefinitionDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
+              funEntityAspect = sourceDefinitionDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
               funEntityConcept = sourceDefinitionDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
               funEntityReifiedRelationship = sourceDefinitionDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
               funEntityUnreifiedRelationship = illegalSourceDependency2RelationshipMapping[Omf#ModelEntityUnreifiedRelationship](depU),
@@ -97,7 +96,9 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
               funDataRelationshipFromEntityToScalar = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromEntityToScalar](depU),
               funDataRelationshipFromEntityToStructure = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromEntityToStructure](depU),
               funDataRelationshipFromStructureToScalar = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToScalar](depU),
-              funDataRelationshipFromStructureToStructure = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToStructure](depU))
+              funDataRelationshipFromStructureToStructure = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToStructure](depU))(
+              sourceOmf
+            )
 
           } yield result
 
