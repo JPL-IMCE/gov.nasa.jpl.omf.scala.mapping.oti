@@ -60,7 +60,7 @@
 <text text-anchor="start" x="5527.5" y="-248.456" font-family="Times Roman,serif" font-size="14.00">1.0.0</text>
 </g>
 <!-- gov.nasa.jpl.imce:gov.nasa.jpl.omf.scala.mapping.oti_2.11:4.4.2&#45;&gt;com.sksamuel.scapegoat:scalac&#45;scapegoat&#45;plugin_2.11:1.0.0 -->
-<g id="edge1598" class="edge"><title>gov.nasa.jpl.imce:gov.nasa.jpl.omf.scala.mapping.oti_2.11:4.4.2&#45;&gt;com.sksamuel.scapegoat:scalac&#45;scapegoat&#45;plugin_2.11:1.0.0</title>
+<g id="edge1604" class="edge"><title>gov.nasa.jpl.imce:gov.nasa.jpl.omf.scala.mapping.oti_2.11:4.4.2&#45;&gt;com.sksamuel.scapegoat:scalac&#45;scapegoat&#45;plugin_2.11:1.0.0</title>
 <path fill="none" stroke="black" d="M337.381,-280.467C444.737,-303.554 600.788,-330.822 739,-330.822 739,-330.822 739,-330.822 1367,-330.822 2116.41,-330.822 2303.59,-306.822 3053,-306.822 3053,-306.822 3053,-306.822 4860,-306.822 5041.85,-306.822 5250.37,-292.64 5389.31,-281.165"/>
 <polygon fill="black" stroke="black" points="5389.94,-284.625 5399.61,-280.309 5389.36,-277.649 5389.94,-284.625"/>
 </g>
@@ -130,7 +130,7 @@
 <polygon fill="black" stroke="black" points="8600.46,-114.46 8610.58,-111.329 8600.72,-107.465 8600.46,-114.46"/>
 </g>
 <!-- gov.nasa.jpl.imce:jpl&#45;omf&#45;schema&#45;tables_2.11:0.24.0&#45;&gt;com.sksamuel.scapegoat:scalac&#45;scapegoat&#45;plugin_2.11:1.0.0 -->
-<g id="edge1604" class="edge"><title>gov.nasa.jpl.imce:jpl&#45;omf&#45;schema&#45;tables_2.11:0.24.0&#45;&gt;com.sksamuel.scapegoat:scalac&#45;scapegoat&#45;plugin_2.11:1.0.0</title>
+<g id="edge1602" class="edge"><title>gov.nasa.jpl.imce:jpl&#45;omf&#45;schema&#45;tables_2.11:0.24.0&#45;&gt;com.sksamuel.scapegoat:scalac&#45;scapegoat&#45;plugin_2.11:1.0.0</title>
 <path fill="none" stroke="black" d="M5005.36,-119.503C5105.67,-124.586 5241.12,-137.911 5356,-171.822 5397.4,-184.043 5440.66,-204.946 5475.42,-224.039"/>
 <polygon fill="black" stroke="black" points="5474.09,-227.303 5484.53,-229.107 5477.49,-221.186 5474.09,-227.303"/>
 </g>
@@ -1870,7 +1870,7 @@
 <polygon fill="black" stroke="black" points="2074.54,-6274.54 2075.11,-6263.96 2068.07,-6271.88 2074.54,-6274.54"/>
 </g>
 <!-- gov.nasa.jpl.imce:imce.third_party.scala_graph_libraries_2.11:3.3.0&#45;&gt;com.sksamuel.scapegoat:scalac&#45;scapegoat&#45;plugin_2.11:1.0.0 -->
-<g id="edge1602" class="edge"><title>gov.nasa.jpl.imce:imce.third_party.scala_graph_libraries_2.11:3.3.0&#45;&gt;com.sksamuel.scapegoat:scalac&#45;scapegoat&#45;plugin_2.11:1.0.0</title>
+<g id="edge1600" class="edge"><title>gov.nasa.jpl.imce:imce.third_party.scala_graph_libraries_2.11:3.3.0&#45;&gt;com.sksamuel.scapegoat:scalac&#45;scapegoat&#45;plugin_2.11:1.0.0</title>
 <path fill="none" stroke="black" d="M1752.48,-7367.45C1848.16,-7349.22 1977.01,-7329.82 2092,-7329.82 2092,-7329.82 2092,-7329.82 3891,-7329.82 4151.31,-7329.82 4878.65,-7355.79 5050,-7159.82 5077.92,-7127.89 5039.31,-5664.07 5068,-5632.82 5111.49,-5585.46 5312.71,-5652.36 5356,-5604.82 5380.37,-5578.06 5357.58,-425.076 5374,-392.822 5392.43,-356.638 5426.64,-328.328 5459.73,-307.789"/>
 <polygon fill="black" stroke="black" points="5461.81,-310.626 5468.57,-302.468 5458.19,-304.63 5461.81,-310.626"/>
 </g>
@@ -1946,7 +1946,7 @@
 <polygon fill="black" stroke="black" points="2084.37,-6171.99 2088.67,-6181.68 2091.35,-6171.43 2084.37,-6171.99"/>
 </g>
 <!-- org.omg.tiwg:org.omg.oti.uml.json.schema_2.11:3.3.3&#45;&gt;com.sksamuel.scapegoat:scalac&#45;scapegoat&#45;plugin_2.11:1.0.0 -->
-<g id="edge1600" class="edge"><title>org.omg.tiwg:org.omg.oti.uml.json.schema_2.11:3.3.3&#45;&gt;com.sksamuel.scapegoat:scalac&#45;scapegoat&#45;plugin_2.11:1.0.0</title>
+<g id="edge1598" class="edge"><title>org.omg.tiwg:org.omg.oti.uml.json.schema_2.11:3.3.3&#45;&gt;com.sksamuel.scapegoat:scalac&#45;scapegoat&#45;plugin_2.11:1.0.0</title>
 <path fill="none" stroke="black" d="M1787.91,-265.65C1878.95,-267.284 1991.36,-268.822 2092,-268.822 2092,-268.822 2092,-268.822 4860,-268.822 5037.77,-268.822 5241.45,-268.142 5380.4,-267.575"/>
 <polygon fill="black" stroke="black" points="5380.72,-271.074 5390.7,-267.533 5380.69,-264.074 5380.72,-271.074"/>
 </g>
