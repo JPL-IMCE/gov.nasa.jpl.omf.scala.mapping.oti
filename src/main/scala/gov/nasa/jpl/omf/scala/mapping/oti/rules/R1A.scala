@@ -342,7 +342,7 @@ object R1A {
         \&/.This(Set(
           UMLError.illegalElementError[Uml, UMLPackage[Uml]](
             s"R1A: package ${pkgU.qualifiedName.get} should have not yet been mapped"+
-            s"to a mutable OMF TBox: ${context.ops.getTerminologyGraphIRI(pkgTbox)}",
+            s"to a mutable OMF TBox: ${context.ops.getTerminologyIRI(pkgTbox)}",
             Iterable(pkgU))
         ))
 

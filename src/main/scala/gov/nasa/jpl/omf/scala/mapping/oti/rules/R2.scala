@@ -118,7 +118,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
     def class2concept
     (rule: MappingFunction[Uml, Omf, Provenance],
-     tbox: Omf#MutableModelTerminologyGraph,
+     tbox: Omf#MutableTerminologyBox,
      c: UMLClass[Uml],
      as: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityAspectMap,
      cs: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityConceptMap)
@@ -150,7 +150,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                       Iterable(c, ai),
                       nels)),
                     ri),
-                (_: Omf#EntityDefinitionAspectSubClassAxiom) =>
+                (_: Omf#AspectSpecializationAxiom) =>
                   \&/.That(ri))
             }
         }
@@ -173,7 +173,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                       Iterable(c, ciS),
                       nels)),
                     rj),
-                (_: Omf#EntityConceptSubClassAxiom) =>
+                (_: Omf#ConceptSpecializationAxiom) =>
                   \&/.That(rj))
             }
         }
@@ -231,7 +231,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
     def other2concept
     (rule: MappingFunction[Uml, Omf, Provenance],
-     tbox: Omf#MutableModelTerminologyGraph,
+     tbox: Omf#MutableTerminologyBox,
      cls: UMLClassifier[Uml],
      as: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityAspectMap,
      cs: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityConceptMap)
@@ -262,7 +262,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                       Iterable(cls, ai),
                       nels)),
                     ri),
-                (_: Omf#EntityDefinitionAspectSubClassAxiom) =>
+                (_: Omf#AspectSpecializationAxiom) =>
                   \&/.That(ri))
             }
         }
@@ -284,7 +284,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
                       Iterable(cls, ciS),
                       nels)),
                     rj),
-                (_: Omf#EntityConceptSubClassAxiom) =>
+                (_: Omf#ConceptSpecializationAxiom) =>
                   \&/.That(rj))
             }
         }
@@ -358,7 +358,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
   def scanForNestedElements
   (context: OTI2OMFMappingContext[Uml, Omf, Provenance],
-   tbox: Omf#MutableModelTerminologyGraph,
+   tbox: Omf#MutableTerminologyBox,
    e: UMLElement[Uml],
    result: RuleResult[Uml, Omf, Provenance])
   : RuleResult[Uml, Omf, Provenance]

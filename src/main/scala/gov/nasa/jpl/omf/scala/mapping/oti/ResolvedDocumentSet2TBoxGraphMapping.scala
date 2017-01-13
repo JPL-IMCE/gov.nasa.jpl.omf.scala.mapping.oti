@@ -38,14 +38,14 @@ case class ResolvedDocumentSet2TBoxGraphMapping[Uml <: UML, Omf <: OMF]()(
 
 case class ResolvedDocumentTBoxGraph[Uml <: UML, Omf <: OMF]
 ( document: Document[Uml],
-  tbox: Omf#ImmutableModelTerminologyGraph,
-  aspects: Map[UMLElement[Uml], Omf#ModelEntityAspect],
-  concepts: Map[UMLElement[Uml], Omf#ModelEntityConcept] )
+  tbox: Omf#ImmutableTerminologyBox,
+  aspects: Map[UMLElement[Uml], Omf#Aspect],
+  concepts: Map[UMLElement[Uml], Omf#Concept] )
 ( implicit umlOps: UMLOps[Uml], omfOps: OMFOps[Omf], omfStore: Omf#Store )
 
 case class Document2TBoxGraphCorrespondences[Uml <: UML, Omf <: OMF]
 ( resolved: ResolvedDocumentSet[Uml],
-  document2tboxGraphs: Map[Document[Uml], Omf#ImmutableModelTerminologyGraph],
+  document2tboxGraphs: Map[Document[Uml], Omf#ImmutableTerminologyBox],
   documents2map: Set[Document[Uml]] )
 ( implicit umlOps: UMLOps[Uml], omfOps: OMFOps[Omf], omfStore: Omf#Store )
 
@@ -70,9 +70,9 @@ object ResolvedDocumentSet2TBoxGraphMapping {
 
     import omfOps._
 
-    type DocumentGraphMap = ( Map[Document[Uml], Omf#ImmutableModelTerminologyGraph], Set[Document[Uml]] )
+    type DocumentGraphMap = ( Map[Document[Uml], Omf#ImmutableTerminologyBox], Set[Document[Uml]] )
     val m0: Set[java.lang.Throwable] \/ DocumentGraphMap =
-      (Map[Document[Uml], Omf#ImmutableModelTerminologyGraph](), Set[Document[Uml]]()).right
+      (Map[Document[Uml], Omf#ImmutableTerminologyBox](), Set[Document[Uml]]()).right
     val mN: Set[java.lang.Throwable] \/ DocumentGraphMap =
       (m0 /: sortedDocuments ) {
         (mi, document) =>
@@ -100,7 +100,7 @@ object ResolvedDocumentSet2TBoxGraphMapping {
                       // @todo it seems this should use the resolved uri instead of document.uri
                       makeIRI(uri.toString)
                         .flatMap { iri =>
-                          loadTerminologyGraph(iri)
+                          loadTerminology(iri)
                             .flatMap { case (iTbox, _) =>
                               System.out.println(s"==> document: $duri")
                               (document2tboxMap + (document -> iTbox), d2map).right
@@ -121,7 +121,7 @@ object ResolvedDocumentSet2TBoxGraphMapping {
 
   def mapDocument2TBoxGraphCorrespondences[Uml <: UML, Omf <: OMF](
     correspondences: Document2TBoxGraphCorrespondences[Uml, Omf],
-    document2BuiltInTBoxGraph: Function1[Document[Uml], Set[java.lang.Throwable] \/ Option[Omf#ImmutableModelTerminologyGraph]] )(
+    document2BuiltInTBoxGraph: Function1[Document[Uml], Set[java.lang.Throwable] \/ Option[Omf#ImmutableTerminologyBox]] )(
       implicit umlOps: UMLOps[Uml],
       omfOps: OMFOps[Omf],
       omfStore: Omf#Store,

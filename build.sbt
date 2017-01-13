@@ -50,17 +50,22 @@ lazy val core =
     resolvers += Resolver.bintrayRepo("jpl-imce", "gov.nasa.jpl.imce"),
     resolvers += Resolver.bintrayRepo("tiwg", "org.omg.tiwg"),
 
+    resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases",
+    scalacOptions in (Compile, compile) += s"-P:artima-supersafe:config-file:${baseDirectory.value}/project/supersafe.cfg",
+    scalacOptions in (Test, compile) += s"-P:artima-supersafe:config-file:${baseDirectory.value}/project/supersafe.cfg",
+    scalacOptions in (Compile, doc) += "-Xplugin-disable:artima-supersafe",
+    scalacOptions in (Test, doc) += "-Xplugin-disable:artima-supersafe",
+
     extractArchives := {}
   )
   .dependsOnSourceProjectOrLibraryArtifacts(
     "oti-uml-composite_structure_tree_analysis",
     "org.omg.oti.uml.composite_structure_tree_analysis",
     Seq(
-      //      //  extra("artifact.kind" -> "generic.library")
       "org.omg.tiwg" %% "org.omg.oti.uml.composite_structure_tree_analysis"
         % Versions_oti_uml_composite_structure_tree_analysis.version
         % "compile" withSources() withJavadoc() artifacts
-        Artifact("org.omg.oti.uml.composite_structure_tree_analysis", "zip", "zip", Some("resource"), Seq(), None, Map())
+        Artifact("org.omg.oti.uml.composite_structure_tree_analysis", "zip", "zip", "resource")
     )
   )
   .dependsOnSourceProjectOrLibraryArtifacts(
@@ -70,7 +75,7 @@ lazy val core =
       "org.omg.tiwg" %% "org.omg.oti.uml.canonical_xmi.serialization"
         % Versions_oti_uml_canonical_xmi_serialization.version
         % "compile" withSources() withJavadoc() artifacts
-        Artifact("org.omg.oti.uml.canonical_xmi.serialization", "zip", "zip", Some("resource"), Seq(), None, Map())
+        Artifact("org.omg.oti.uml.canonical_xmi.serialization", "zip", "zip", "resource")
     )
   )
   .dependsOnSourceProjectOrLibraryArtifacts(
@@ -80,7 +85,7 @@ lazy val core =
       "gov.nasa.jpl.imce" %% "gov.nasa.jpl.omf.scala.core"
         % Versions_omf_scala_core.version
         % "compile" artifacts
-        Artifact("gov.nasa.jpl.omf.scala.core", "zip", "zip", Some("resource"), Seq(), None, Map()),
+        Artifact("gov.nasa.jpl.omf.scala.core", "zip", "zip", "resource"),
       "gov.nasa.jpl.imce" %% "gov.nasa.jpl.omf.scala.core"
         % Versions_omf_scala_core.version
         % "test->compile;compile->compile" artifacts(

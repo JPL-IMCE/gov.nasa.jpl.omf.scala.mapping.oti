@@ -70,7 +70,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
             source2target <- context.getDependencySourceAndTargetMappings(depU)
             ((sourceU, osourceE), (targetU, otargetE)) = source2target
 
-            sourceOmf <- osourceE.fold[Set[java.lang.Throwable] \&/ Omf#ModelEntityDefinition] {
+            sourceOmf <- osourceE.fold[Set[java.lang.Throwable] \&/ Omf#Entity] {
 
               val explanation: String =
                 s"R3 dependency2RelationshipMapping => unmapped source: " +
@@ -87,16 +87,23 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
             result <-
             omfOps.foldTerm[Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]](
-              funEntityAspect = sourceDefinitionDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
-              funEntityConcept = sourceDefinitionDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
-              funEntityReifiedRelationship = sourceDefinitionDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
-              funEntityUnreifiedRelationship = illegalSourceDependency2RelationshipMapping[Omf#ModelEntityUnreifiedRelationship](depU),
-              funScalarDataType = illegalSourceDependency2RelationshipMapping[Omf#ModelScalarDataType](depU),
-              funStructuredDataType = illegalSourceDependency2RelationshipMapping[Omf#ModelStructuredDataType](depU),
-              funDataRelationshipFromEntityToScalar = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromEntityToScalar](depU),
-              funDataRelationshipFromEntityToStructure = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromEntityToStructure](depU),
-              funDataRelationshipFromStructureToScalar = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToScalar](depU),
-              funDataRelationshipFromStructureToStructure = illegalSourceDependency2RelationshipMapping[Omf#ModelDataRelationshipFromStructureToStructure](depU))(
+              funAspect = sourceDefinitionDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
+              funConcept = sourceDefinitionDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
+              funReifiedRelationship = sourceDefinitionDependency2RelationshipMapping(rule, tbox, context, rs, unmappedS, sourceU, depU, targetU, otargetE),
+              funUnreifiedRelationship = illegalSourceDependency2RelationshipMapping[Omf#UnreifiedRelationship](depU),
+              funScalar = illegalSourceDependency2RelationshipMapping[Omf#Scalar](depU),
+              funStructure  = illegalSourceDependency2RelationshipMapping[Omf#Structure](depU),
+              funScalarOneOfRestriction = illegalSourceDependency2RelationshipMapping[Omf#ScalarOneOfRestriction](depU),
+              funBinaryScalarRestriction = illegalSourceDependency2RelationshipMapping[Omf#BinaryScalarRestriction](depU),
+              funIRIScalarRestriction = illegalSourceDependency2RelationshipMapping[Omf#IRIScalarRestriction](depU),
+              funPlainLiteralScalarRestriction = illegalSourceDependency2RelationshipMapping[Omf#PlainLiteralScalarRestriction](depU),
+              funStringScalarRestriction = illegalSourceDependency2RelationshipMapping[Omf#StringScalarRestriction](depU),
+              funSynonymScalarRestriction = illegalSourceDependency2RelationshipMapping[Omf#SynonymScalarRestriction](depU),
+              funTimeScalarRestriction = illegalSourceDependency2RelationshipMapping[Omf#TimeScalarRestriction](depU),
+              funEntityScalarDataProperty = illegalSourceDependency2RelationshipMapping[Omf#EntityScalarDataProperty](depU),
+              funEntityStructuredDataProperty = illegalSourceDependency2RelationshipMapping[Omf#EntityStructuredDataProperty](depU),
+              funScalarDataProperty = illegalSourceDependency2RelationshipMapping[Omf#ScalarDataProperty](depU),
+              funStructuredDataProperty = illegalSourceDependency2RelationshipMapping[Omf#StructuredDataProperty](depU))(
               sourceOmf
             )
 
@@ -110,7 +117,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
   }
 
-  def illegalSourceDependency2AspectMapping[Term <: Omf#ModelTypeTerm]
+  def illegalSourceDependency2AspectMapping[Term <: Omf#Term]
   (depU: UMLDependency[Uml])
   ( other: Term )
   : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
@@ -120,7 +127,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         s"R3 is not applicable to: $depU because its source is not mapped to an OMF Entity Concept",
         Iterable(depU))))
 
-  def illegalSourceDependency2RelationshipMapping[Term <: Omf#ModelTypeTerm]
+  def illegalSourceDependency2RelationshipMapping[Term <: Omf#Term]
   (depU: UMLDependency[Uml])
   ( other: Term )
   : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
@@ -132,15 +139,15 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
 
   def sourceDefinitionDependency2RelationshipMapping
   (rule: MappingFunction[Uml, Omf, Provenance],
-   tbox: Omf#MutableModelTerminologyGraph,
+   tbox: Omf#MutableTerminologyBox,
    context: OTI2OMFMappingContext[Uml, Omf, Provenance],
    rs: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityRelationshipMap,
    unmappedS: Set[UMLStereotype[Uml]],
    sourceU: UMLNamedElement[Uml],
    depU: UMLDependency[Uml],
    targetU: UMLNamedElement[Uml],
-   otargetE: Option[Omf#ModelEntityDefinition])
-  ( sourceOmf: Omf#ModelEntityDefinition)
+   otargetE: Option[Omf#Entity])
+  ( sourceOmf: Omf#Entity)
   : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
   = {
 
@@ -191,7 +198,7 @@ case class R3[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
             val inc =
               ax
                 .map(_ => Vector(TboxUMLElement2ReifiedRelationshipRestriction(
-                  Some(tbox), relOmf, depU, sourceU, sourceOmf, targetU, targetOmf, ExistentialRestrictionKind)))
+                  Some(tbox), relOmf, depU, sourceU, sourceOmf, targetU, targetOmf)))
                 .toThese
 
             acc append inc
