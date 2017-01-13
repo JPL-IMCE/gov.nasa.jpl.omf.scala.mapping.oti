@@ -21,6 +21,7 @@ package gov.nasa.jpl.omf.scala.mapping.oti.rules
 import gov.nasa.jpl.omf.scala.core._
 import gov.nasa.jpl.omf.scala.mapping.oti._
 
+import org.omg.oti.json.common.OTIPrimitiveTypes.TOOL_SPECIFIC_ID
 import org.omg.oti.uml.UMLError
 import org.omg.oti.uml.read.api._
 import org.omg.oti.uml.read.operations._
@@ -166,8 +167,8 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         Iterable(aU))
     }
 
-    val sourceName = sourceTU.name.getOrElse(sourceTU.toolSpecific_id)
-    val targetName = targetTU.name.getOrElse(sourceTU.toolSpecific_id)
+    val sourceName = sourceTU.name.getOrElse(TOOL_SPECIFIC_ID.unwrap(sourceTU.toolSpecific_id))
+    val targetName = targetTU.name.getOrElse(TOOL_SPECIFIC_ID.unwrap(sourceTU.toolSpecific_id))
     val hasName = aU.name
 
     val omfRelationshipParents
@@ -245,8 +246,8 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
         Iterable(aU))
     }
 
-    val sourceName = sourceTU.name.getOrElse(sourceTU.toolSpecific_id)
-    val targetName = targetTU.name.getOrElse(sourceTU.toolSpecific_id)
+    val sourceName = sourceTU.name.getOrElse(TOOL_SPECIFIC_ID.unwrap(sourceTU.toolSpecific_id))
+    val targetName = targetTU.name.getOrElse(TOOL_SPECIFIC_ID.unwrap(sourceTU.toolSpecific_id))
     val hasName = aU.name
 
     val omfRelationshipParents
