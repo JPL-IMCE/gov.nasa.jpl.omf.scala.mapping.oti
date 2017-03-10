@@ -31,7 +31,7 @@ import org.omg.oti.uml.xmi._
 import scala.Predef.{Map => _, Set => _, _}
 import scala.collection.immutable._
 import scala.collection.parallel._
-import scala.{Boolean, Enumeration, Function1, Function2, Function3, Function4, Function5, Function6, Function7, Function8, annotation}
+import scala.{Boolean, Enumeration, Function1, Function2, Function3, Function4, Function5, Function6, Function7, annotation}
 import scala.{None, Option, PartialFunction, Some, StringContext, Tuple2, Tuple6, Unit}
 import scalaz._
 import Scalaz._
@@ -74,8 +74,7 @@ trait Element2ConceptCTor[Uml <: UML, Omf <: OMF, Provenance] {
   ( context: OTI2OMFMappingContext[Uml, Omf, Provenance],
     rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableTerminologyBox,
-    u: UMLNamedElement[Uml],
-    isAbstract: Boolean)
+    u: UMLNamedElement[Uml])
   : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityConcept
 }
 
@@ -87,10 +86,9 @@ trait Element2ConceptCTorFunction[Uml <: UML, Omf <: OMF, Provenance]
   ( context: OTI2OMFMappingContext[Uml, Omf, Provenance],
     rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableTerminologyBox,
-    u: UMLNamedElement[Uml],
-    isAbstract: Boolean)
+    u: UMLNamedElement[Uml])
   : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityConcept
-  = apply(rule, tbox, u, isAbstract)
+  = apply(rule, tbox, u)
 
 }
 
@@ -103,7 +101,6 @@ trait Element2RelationshipCTor[Uml <: UML, Omf <: OMF, Provenance] {
     source: Omf#Entity,
     target: Omf#Entity,
     characteristics: Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
-    isAbstract: Boolean,
     name: Option[String] )
   : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityRelationship
 }
@@ -120,10 +117,9 @@ trait Element2RelationshipCTorFunction[Uml <: UML, Omf <: OMF, Provenance]
     source: Omf#Entity,
     target: Omf#Entity,
     characteristics: Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
-    isAbstract: Boolean,
     name: Option[String] )
   : Set[java.lang.Throwable] \/ OTI2OMFMappingContext[Uml, Omf, Provenance]#MappedEntityRelationship
-  = apply(rule, tbox, u, source, target, characteristics, isAbstract, name)
+  = apply(rule, tbox, u, source, target, characteristics, name)
 
 }
 
@@ -407,21 +403,19 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     UMLElement[Uml],
     Set[java.lang.Throwable] \/ Omf#Aspect]
 
-  type Element2ConceptCTorRuleFunction = Function4[
+  type Element2ConceptCTorRuleFunction = Function3[
     MappingFunction[Uml, Omf, Provenance],
     Omf#MutableTerminologyBox,
     UMLNamedElement[Uml],
-    Boolean,
     Set[java.lang.Throwable] \/ MappedEntityConcept]
 
-  type Element2RelationshipCTorRuleFunction = Function8[
+  type Element2RelationshipCTorRuleFunction = Function7[
     MappingFunction[Uml, Omf, Provenance],
     Omf#MutableTerminologyBox,
     UMLNamedElement[Uml],
     Omf#Entity,
     Omf#Entity,
     Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
-    Boolean,
     Option[String],
     Set[java.lang.Throwable] \/ MappedEntityRelationship]
 
@@ -712,7 +706,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
           require(pair.nestingPkgTbox.isDefined)
           val result3 =
             for {
-              pkgAuthC <- mapElement2Concept(rule, pair.nestingPkgTbox.get, pkgU, isAbstract=false)
+              pkgAuthC <- mapElement2Concept(rule, pair.nestingPkgTbox.get, pkgU)
               _ <- {
                 val a0: Set[java.lang.Throwable] \/ Unit = \/-(())
                 val aN: Set[java.lang.Throwable] \/ Unit = (a0 /: pair.authorities) { (ai, authS) =>
@@ -751,7 +745,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     : Set[java.lang.Throwable] \/ TBoxOTIDocumentPackageConversion[Uml, Omf]
     = for {
       nestedPkgTbox <- ns2tboxCtor(rule, nestedPkgU, TerminologyKind.isDefinition, pkg2provenance(nestedPkgU))
-      nestedPkgAuthC <- mapElement2Concept(rule, pair.pkgDocumentTbox, nestedPkgU, isAbstract=false)
+      nestedPkgAuthC <- mapElement2Concept(rule, pair.pkgDocumentTbox, nestedPkgU)
       _ <- {
         val a0: Set[java.lang.Throwable] \/ Unit = \/-(())
         val aN: Set[java.lang.Throwable] \/ Unit = (a0 /: nestedPkgAuthorities) { (ai, authS) =>
@@ -815,11 +809,10 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   def mapElement2Concept
   ( rule: MappingFunction[Uml, Omf, Provenance],
     tbox: Omf#MutableTerminologyBox,
-    u: UMLNamedElement[Uml],
-    isAbstract: Boolean)
+    u: UMLNamedElement[Uml])
   : Set[java.lang.Throwable] \/ MappedEntityConcept
   = for {
-    o <- element2conceptCtor.applyMapping(this, rule, tbox, u, isAbstract)
+    o <- element2conceptCtor.applyMapping(this, rule, tbox, u)
   } yield {
     OML2OTIProvenances += OTI2OMFMappingContext.OML2OTITermProvenance(ops, tbox, o, u, rule.name)
     mappedElement2Concept += (u -> o)
@@ -840,11 +833,10 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
     source: Omf#Entity,
     target: Omf#Entity,
     characteristics: Iterable[RelationshipCharacteristics.RelationshipCharacteristics],
-    isAbstract: Boolean,
     hasName: Option[String] )
   : Set[java.lang.Throwable] \/ MappedEntityRelationship
   = for {
-    o <- element2relationshipCtor.applyMapping(this, rule, tbox, u, source, target, characteristics, isAbstract, hasName)
+    o <- element2relationshipCtor.applyMapping(this, rule, tbox, u, source, target, characteristics, hasName)
   } yield {
     OML2OTIProvenances += OTI2OMFMappingContext.OML2OTITermProvenance(ops, tbox, o, u, rule.name)
     mappedElement2Relationship += (u -> o)

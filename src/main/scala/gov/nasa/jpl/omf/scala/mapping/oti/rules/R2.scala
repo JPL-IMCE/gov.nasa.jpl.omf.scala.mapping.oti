@@ -124,7 +124,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
      cs: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityConceptMap)
     : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
     = context
-      .mapElement2Concept(rule, tbox, c, c.isAbstract)
+      .mapElement2Concept(rule, tbox, c)
       .toThese
       .flatMap { cConcept =>
 
@@ -237,7 +237,7 @@ case class R2[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
      cs: OTI2OMFMappingContext[Uml, Omf, Provenance]#UMLStereotype2EntityConceptMap)
     : Set[java.lang.Throwable] \&/ RuleResult[Uml, Omf, Provenance]
     = context
-      .mapElement2Concept(rule, tbox, cls, cls.isAbstract)
+      .mapElement2Concept(rule, tbox, cls)
       .toThese
       .flatMap { cConcept =>
 
