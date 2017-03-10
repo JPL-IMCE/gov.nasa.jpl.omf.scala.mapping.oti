@@ -18,7 +18,7 @@
 
 package gov.nasa.jpl.omf.scala.mapping.oti
 
-import gov.nasa.jpl.imce.omf.provenance.oti.schema.tables.{OMF2OTIProvenance, OMF2OTIProvenanceTables}
+import gov.nasa.jpl.imce.oml.provenance.oti.{OML2OTIProvenance, OML2OTIProvenanceTables}
 import gov.nasa.jpl.omf.scala.core._
 import org.omg.oti.json.common.OTIPrimitiveTypes
 import org.omg.oti.uml.UMLError
@@ -273,13 +273,13 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   import umlOps._
   import TBoxMappingTuples._
 
-  protected val omf2otiProvenances = new scala.collection.mutable.ListBuffer[OMF2OTIProvenance]()
+  protected val OML2OTIProvenances = new scala.collection.mutable.ListBuffer[OML2OTIProvenance]()
 
-  def getOMF2OTIProvenance
-  : OMF2OTIProvenanceTables
-  = OMF2OTIProvenanceTables
-    .createEmptyOMF2OTIProvenanceTables()
-    .copy(omf2OTIProvenances = omf2otiProvenances.to[Seq])
+  def getOML2OTIProvenance
+  : OML2OTIProvenanceTables
+  = OML2OTIProvenanceTables
+    .createEmptyOML2OTIProvenanceTables()
+    .copy(oml2OTIProvenances = OML2OTIProvenances.to[Seq])
 
   val package2Document: Map[UMLPackage[Uml], Document[Uml]]
   = rds.ds.allDocuments.map { d => d.scope -> d }.toMap
@@ -800,7 +800,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   = for {
     o <- element2aspectCtor.applyMapping(this, rule, tbox, u)
   } yield {
-    omf2otiProvenances += OTI2OMFMappingContext.omf2otiTermProvenance(ops, tbox, o, u, rule.name)
+    OML2OTIProvenances += OTI2OMFMappingContext.OML2OTITermProvenance(ops, tbox, o, u, rule.name)
     mappedElement2Aspect += (u -> o)
     o
   }
@@ -821,7 +821,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   = for {
     o <- element2conceptCtor.applyMapping(this, rule, tbox, u, isAbstract)
   } yield {
-    omf2otiProvenances += OTI2OMFMappingContext.omf2otiTermProvenance(ops, tbox, o, u, rule.name)
+    OML2OTIProvenances += OTI2OMFMappingContext.OML2OTITermProvenance(ops, tbox, o, u, rule.name)
     mappedElement2Concept += (u -> o)
     o
   }
@@ -846,7 +846,7 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   = for {
     o <- element2relationshipCtor.applyMapping(this, rule, tbox, u, source, target, characteristics, isAbstract, hasName)
   } yield {
-    omf2otiProvenances += OTI2OMFMappingContext.omf2otiTermProvenance(ops, tbox, o, u, rule.name)
+    OML2OTIProvenances += OTI2OMFMappingContext.OML2OTITermProvenance(ops, tbox, o, u, rule.name)
     mappedElement2Relationship += (u -> o)
     o
   }
@@ -926,8 +926,8 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   = for {
     axiom <- addDirectlyExtendedTerminologyGraphCtor(rule, extendingG, extendedG)
   } yield {
-    omf2otiProvenances +=
-      OTI2OMFMappingContext.omf2otiTerminologyGraphAxiomProvenance(ops, extendingG, axiom, u, rule.name)(store)
+    OML2OTIProvenances +=
+      OTI2OMFMappingContext.OML2OTITerminologyGraphAxiomProvenance(ops, extendingG, axiom, u, rule.name)(store)
     ()
   }
 
@@ -941,8 +941,8 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   = for {
     axiom <- addDirectlyNestedTerminologyGraphCtor(rule, parentG, parentC, nestedG)
   } yield {
-    omf2otiProvenances +=
-      OTI2OMFMappingContext.omf2otiTerminologyGraphAxiomProvenance(ops, nestedG, axiom, u, rule.name)(store)
+    OML2OTIProvenances +=
+      OTI2OMFMappingContext.OML2OTITerminologyGraphAxiomProvenance(ops, nestedG, axiom, u, rule.name)(store)
     ()
   }
 
@@ -958,8 +958,8 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   = for {
     axiom <- addEntityConceptDesignationTerminologyGraphAxiomCtor(rule, tree, tbox, bstConcept, bstGraph)
   } yield {
-    omf2otiProvenances +=
-      OTI2OMFMappingContext.omf2otiTerminologyGraphAxiomProvenance(ops, bstGraph, axiom, u, rule.name)
+    OML2OTIProvenances +=
+      OTI2OMFMappingContext.OML2OTITerminologyGraphAxiomProvenance(ops, bstGraph, axiom, u, rule.name)
     ()
   }
 
@@ -976,8 +976,8 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   = for {
     axiom <- addEntityDefinitionAspectSubClassAxiomCtor(rule, tbox, uSub, sub, uSup, sup)
   } yield {
-    omf2otiProvenances +=
-      OTI2OMFMappingContext.omf2otiTermAxiomProvenance(ops, tbox, axiom, u, explanation)
+    OML2OTIProvenances +=
+      OTI2OMFMappingContext.OML2OTITermAxiomProvenance(ops, tbox, axiom, u, explanation)
     axiom
   }
 
@@ -994,8 +994,8 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   = for {
     axiom <- addEntityConceptSubClassAxiomCtor(rule, tbox, subU, sub, supS, sup)
   } yield {
-    omf2otiProvenances +=
-      OTI2OMFMappingContext.omf2otiTermAxiomProvenance(ops, tbox, axiom, u, explanation)
+    OML2OTIProvenances +=
+      OTI2OMFMappingContext.OML2OTITermAxiomProvenance(ops, tbox, axiom, u, explanation)
     axiom
   }
 
@@ -1013,8 +1013,8 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   = for {
     axiom <- addEntityDefinitionExistentialRestrictionAxiomCtor(rule, tbox, contextU, contextS, domain, rel, range)
   } yield {
-    omf2otiProvenances +=
-      OTI2OMFMappingContext.omf2otiTermAxiomProvenance(ops, tbox, axiom, u, explanation)
+    OML2OTIProvenances +=
+      OTI2OMFMappingContext.OML2OTITermAxiomProvenance(ops, tbox, axiom, u, explanation)
     axiom
   }
 
@@ -1032,8 +1032,8 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   = for {
     axiom <- addEntityDefinitionUniversalRestrictionAxiomCtor(rule, tbox, contextU, contextS, domain, rel, range)
   } yield {
-    omf2otiProvenances +=
-      OTI2OMFMappingContext.omf2otiTermAxiomProvenance(ops, tbox, axiom, u, explanation)
+    OML2OTIProvenances +=
+      OTI2OMFMappingContext.OML2OTITermAxiomProvenance(ops, tbox, axiom, u, explanation)
     axiom
   }
 
@@ -1050,55 +1050,55 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   = for {
     axiom <- addEntityRelationshipSubClassAxiomCtor(rule, tbox, subU, sub, supS, sup)
   } yield {
-    omf2otiProvenances +=
-      OTI2OMFMappingContext.omf2otiTermAxiomProvenance(ops, tbox, axiom, u, explanation)
+    OML2OTIProvenances +=
+      OTI2OMFMappingContext.OML2OTITermAxiomProvenance(ops, tbox, axiom, u, explanation)
     axiom
   }
 }
 
 object OTI2OMFMappingContext {
 
-  def omf2otiTermProvenance[Uml <: UML, Omf <: OMF, T <: Omf#Term]
+  def OML2OTITermProvenance[Uml <: UML, Omf <: OMF, T <: Omf#Term]
   (ops: OMFOps[Omf],
    tbox: Omf#MutableTerminologyBox,
    o: T,
    u: UMLElement[Uml],
    explanation: String)
-  : OMF2OTIProvenance
-  = OMF2OTIProvenance(
+  : OML2OTIProvenance
+  = OML2OTIProvenance(
     explanation,
-    omfUUID = ops.getTermUUID(o).toString,
+    omlUUID = ops.getTermUUID(o).toString,
     otiID = OTIPrimitiveTypes.TOOL_SPECIFIC_ID.unwrap(u.toolSpecific_id),
     otiURL = OTIPrimitiveTypes.TOOL_SPECIFIC_URL.unwrap(u.toolSpecific_url),
     otiUUID = u.toolSpecific_uuid.map(OTIPrimitiveTypes.TOOL_SPECIFIC_UUID.unwrap)
   )
 
-  def omf2otiTermAxiomProvenance[Uml <: UML, Omf <: OMF, A <: Omf#TermAxiom]
+  def OML2OTITermAxiomProvenance[Uml <: UML, Omf <: OMF, A <: Omf#TermAxiom]
   (ops: OMFOps[Omf],
    tbox: Omf#MutableTerminologyBox,
    o: A,
    u: UMLElement[Uml],
    explanation: String)
-  : OMF2OTIProvenance
-  = OMF2OTIProvenance(
+  : OML2OTIProvenance
+  = OML2OTIProvenance(
     explanation,
-    omfUUID = ops.getAxiomUUID(o).toString,
+    omlUUID = ops.getAxiomUUID(o).toString,
     otiID = OTIPrimitiveTypes.TOOL_SPECIFIC_ID.unwrap(u.toolSpecific_id),
     otiURL = OTIPrimitiveTypes.TOOL_SPECIFIC_URL.unwrap(u.toolSpecific_url),
     otiUUID = u.toolSpecific_uuid.map(OTIPrimitiveTypes.TOOL_SPECIFIC_UUID.unwrap)
   )
 
-  def omf2otiTerminologyGraphAxiomProvenance[Uml <: UML, Omf <: OMF]
+  def OML2OTITerminologyGraphAxiomProvenance[Uml <: UML, Omf <: OMF]
   (ops: OMFOps[Omf],
    tbox: Omf#MutableTerminologyBox,
    o: Omf#TerminologyAxiom,
    u: UMLElement[Uml],
    explanation: String)
   (implicit omfStore: Omf#Store)
-  : OMF2OTIProvenance
-  = OMF2OTIProvenance(
+  : OML2OTIProvenance
+  = OML2OTIProvenance(
     explanation,
-    omfUUID = ops.getTerminologyAxiomUUID(o).toString,
+    omlUUID = ops.getTerminologyAxiomUUID(o).toString,
     otiID = OTIPrimitiveTypes.TOOL_SPECIFIC_ID.unwrap(u.toolSpecific_id),
     otiURL = OTIPrimitiveTypes.TOOL_SPECIFIC_URL.unwrap(u.toolSpecific_url),
     otiUUID = u.toolSpecific_uuid.map(OTIPrimitiveTypes.TOOL_SPECIFIC_UUID.unwrap)
