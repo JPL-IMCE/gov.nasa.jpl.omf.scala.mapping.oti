@@ -168,7 +168,7 @@ case class R4[Uml <: UML, Omf <: OMF, Provenance]()(implicit val umlOps: UMLOps[
     }
 
     val sourceName = sourceTU.name.getOrElse(TOOL_SPECIFIC_ID.unwrap(sourceTU.toolSpecific_id))
-    val targetName = targetTU.name.getOrElse(TOOL_SPECIFIC_ID.unwrap(sourceTU.toolSpecific_id))
+    val targetName = targetTU.name.getOrElse(TOOL_SPECIFIC_ID.unwrap(targetTU.toolSpecific_id))
     val hasName = aU.name
 
     val omfRelationshipParents
