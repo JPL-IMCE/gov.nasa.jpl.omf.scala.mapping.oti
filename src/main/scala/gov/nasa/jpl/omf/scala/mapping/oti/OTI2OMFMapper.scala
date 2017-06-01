@@ -665,9 +665,10 @@ abstract class OTI2OMFMappingContext[Uml <: UML, Omf <: OMF, Provenance]
   }
 
   val projectAuthorityOrSpecific: Set[UMLStereotype[Uml]] =
-    closure[UMLStereotype[Uml], UMLStereotype[Uml]](
+    (closure[UMLStereotype[Uml], UMLStereotype[Uml]](
       projectAuthorityS,
-      _.general_classifier.selectByKindOf { case s: UMLStereotype[Uml] => s })
+      _.general_classifier.selectByKindOf { case s: UMLStereotype[Uml] => s }) + projectAuthorityS)
+    .filterNot(_.isAbstract)
 
   def lookupProjectAuthorityOrSpecificAppliedStereotype
   (pkg: UMLPackage[Uml])

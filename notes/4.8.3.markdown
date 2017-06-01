@@ -1,0 +1,7 @@
+gov.nasa.jpl.omf.scala.mapping.oti 4.8.3 is a minor release
+
+## Bugs fixed
+
+- [#1 Mapping of `project:Authority`-stereotyped packages](https://github.com/JPL-IMCE/gov.nasa.jpl.omf.scala.mapping.oti/issues/1)
+    
+    Fixed.
